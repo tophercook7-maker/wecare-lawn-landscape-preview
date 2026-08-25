@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>We Care — Owner Dashboard (AI CRM &amp; Bookings)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="img/mark.png">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body{background:#eef1ee}
+  .dash-top{background:linear-gradient(135deg,#173b2c,#2c6d7b);color:#fff;padding:18px 0}
+  .dash-top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .dash-top .brand{color:#fff}.dash-top .brand img{height:40px}
+  .dash-top .who{font-size:.85rem;color:#cfe4d6}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
+  @media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;border-radius:14px;padding:20px;box-shadow:var(--shadow);border:1px solid var(--line)}
+  .stat .n{font-family:var(--serif);font-size:2.2rem;color:var(--green-deep);line-height:1}
+  .stat .l{font-size:.82rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:6px}
+  .stat .sub{font-size:.8rem;color:var(--teal-dark);margin-top:6px;font-weight:600}
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start}
+  @media(max-width:900px){.board{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.board{grid-template-columns:1fr}}
+  .col{background:#e7ebe7;border-radius:14px;padding:12px;min-height:120px}
+  .col h3{font-family:var(--ff);font-size:.85rem;text-transform:uppercase;letter-spacing:.06em;color:var(--green-ink);display:flex;justify-content:space-between;align-items:center;margin:4px 6px 12px}
+  .col h3 .c{background:var(--teal);color:#fff;border-radius:999px;padding:1px 9px;font-size:.75rem}
+  .col.new h3 .c{background:#e8514f}.col.contacted h3 .c{background:#e8a33d}.col.quoted h3 .c{background:#3d8b9a}.col.won h3 .c{background:#4a9b5e}
+  .lead{background:#fff;border-radius:11px;padding:13px;box-shadow:0 3px 10px rgba(20,48,42,.07);margin-bottom:10px;border-left:3px solid var(--teal);cursor:default}
+  .lead .nm{font-weight:700;color:var(--green-ink);font-size:.95rem;display:flex;justify-content:space-between;align-items:center}
+  .lead .svc{display:inline-block;background:var(--sand-2);border-radius:6px;padding:2px 8px;font-size:.72rem;font-weight:600;color:var(--teal-dark);margin:6px 0}
+  .lead .meta{font-size:.82rem;color:var(--body);line-height:1.5}
+  .lead .meta a{color:var(--teal-dark);font-weight:600}
+  .lead .src{font-size:.7rem;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:4px}
+  .lead .acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .lead .acts button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 9px;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--green-deep)}
+  .lead .acts button:hover{border-color:var(--teal);background:var(--sand)}
+  .lead .acts .adv{background:var(--teal);color:#fff;border-color:var(--teal)}
+  .empty{color:var(--muted);font-size:.82rem;text-align:center;padding:18px 8px;font-style:italic}
+  .panel{background:#fff;border-radius:14px;padding:22px;box-shadow:var(--shadow);border:1px solid var(--line);margin-top:24px}
+  .ai-note{background:linear-gradient(135deg,rgba(148,204,79,.14),rgba(64,143,158,.1));border:1px solid var(--leaf);border-radius:12px;padding:16px;display:flex;gap:14px;align-items:flex-start;margin-bottom:20px}
+  .ai-note .ic{font-size:1.5rem}
+  .followups .fu{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;background:var(--sand)}
+  .followups .fu .to{font-weight:700;color:var(--green-deep);font-size:.9rem}
+  .followups .fu .msg{font-size:.9rem;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:8px;font-style:italic}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+  .toolbar .spacer{flex:1}
+  .mini{font-size:.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="dash-top">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/mark-trans.png" alt="We Care" style="height:38px"> <span style="color:#fff">We Care · Owner Dashboard</span></a>
+    <div style="text-align:right">
+      <div style="font-weight:600">🌱 Ivy is managing your bookings</div>
+      <div class="who">Every request from the website lands here automatically</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="padding-bottom:60px">
+
+  <div class="ai-note" style="margin-top:24px">
+    <div class="ic">🤖</div>
+    <div>
+      <b>How this works:</b> When a customer books through <b>Ivy</b> (the green assistant on your website) or fills out a form, the job appears here — sorted, timestamped, and ready to follow up. Move a card through <b>New → Contacted → Quoted → Won</b> with one tap. This is a live demo: bookings you make on the <a href="index.html">website</a> show up here instantly.
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-primary btn-sm" onclick="location.href='index.html'">← Back to website</button>
+    <button class="btn btn-outline btn-sm" onclick="seedDemo()">Load sample bookings</button>
+    <button class="btn btn-outline btn-sm" onclick="clearAll()">Clear all</button>
+    <span class="spacer"></span>
+    <span class="mini" id="updated"></span>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="board">
+    <div class="col new"><h3>🆕 New <span class="c" id="cNew">0</span></h3><div id="colNew"></div></div>
+    <div class="col contacted"><h3>📞 Contacted <span class="c" id="cContacted">0</span></h3><div id="colContacted"></div></div>
+    <div class="col quoted"><h3>💬 Quoted <span class="c" id="cQuoted">0</span></h3><div id="colQuoted"></div></div>
+    <div class="col won"><h3>✅ Won <span class="c" id="cWon">0</span></h3><div id="colWon"></div></div>
+  </div>
+
+  <div class="panel followups">
+    <h3 style="margin-top:0;font-family:var(--serif);color:var(--green-ink)">✉️ AI-drafted follow-ups</h3>
+    <p class="mini" style="margin-top:-6px">Ivy writes these automatically for your newest leads. Tap to copy, then send by text or email.</p>
+    <div id="followups"></div>
+  </div>
+
+</div>
+
+<script src="js/app.js"></script>
+<script>
+var STAGES=["New","Contacted","Quoted","Won"];
+function money(n){return "$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:0})}
+
+function setStage(id,stage){
+  var all=WeCareLeads.load();
+  var l=all.find(function(x){return x.id===id});if(l)l.stage=stage;
+  localStorage.setItem(WeCareLeads.KEY,JSON.stringify(all));render();
+}
+function del(id){
+  var all=WeCareLeads.load().filter(function(x){return x.id!==id});
+  localStorage.setItem(WeCareLeads.KEY,JSON.stringify(all));render();
+}
+function clearAll(){ if(confirm("Clear all bookings from this demo?")){localStorage.removeItem(WeCareLeads.KEY);render();} }
+
+function timeAgo(iso){
+  var s=(Date.now()-new Date(iso).getTime())/1000;
+  if(s<60)return "just now"; if(s<3600)return Math.floor(s/60)+"m ago";
+  if(s<86400)return Math.floor(s/3600)+"h ago"; return Math.floor(s/86400)+"d ago";
+}
+function next(stage){var i=STAGES.indexOf(stage);return i<STAGES.length-1?STAGES[i+1]:null}
+
+function leadCard(l){
+  var phone=(l.phone||"").replace(/[^\d]/g,"");
+  var nx=next(l.stage);
+  var est="";
+  if(l.sqft){var e=sodEstimate(l.sqft);est=' · ~'+e.pallets+' pallet'+(e.pallets>1?'s':'')+' ('+money(e.total)+')';}
+  return '<div class="lead">'+
+    '<div class="nm">'+esc(l.name||"New lead")+'</div>'+
+    '<span class="svc">'+esc(l.service||"Inquiry")+'</span>'+
+    '<div class="meta">'+
+      (l.phone?'📞 <a href="tel:'+phone+'">'+esc(l.phone)+'</a><br>':'')+
+      (l.address?'📍 '+esc(l.address)+'<br>':'')+
+      (l.detail?'📝 '+esc(l.detail)+est+'<br>':(l.sqft?'📝 '+l.sqft.toLocaleString()+' sq ft'+est+'<br>':''))+
+      (l.when?'🗓️ '+esc(l.when):'')+
+    '</div>'+
+    '<div class="src">🤖 '+esc(l.source||"Website")+' · '+timeAgo(l.created)+'</div>'+
+    '<div class="acts">'+
+      (nx?'<button class="adv" onclick="setStage(\''+l.id+'\',\''+nx+'\')">Move to '+nx+' →</button>':'<button class="adv" onclick="setStage(\''+l.id+'\',\'Won\')">✓ Won</button>')+
+      (phone?'<button onclick="alert(\'Calling '+esc(l.phone)+'…\')">Call</button>':'')+
+      '<button onclick="del(\''+l.id+'\')">✕</button>'+
+    '</div>'+
+  '</div>';
+}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+function render(){
+  var all=WeCareLeads.load();
+  var by={New:[],Contacted:[],Quoted:[],Won:[]};
+  all.forEach(function(l){(by[l.stage]||by.New).push(l)});
+  ["New","Contacted","Quoted","Won"].forEach(function(s){
+    var col=document.getElementById("col"+s);
+    col.innerHTML=by[s].length?by[s].map(leadCard).join(""):'<div class="empty">No '+s.toLowerCase()+' leads</div>';
+    document.getElementById("c"+s).textContent=by[s].length;
+  });
+  // stats
+  var newCount=by.New.length, won=by.Won.length, total=all.length;
+  var pipeline=all.filter(function(l){return l.stage!=="Won"}).reduce(function(a,l){return a+(l.sqft?sodEstimate(l.sqft).total:0)},0);
+  document.getElementById("stats").innerHTML=
+    stat(total,"Total bookings","🌱 all-time")+
+    stat(newCount,"Awaiting reply", newCount?"⚠️ follow up now":"✓ all caught up")+
+    stat(won,"Jobs won", total?Math.round(won/total*100)+"% close rate":"")+
+    stat(money(pipeline),"Sod pipeline","est. open value");
+  document.getElementById("updated").textContent="Updated "+new Date().toLocaleTimeString();
+  renderFollowups(all);
+}
+function stat(n,l,sub){return '<div class="stat"><div class="n">'+n+'</div><div class="l">'+l+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'}
+
+function renderFollowups(all){
+  var news=all.filter(function(l){return l.stage==="New"}).slice(0,3);
+  var box=document.getElementById("followups");
+  if(!news.length){box.innerHTML='<p class="mini">No pending follow-ups — you\'re all caught up. 🎉</p>';return;}
+  box.innerHTML=news.map(function(l){
+    var fn=(l.name||"there").split(" ")[0];
+    var msg;
+    if(l.sqft){var e=sodEstimate(l.sqft);
+      msg="Hi "+fn+", it's We Care Lawn & Landscape. Thanks for your sod request! For ~"+l.sqft.toLocaleString()+" sq ft you're looking at about "+e.pallets+" pallet"+(e.pallets>1?"s":"")+" (~"+money(e.total)+" delivered). When works for delivery? — 501-627-4384";}
+    else{msg="Hi "+fn+", it's We Care Lawn & Landscape following up on your "+(l.service||"service").toLowerCase()+" request"+(l.address?" at "+l.address:"")+". We'd love to get you scheduled — what day works best? — 501-627-4384";}
+    return '<div class="fu"><div class="to">To '+esc(l.name||"lead")+(l.phone?' · '+esc(l.phone):'')+'</div>'+
+      '<div class="msg" id="fu-'+l.id+'">'+esc(msg)+'</div>'+
+      '<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="copyFu(\''+l.id+'\')">📋 Copy message</button></div>';
+  }).join("");
+}
+function copyFu(id){var t=document.getElementById("fu-"+id).textContent;
+  navigator.clipboard&&navigator.clipboard.writeText(t);
+  event.target.textContent="✓ Copied";setTimeout(function(){event.target.textContent="📋 Copy message"},1500);}
+
+function seedDemo(){
+  var now=Date.now();
+  var demo=[
+    {name:"Tammy Ledgerwood",phone:"501-555-0142",address:"Ledgerwood Circle, Hot Springs",service:"Lawn maintenance",detail:"Biweekly mow + weed eating",when:"This week",source:"AI Assistant (Ivy)",stage:"Won",created:new Date(now-86400000*2).toISOString(),id:"seed1"},
+    {name:"Mark D.",phone:"501-555-0199",address:"Malvern",service:"Sod farm — order/estimate",sqft:1200,when:"Next Saturday",source:"AI Assistant (Ivy)",stage:"New",created:new Date(now-3600000*2).toISOString(),id:"seed2"},
+    {name:"Janet Rowe",phone:"501-555-0110",address:"Hot Springs Village",service:"Landscape design & build",detail:"Flagstone patio + water feature",when:"No rush",source:"Website form",stage:"Quoted",created:new Date(now-86400000).toISOString(),id:"seed3"},
+    {name:"Carlos M.",phone:"501-555-0187",address:"Benton",service:"Sod farm — order/estimate",sqft:2400,when:"ASAP",source:"AI Assistant (Ivy)",stage:"Contacted",created:new Date(now-3600000*20).toISOString(),id:"seed4"},
+    {name:"Dana P.",phone:"501-555-0133",address:"Bryant",service:"Lawn maintenance",detail:"Weekly mowing, corner lot",when:"Start next week",source:"AI Assistant (Ivy)",stage:"New",created:new Date(now-3600000*5).toISOString(),id:"seed5"}
+  ];
+  var existing=WeCareLeads.load();
+  var ids={};existing.forEach(function(l){ids[l.id]=1});
+  demo.forEach(function(d){if(!ids[d.id])existing.push(d)});
+  localStorage.setItem(WeCareLeads.KEY,JSON.stringify(existing));render();
+}
+
+// auto-seed if empty so the pitch looks alive; refresh when returning to tab
+if(!WeCareLeads.load().length)seedDemo(); else render();
+window.addEventListener("focus",render);
+render();
+</script>
+</body>
+</html>
