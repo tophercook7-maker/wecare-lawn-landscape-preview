@@ -1,8 +1,8 @@
 /* We Care Lawn & Landscape — site logic
-   - Ivy: self-contained AI booking/CRM assistant (works offline, no API key)
+   - Sage: self-contained AI booking/CRM assistant (works offline, no API key)
    - Sod calculator
    - Lead capture -> localStorage (shared with dashboard.html)
-   Production note: swap Ivy's reply() for a call to a local Ollama model (free)
+   Production note: swap Sage's reply() for a call to a local Ollama model (free)
    and persist leads to the real CRM. The demo brain below shows the exact flow. */
 (function(){
 "use strict";
@@ -61,7 +61,7 @@ function initPageCalc(){
       '<div class="rowline"><span>Local delivery</span><b>'+money(e.delivery)+'</b></div>'+
       '<div class="rowline"><span>Estimated total</span><b style="color:var(--green-deep)">'+money(e.total)+'</b></div>'+
       '<p style="font-size:.8rem;color:var(--muted);margin:.8rem 0 0">Estimate only — final price confirmed by We Care. Installation quoted separately.</p>'+
-      '<button class="btn btn-leaf btn-sm" style="margin-top:12px" onclick="Ivy.openWith(\'sod order '+e.sqft+'\')">Request this sod order →</button>';
+      '<button class="btn btn-leaf btn-sm" style="margin-top:12px" onclick="Sage.openWith(\'sod order '+e.sqft+'\')">Request this sod order →</button>';
   }
   form.addEventListener("input",calc);
   form.querySelectorAll('[name=mode]').forEach(function(r){r.addEventListener("change",function(){
@@ -72,8 +72,8 @@ function initPageCalc(){
   calc();
 }
 
-/* ================= IVY — the AI assistant ================= */
-var Ivy=(function(){
+/* ================= SAGE — the AI assistant ================= */
+var Sage=(function(){
   var panel,msgs,chipsEl,inputEl;
   var flow=null;         // active guided flow (booking/quote/sod)
   var data={};           // collected fields
@@ -165,7 +165,7 @@ var Ivy=(function(){
     var lead=window.WeCareLeads.save({
       name:data.name,phone:data.phone,address:data.address,
       service:data.service,detail:data.detail||(data.sqft?data.sqft+" sq ft sod":""),
-      sqft:data.sqft||null,when:data.when,source:"AI Assistant (Ivy)"
+      sqft:data.sqft||null,when:data.when,source:"AI Assistant (Sage)"
     });
     var extra="";
     if(data._svcKey==="sod"&&data.sqft){var e=sodEstimate(data.sqft);
@@ -222,9 +222,9 @@ var Ivy=(function(){
     if(/(area|serve|location|where|town|near|hot springs|benton|malvern)/.test(q)){say("We serve <b>"+BIZ.area+"</b> — including "+BIZ.towns.slice(0,6).join(", ")+" and nearby. What's your town? I'll confirm.");return;}
     if(/(hour|open|when.*open|time)/.test(q)){say("We're out on jobs Mon–Sat. Leave your info here anytime and We Care follows up quickly — often same day.");return;}
     if(/(how long|since|experience|years|established|1998)/.test(q)){say("We Care has served Central Arkansas since <b>"+BIZ.since+"</b> — that's over 25 years of landscaping, masonry, and sod. 🌿");return;}
-    if(/(who are you|your name|are you (a )?(bot|robot|ai|human)|ivy)/.test(q)){say("I'm <b>Ivy</b>, the We Care assistant 🌱 — I help you estimate sod, book maintenance, and get landscape quotes, 24/7. I can hand you to a real person anytime too.");return;}
+    if(/(who are you|your name|are you (a )?(bot|robot|ai|human)|sage|ivy)/.test(q)){say("I'm <b>Sage</b>, the We Care assistant 🌱 — I help you estimate sod, book maintenance, and get landscape quotes, 24/7. I can hand you to a real person anytime too.");return;}
     if(/(human|person|real|someone|owner|talk to)/.test(q)){startFlow("callback",{key:"callback",service:"Call-back request"});return;}
-    if(/(hi|hello|hey|howdy|yo)\b/.test(q)&&q.length<12){menu("Hi there! 👋 I'm Ivy. How can I help today?");return;}
+    if(/(hi|hello|hey|howdy|yo)\b/.test(q)&&q.length<12){menu("Hi there! 👋 I'm Sage. How can I help today?");return;}
     if(/(thank|thanks|appreciate)/.test(q)){say("Anytime! 🌿 Anything else?");return;}
 
     // fallback -> offer menu
@@ -253,14 +253,14 @@ var Ivy=(function(){
     if(document.getElementById("ai-panel"))return;
     var launch=document.createElement("button");
     launch.id="ai-launch";
-    launch.innerHTML='<span class="pulse"></span><span class="av">🌱</span> Ask Ivy';
+    launch.innerHTML='<span class="pulse"></span><span class="av">🌱</span> Ask Sage';
     launch.onclick=open;
     document.body.appendChild(launch);
 
     panel=document.createElement("div");
     panel.id="ai-panel";
     panel.innerHTML=
-      '<div class="ai-hd"><div class="av">🌱</div><div class="t"><b>Ivy · We Care Assistant</b><span>Online — replies instantly</span></div><button class="x" aria-label="close">×</button></div>'+
+      '<div class="ai-hd"><div class="av">🌱</div><div class="t"><b>Sage · We Care Assistant</b><span>Online — replies instantly</span></div><button class="x" aria-label="close">×</button></div>'+
       '<div class="ai-msgs" id="aiMsgs"></div>'+
       '<div class="ai-chips" id="aiChips"></div>'+
       '<form class="ai-input" id="aiForm"><input id="aiInput" placeholder="Type your question…" autocomplete="off"><button type="submit" aria-label="send">➤</button></form>';
@@ -274,7 +274,7 @@ var Ivy=(function(){
   function open(){
     build();panel.classList.add("open");document.getElementById("ai-launch").style.display="none";
     if(!greeted){greeted=true;
-      say("Hi! I'm <b>Ivy</b> 🌱 — your We Care assistant. I can estimate sod, book lawn maintenance, or start a landscape quote — right here, 24/7.",function(){menu("What would you like to do?")});
+      say("Hi! I'm <b>Sage</b> 🌱 — your We Care assistant. I can estimate sod, book lawn maintenance, or start a landscape quote — right here, 24/7.",function(){menu("What would you like to do?")});
     }
     setTimeout(function(){inputEl&&inputEl.focus()},300);
   }
@@ -283,7 +283,7 @@ var Ivy=(function(){
 
   return {build:build,open:open,close:close,openWith:openWith};
 })();
-window.Ivy=Ivy;
+window.Sage=Sage;
 
 /* ---------- Simple lead forms on page ---------- */
 function initPageForms(){
@@ -311,6 +311,6 @@ function initUX(){
 }
 
 document.addEventListener("DOMContentLoaded",function(){
-  initPageCalc();initPageForms();initUX();Ivy.build();
+  initPageCalc();initPageForms();initUX();Sage.build();
 });
 })();

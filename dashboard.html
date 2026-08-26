@@ -55,7 +55,7 @@
   <div class="wrap">
     <a class="brand" href="index.html"><img src="img/mark-trans.png" alt="We Care" style="height:38px"> <span style="color:#fff">We Care · Owner Dashboard</span></a>
     <div style="text-align:right">
-      <div style="font-weight:600">🌱 Ivy is managing your bookings</div>
+      <div style="font-weight:600">🌱 Sage is managing your bookings</div>
       <div class="who">Every request from the website lands here automatically</div>
     </div>
   </div>
@@ -66,7 +66,7 @@
   <div class="ai-note" style="margin-top:24px">
     <div class="ic">🤖</div>
     <div>
-      <b>How this works:</b> When a customer books through <b>Ivy</b> (the green assistant on your website) or fills out a form, the job appears here — sorted, timestamped, and ready to follow up. Move a card through <b>New → Contacted → Quoted → Won</b> with one tap. This is a live demo: bookings you make on the <a href="index.html">website</a> show up here instantly.
+      <b>How this works:</b> When a customer books through <b>Sage</b> (the green assistant on your website) or fills out a form, the job appears here — sorted, timestamped, and ready to follow up. Move a card through <b>New → Contacted → Quoted → Won</b> with one tap. This is a live demo: bookings you make on the <a href="index.html">website</a> show up here instantly.
     </div>
   </div>
 
@@ -89,7 +89,7 @@
 
   <div class="panel followups">
     <h3 style="margin-top:0;font-family:var(--serif);color:var(--green-ink)">✉️ AI-drafted follow-ups</h3>
-    <p class="mini" style="margin-top:-6px">Ivy writes these automatically for your newest leads. Tap to copy, then send by text or email.</p>
+    <p class="mini" style="margin-top:-6px">Sage writes these automatically for your newest leads. Tap to copy, then send by text or email.</p>
     <div id="followups"></div>
   </div>
 
@@ -186,11 +186,11 @@ function copyFu(id){var t=document.getElementById("fu-"+id).textContent;
 function seedDemo(){
   var now=Date.now();
   var demo=[
-    {name:"Tammy Ledgerwood",phone:"501-555-0142",address:"Ledgerwood Circle, Hot Springs",service:"Lawn maintenance",detail:"Biweekly mow + weed eating",when:"This week",source:"AI Assistant (Ivy)",stage:"Won",created:new Date(now-86400000*2).toISOString(),id:"seed1"},
-    {name:"Mark D.",phone:"501-555-0199",address:"Malvern",service:"Sod farm — order/estimate",sqft:1200,when:"Next Saturday",source:"AI Assistant (Ivy)",stage:"New",created:new Date(now-3600000*2).toISOString(),id:"seed2"},
+    {name:"Tammy Ledgerwood",phone:"501-555-0142",address:"Ledgerwood Circle, Hot Springs",service:"Lawn maintenance",detail:"Biweekly mow + weed eating",when:"This week",source:"AI Assistant (Sage)",stage:"Won",created:new Date(now-86400000*2).toISOString(),id:"seed1"},
+    {name:"Mark D.",phone:"501-555-0199",address:"Malvern",service:"Sod farm — order/estimate",sqft:1200,when:"Next Saturday",source:"AI Assistant (Sage)",stage:"New",created:new Date(now-3600000*2).toISOString(),id:"seed2"},
     {name:"Janet Rowe",phone:"501-555-0110",address:"Hot Springs Village",service:"Landscape design & build",detail:"Flagstone patio + water feature",when:"No rush",source:"Website form",stage:"Quoted",created:new Date(now-86400000).toISOString(),id:"seed3"},
-    {name:"Carlos M.",phone:"501-555-0187",address:"Benton",service:"Sod farm — order/estimate",sqft:2400,when:"ASAP",source:"AI Assistant (Ivy)",stage:"Contacted",created:new Date(now-3600000*20).toISOString(),id:"seed4"},
-    {name:"Dana P.",phone:"501-555-0133",address:"Bryant",service:"Lawn maintenance",detail:"Weekly mowing, corner lot",when:"Start next week",source:"AI Assistant (Ivy)",stage:"New",created:new Date(now-3600000*5).toISOString(),id:"seed5"}
+    {name:"Carlos M.",phone:"501-555-0187",address:"Benton",service:"Sod farm — order/estimate",sqft:2400,when:"ASAP",source:"AI Assistant (Sage)",stage:"Contacted",created:new Date(now-3600000*20).toISOString(),id:"seed4"},
+    {name:"Dana P.",phone:"501-555-0133",address:"Bryant",service:"Lawn maintenance",detail:"Weekly mowing, corner lot",when:"Start next week",source:"AI Assistant (Sage)",stage:"New",created:new Date(now-3600000*5).toISOString(),id:"seed5"}
   ];
   var existing=WeCareLeads.load();
   var ids={};existing.forEach(function(l){ids[l.id]=1});
