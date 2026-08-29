@@ -87,6 +87,12 @@
     <div class="col won"><h3>✅ Won <span class="c" id="cWon">0</span></h3><div id="colWon"></div></div>
   </div>
 
+  <div class="panel" id="livePanel" style="border:2px solid var(--teal)">
+    <h3 style="margin-top:0;font-family:var(--serif);color:var(--green-ink)">💬 Live conversations <span id="liveBadge" style="display:none;background:#e8514f;color:#fff;border-radius:999px;padding:1px 9px;font-size:.75rem;vertical-align:middle">0 new</span></h3>
+    <p class="mini" style="margin-top:-6px">Sage handles the sod stuff on its own. You get pinged on every new customer — watch any chat live, and <b>jump in whenever you want</b>.</p>
+    <div id="liveList"></div>
+  </div>
+
   <div class="panel followups">
     <h3 style="margin-top:0;font-family:var(--serif);color:var(--green-ink)">✉️ AI-drafted follow-ups</h3>
     <p class="mini" style="margin-top:-6px">Sage writes these automatically for your newest leads. Tap to copy, then send by text or email.</p>
@@ -94,6 +100,34 @@
   </div>
 
 </div>
+
+<style>
+  .cv{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;background:#fff}
+  .cv .cvh{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:var(--sand)}
+  .cv .cvh:hover{background:var(--sand-2)}
+  .cv .cvh .who{font-weight:700;color:var(--green-ink);font-size:.95rem}
+  .cv .cvh .svc{font-size:.75rem;color:var(--teal-dark);background:#fff;border:1px solid var(--line);border-radius:6px;padding:1px 7px}
+  .cv .cvh .ago{margin-left:auto;font-size:.75rem;color:var(--muted)}
+  .cv .cvh .ping{width:9px;height:9px;border-radius:50%;background:#e8514f}
+  .cv .ctrl{font-size:.72rem;font-weight:700;border-radius:999px;padding:2px 10px}
+  .cv .ctrl.sage{background:rgba(148,204,79,.2);color:var(--green-deep)}
+  .cv .ctrl.human{background:rgba(64,143,158,.18);color:var(--teal-dark)}
+  .cv .body{display:none;padding:12px 14px;border-top:1px solid var(--line-soft)}
+  .cv.open .body{display:block}
+  .cvmsgs{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;padding:4px}
+  .cvm{max-width:85%;padding:8px 12px;border-radius:12px;font-size:.86rem;line-height:1.4}
+  .cvm.customer{background:#eef1ef;color:var(--ink);align-self:flex-start;border-bottom-left-radius:4px}
+  .cvm.sage{background:rgba(148,204,79,.16);color:var(--ink);align-self:flex-end;border-bottom-right-radius:4px}
+  .cvm.owner{background:var(--green-deep);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .cvm .lbl{font-size:.66rem;opacity:.7;font-weight:700;display:block;margin-bottom:1px}
+  .cvbar{display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap}
+  .cvbar .reply{flex:1;min-width:160px;border:1.5px solid var(--line);border-radius:999px;padding:9px 14px;font-family:var(--ff);font-size:.9rem}
+  .cvbar button{border:0;border-radius:999px;padding:9px 15px;font-weight:600;font-size:.85rem;cursor:pointer}
+  .cvbar .take{background:var(--teal);color:#fff}
+  .cvbar .hand{background:var(--sand-2);color:var(--green-deep)}
+  .cvbar .send{background:var(--green-deep);color:#fff}
+  .cvempty{color:var(--muted);font-size:.85rem;font-style:italic;padding:8px 4px}
+</style>
 
 <script src="js/app.js"></script>
 <script>
@@ -198,10 +232,68 @@ function seedDemo(){
   localStorage.setItem(WeCareLeads.KEY,JSON.stringify(existing));render();
 }
 
+/* ===== Live conversations + owner takeover ===== */
+var _openCv=null;   // which conversation is expanded
+function cvTimeAgo(iso){var s=(Date.now()-new Date(iso).getTime())/1000;if(s<60)return"just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return Math.floor(s/86400)+"d ago";}
+function cvName(c){return (c.customer&&c.customer.name)||"New customer";}
+
+function renderLive(){
+  var all=WeCareConvos.load();
+  var ids=Object.keys(all).sort(function(a,b){return new Date(all[b].updated)-new Date(all[a].updated);});
+  var active=ids.map(function(i){return all[i];}).filter(function(c){return c.msgs.length>0;});
+  var newCount=active.filter(function(c){return c.unseen;}).length;
+  var badge=document.getElementById("liveBadge");
+  if(newCount){badge.style.display="";badge.textContent=newCount+" new";} else badge.style.display="none";
+  var box=document.getElementById("liveList");
+  if(!active.length){box.innerHTML='<div class="cvempty">No conversations yet. When a customer opens Sage on your website, they show up here live.</div>';return;}
+  box.innerHTML=active.map(function(c){
+    var isOpen=_openCv===c.id;
+    var msgs=c.msgs.map(function(m){
+      var lbl=m.who==="customer"?cvName(c):(m.who==="owner"?"You":"Sage");
+      return '<div class="cvm '+m.who+'"><span class="lbl">'+esc(lbl)+'</span>'+esc(m.text)+'</div>';
+    }).join("");
+    var human=c.control==="human";
+    return '<div class="cv '+(isOpen?'open':'')+'">'+
+      '<div class="cvh" onclick="toggleCv(\''+c.id+'\')">'+
+        (c.unseen?'<span class="ping"></span>':'')+
+        '<span class="who">'+esc(cvName(c))+'</span>'+
+        (c.service?'<span class="svc">'+esc(c.service)+'</span>':'')+
+        '<span class="ctrl '+(human?'human':'sage')+'">'+(human?'You’re in':'Sage')+'</span>'+
+        '<span class="ago">'+cvTimeAgo(c.updated)+'</span>'+
+      '</div>'+
+      '<div class="body">'+
+        '<div class="cvmsgs" id="cvmsgs-'+c.id+'">'+msgs+'</div>'+
+        '<div class="cvbar">'+
+          (human
+            ? '<input class="reply" id="reply-'+c.id+'" placeholder="Type to '+esc(cvName(c))+'…" onkeydown="if(event.key===\'Enter\')cvSend(\''+c.id+'\')">'+
+              '<button class="send" onclick="cvSend(\''+c.id+'\')">Send</button>'+
+              '<button class="hand" onclick="cvHandBack(\''+c.id+'\')">↩ Back to Sage</button>'
+            : '<button class="take" onclick="cvTakeOver(\''+c.id+'\')">✋ Jump in &amp; take over</button>'+
+              '<span class="mini">Sage is handling this — jump in anytime.</span>')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+function toggleCv(id){ _openCv=(_openCv===id?null:id); var all=WeCareConvos.load(); if(all[id]){all[id].unseen=false;localStorage.setItem(WeCareConvos.KEY,JSON.stringify(all));} renderLive(); }
+function cvTakeOver(id){ WeCareConvos.patch(id,{control:"human"}); _openCv=id; renderLive(); var r=document.getElementById("reply-"+id); if(r)r.focus(); }
+function cvHandBack(id){ WeCareConvos.patch(id,{control:"sage"}); renderLive(); }
+function cvSend(id){ var r=document.getElementById("reply-"+id); if(!r||!r.value.trim())return; WeCareConvos.append(id,"owner",r.value.trim()); r.value=""; renderLive(); }
+
+var _prevCount=0;
+function pingCheck(){
+  var all=WeCareConvos.load();
+  var news=Object.keys(all).filter(function(i){return all[i].unseen&&all[i].msgs.length;}).length;
+  if(news>_prevCount){ try{new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=").play();}catch(e){} }
+  _prevCount=news;
+}
+window.addEventListener("storage",function(e){ if(e.key===WeCareConvos.KEY){renderLive();pingCheck();} });
+setInterval(function(){renderLive();pingCheck();},1500);
+
 // auto-seed if empty so the pitch looks alive; refresh when returning to tab
 if(!WeCareLeads.load().length)seedDemo(); else render();
-window.addEventListener("focus",render);
-render();
+window.addEventListener("focus",function(){render();renderLive();});
+render();renderLive();
 </script>
 </body>
 </html>

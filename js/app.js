@@ -46,6 +46,31 @@ function saveLead(lead){
 }
 window.WeCareLeads={load:loadLeads,save:saveLead,KEY:LS_KEY};
 
+/* ---------- Live conversation store (shared with owner dashboard) ----------
+   Every customer chat is logged turn-by-turn so Derrick can watch live, get
+   pinged on new customers, and TAKE OVER any conversation at any point.
+   control: 'sage' = Sage auto-handles · 'human' = Derrick is talking. */
+var CV_KEY="wecare_convos";
+function cvLoad(){ try{return JSON.parse(localStorage.getItem(CV_KEY))||{}}catch(e){return {}} }
+function cvSave(all){ try{localStorage.setItem(CV_KEY,JSON.stringify(all))}catch(e){} }
+function cvGet(id){ return cvLoad()[id]||null; }
+function cvNew(){
+  var all=cvLoad();
+  var id="C"+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);
+  all[id]={id:id, customer:{}, service:"", msgs:[], control:"sage",
+           status:"active", unseen:true, created:new Date().toISOString(), updated:new Date().toISOString()};
+  cvSave(all); return id;
+}
+function cvAppend(id, who, text){          // who: 'sage' | 'customer' | 'owner'
+  var all=cvLoad(); var c=all[id]; if(!c)return;
+  c.msgs.push({who:who, text:text, ts:new Date().toISOString()});
+  c.updated=new Date().toISOString();
+  if(who==="customer") c.unseen=true;      // re-flag for owner attention
+  cvSave(all);
+}
+function cvPatch(id, fields){ var all=cvLoad(); var c=all[id]; if(!c)return; Object.assign(c,fields); c.updated=new Date().toISOString(); cvSave(all); }
+window.WeCareConvos={load:cvLoad,get:cvGet,neu:cvNew,append:cvAppend,patch:cvPatch,KEY:CV_KEY};
+
 /* ---------- Sod calculator (Derrick's real per-pallet rules) ----------
    Sage quotes MATERIAL + DELIVERY only — never installation.
    Over the pallet limit, or beyond the delivery radius, it escalates. */
@@ -129,15 +154,26 @@ var Sage=(function(){
   function typing(){var t=el("ai-typing","<span></span><span></span><span></span>");t.id="typing";msgs.appendChild(t);scroll();}
   function stopTyping(){var t=document.getElementById("typing");if(t)t.remove();}
 
+  var convoId=null;                         // this customer's live conversation id
+  function logTurn(who,text){ if(convoId) window.WeCareConvos.append(convoId,who,text); }
+  function isHuman(){ var c=convoId&&window.WeCareConvos.get(convoId); return c&&c.control==="human"; }
+
   function say(html,cb){
     typing();
     setTimeout(function(){
       stopTyping();
       msgs.appendChild(el("ai-msg bot",html));scroll();
+      logTurn("sage", stripTags(html));
       if(cb)cb();
     }, Math.min(900, 350+html.length*8));
   }
-  function me(text){msgs.appendChild(el("ai-msg user",escapeHtml(text)));scroll();}
+  function me(text){msgs.appendChild(el("ai-msg user",escapeHtml(text)));scroll();logTurn("customer",text);}
+  function ownerBubble(text){       // a message Derrick sent from the dashboard
+    var d=el("ai-msg bot","");d.style.background="var(--green-deep)";d.style.color="#fff";
+    d.innerHTML='<b style="font-size:.72rem;opacity:.85;display:block;margin-bottom:2px">Derrick · We Care</b>'+escapeHtml(text);
+    msgs.appendChild(d);scroll();
+  }
+  function stripTags(h){var d=document.createElement("div");d.innerHTML=h;return d.textContent||d.innerText||"";}
   function escapeHtml(s){return String(s).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
 
   function chips(list){
@@ -196,6 +232,8 @@ var Sage=(function(){
     else if(step==="address")data.address=text;
     else if(step==="detail"){data.detail=text; if(data._svcKey==="sod"){var m=text.match(/[\d,]+/);if(m)data.sqft=parseInt(m[0].replace(/,/g,""))||data.sqft;}}
     else if(step==="when")data.when=text;
+    // keep the live conversation's customer card up to date so Derrick sees who it is
+    if(convoId) window.WeCareConvos.patch(convoId,{customer:{name:data.name,phone:data.phone,address:data.address}, service:data.service||""});
     flow.step++;
     nextStep();
   }
@@ -233,6 +271,8 @@ var Sage=(function(){
 
   function answer(t){
     var q=t.toLowerCase();
+    // Derrick has taken over this chat → Sage stays quiet, he's talking now.
+    if(isHuman()){ return; }
     // If in a guided flow, treat input as an answer
     if(flow){ collect(t); return; }
 
@@ -315,12 +355,31 @@ var Sage=(function(){
       e.preventDefault();var v=inputEl.value.trim();if(!v)return;inputEl.value="";clearChips();me(v);answer(v);
     });
   }
+  var _seenOwner=0, _wasHuman=false;
   function open(){
     build();panel.classList.add("open");document.getElementById("ai-launch").style.display="none";
+    if(!convoId){ convoId=window.WeCareConvos.neu(); watchOwner(); }   // start a live conversation Derrick can watch/join
     if(!greeted){greeted=true;
       say("Hi! I'm <b>Sage</b> 🌱 — your We Care assistant. I can estimate sod, or start a design consultation for luxury landscapes and concrete artistry — right here, 24/7.",function(){menu("What would you like to do?")});
     }
     setTimeout(function(){inputEl&&inputEl.focus()},300);
+  }
+  // Poll the shared store: render Derrick's messages + show a banner when he joins/leaves.
+  function watchOwner(){
+    function tick(){
+      var c=convoId&&window.WeCareConvos.get(convoId); if(!c)return;
+      // new owner messages?
+      var owners=c.msgs.filter(function(m){return m.who==="owner";});
+      for(var i=_seenOwner;i<owners.length;i++){ stopTyping(); ownerBubble(owners[i].text); }
+      _seenOwner=owners.length;
+      // control transitions
+      if(c.control==="human" && !_wasHuman){ _wasHuman=true; clearChips();
+        var b=el("ai-msg bot","👋 <b>Derrick just joined the chat</b> and will take it from here."); b.style.background="var(--sand)";msgs.appendChild(b);scroll(); }
+      if(c.control==="sage" && _wasHuman){ _wasHuman=false;
+        var b2=el("ai-msg bot","🌱 Sage here again — how else can I help?"); b2.style.background="var(--sand)";msgs.appendChild(b2);scroll(); }
+    }
+    window.addEventListener("storage",function(e){ if(e.key===window.WeCareConvos.KEY) tick(); });
+    setInterval(tick, 1500);   // also poll (same-tab changes don't fire 'storage')
   }
   function close(){panel.classList.remove("open");document.getElementById("ai-launch").style.display="flex";}
   function openWith(text){build();open();setTimeout(function(){clearChips();me(text);answer(text);},450);}
