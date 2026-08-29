@@ -249,7 +249,7 @@ var Sage=(function(){
       if(e.escalate){ extra="<br><br>That’s about <b>"+e.pallets+" pallets</b> — a nice big order. Derrick will get you a custom delivery quote and the best pricing."; }
       else { extra="<br><br>For ~"+data.sqft.toLocaleString()+" sq ft that’s about <b>"+e.pallets+" pallet"+(e.pallets>1?"s":"")+"</b> — roughly <b>"+money(e.total)+"</b> for material + delivery (estimate; installation quoted separately)."; }
     } else if(data._svcKey && data._svcKey!=="sod"){
-      extra="<br><br>Since this is custom work, the next step is a quick consultation with Derrick so it’s priced right — I’ve flagged it as a priority for him.";
+      extra="<br><br>It seems like this involves enough design and site-specific work that an in-person consultation would be the most helpful next step. Would it be a bad idea for Derrick to reach out with a couple of times that could work?";
     }
     say("You're all set, "+firstName(data.name)+"! ✅<br><br>I've logged your <b>"+data.service+"</b> request and the team at We Care will reach out to <b>"+escapeHtml(data.phone||"")+"</b> to confirm."+extra+
         "<br><br>Need it faster? Call us directly at <a href='tel:"+BIZ.phoneRaw+"'>"+BIZ.phone+"</a>.",
@@ -311,6 +311,18 @@ var Sage=(function(){
     if(/(hi|hello|hey|howdy|yo)\b/.test(q)&&q.length<12){menu("Hi there! 👋 I'm Sage. How can I help today?");return;}
     if(/(thank|thanks|appreciate)/.test(q)){say("Anytime! 🌿 Anything else?");return;}
 
+    // ---- hesitation / objections: get MORE curious, never pushy (Derrick's spec) ----
+    if(/(too )?expensive|too much|cost too|pricey|out of my|can'?t afford/.test(q)){
+      say("It sounds like the investment may be higher than you expected. What were you anticipating it might take?");return;}
+    if(/(think about it|need to think|not sure|let me think|gotta think)/.test(q)){
+      say("Of course. It seems like there may still be something you're uncertain about. What would be most helpful to think through before you decide?");return;}
+    if(/(other (estimate|quote|bid)|shopping around|getting quotes|comparing)/.test(q)){
+      say("That makes sense — it sounds like you want to be sure you're comparing the right things. What will matter most to you when you decide which company to use?");return;}
+    if(/(not ready|maybe later|down the road|not right now|hold off)/.test(q)){
+      say("No problem at all. What would need to happen before scheduling would make sense?");return;}
+    if(/(budget|price range|how much.*cost|ballpark)/.test(q) && !/sod|turf/.test(q)){
+      say("Projects like this vary quite a bit depending on the stonework, planting, drainage, and custom artistry involved. What kind of investment range were you hoping to stay within? If you're not sure yet, would it be a bad idea for me to explain the typical ranges first?");return;}
+
     // fallback -> offer menu
     say("I can help you with any of these — which one fits?");
     chips([{label:"🌱 Sod estimate",value:"svc:sod"},{label:"🎨 Concrete Artistry",value:"svc:concrete"},{label:"🏡 Luxury Landscapes",value:"svc:luxury"},{label:"✂️ Lawn & Property Care",value:"svc:maintenance"},{label:"📞 Talk to Derrick",value:"human"}]);
@@ -360,7 +372,7 @@ var Sage=(function(){
     build();panel.classList.add("open");document.getElementById("ai-launch").style.display="none";
     if(!convoId){ convoId=window.WeCareConvos.neu(); watchOwner(); }   // start a live conversation Derrick can watch/join
     if(!greeted){greeted=true;
-      say("Hi! I'm <b>Sage</b> 🌱 — your We Care assistant. I can estimate sod, or start a design consultation for luxury landscapes and concrete artistry — right here, 24/7.",function(){menu("What would you like to do?")});
+      say("Hi, I'm <b>Sage</b> 🌱 — I help folks with their outdoor projects here at We Care. I'd love to hear what you're thinking about. What's got you looking into your property right now?",function(){menu("Or pick a starting point:")});
     }
     setTimeout(function(){inputEl&&inputEl.focus()},300);
   }
