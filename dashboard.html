@@ -237,8 +237,18 @@ var _openCv=null;   // which conversation is expanded
 function cvTimeAgo(iso){var s=(Date.now()-new Date(iso).getTime())/1000;if(s<60)return"just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return Math.floor(s/86400)+"d ago";}
 function cvName(c){return (c.customer&&c.customer.name)||"New customer";}
 
-function renderLive(){
+var _liveSig="";
+function renderLive(force){
   var all=WeCareConvos.load();
+  // only re-render when something actually changed — so it never wipes what you're typing
+  var sig=Object.keys(all).map(function(i){var c=all[i];return i+":"+c.updated+":"+c.control+":"+c.msgs.length+":"+(c.unseen?1:0);}).join("|")+"|open:"+_openCv;
+  if(!force && sig===_liveSig) return;
+  // preserve an in-progress reply (value + focus) across the re-render
+  var focusId=null,caret=0,val=null;
+  if(document.activeElement && document.activeElement.classList && document.activeElement.classList.contains("reply")){
+    focusId=document.activeElement.id; caret=document.activeElement.selectionStart; val=document.activeElement.value;
+  }
+  _liveSig=sig;
   var ids=Object.keys(all).sort(function(a,b){return new Date(all[b].updated)-new Date(all[a].updated);});
   var active=ids.map(function(i){return all[i];}).filter(function(c){return c.msgs.length>0;});
   var newCount=active.filter(function(c){return c.unseen;}).length;
@@ -274,11 +284,15 @@ function renderLive(){
       '</div>'+
     '</div>';
   }).join("");
+  // restore the reply box the owner was typing in
+  if(focusId){ var fi=document.getElementById(focusId); if(fi){ fi.value=val; fi.focus(); try{fi.setSelectionRange(caret,caret);}catch(e){} } }
+  // keep the open transcript scrolled to the newest message
+  if(_openCv){ var mb=document.getElementById("cvmsgs-"+_openCv); if(mb) mb.scrollTop=mb.scrollHeight; }
 }
-function toggleCv(id){ _openCv=(_openCv===id?null:id); var all=WeCareConvos.load(); if(all[id]){all[id].unseen=false;localStorage.setItem(WeCareConvos.KEY,JSON.stringify(all));} renderLive(); }
-function cvTakeOver(id){ WeCareConvos.patch(id,{control:"human"}); _openCv=id; renderLive(); var r=document.getElementById("reply-"+id); if(r)r.focus(); }
-function cvHandBack(id){ WeCareConvos.patch(id,{control:"sage"}); renderLive(); }
-function cvSend(id){ var r=document.getElementById("reply-"+id); if(!r||!r.value.trim())return; WeCareConvos.append(id,"owner",r.value.trim()); r.value=""; renderLive(); }
+function toggleCv(id){ _openCv=(_openCv===id?null:id); var all=WeCareConvos.load(); if(all[id]){all[id].unseen=false;localStorage.setItem(WeCareConvos.KEY,JSON.stringify(all));} renderLive(true); }
+function cvTakeOver(id){ WeCareConvos.patch(id,{control:"human"}); _openCv=id; renderLive(true); var r=document.getElementById("reply-"+id); if(r)r.focus(); }
+function cvHandBack(id){ WeCareConvos.patch(id,{control:"sage"}); renderLive(true); }
+function cvSend(id){ var r=document.getElementById("reply-"+id); if(!r||!r.value.trim())return; WeCareConvos.append(id,"owner",r.value.trim()); r.value=""; renderLive(true); }
 
 var _prevCount=0;
 function pingCheck(){
