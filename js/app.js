@@ -7,17 +7,29 @@
 (function(){
 "use strict";
 
-/* ---------- Business knowledge (single source of truth) ---------- */
+/* ---------- Business knowledge (single source of truth) ----------
+   All of SOD below is meant to live in an EDITABLE settings screen (Derrick's rule).
+   Numbers are his real rules from intake 2026-08-28. */
 var BIZ = {
-  name:"We Care Lawn and Landscape",
-  phone:"501-627-4384", phoneRaw:"5016274384",
+  name:"We Care",
+  phone:"501-627-4384", phoneRaw:"5016274384",   // ⚠️ confirm Sage's texting #
   since:1998, area:"Hot Springs & Central Arkansas",
-  sodPerPallet:450,            // sq ft per pallet
-  sodPricePerSqFt:0.62,        // demo price / sq ft (confirm w/ owner)
-  deliveryFee:75,
-  towns:["Hot Springs","Hot Springs Village","Benton","Bryant","Malvern","Bismarck","Royal","Pearcy","Lonsdale","Mountain Pine"]
+  farm:"Plainview, AR",       // sod delivery origin (59 Hwy 314) — confirm
+  // Primary service area + luxury travel area (Sage never auto-rejects out of area)
+  primaryTowns:["Hot Springs","Hot Springs Village"],
+  luxuryTowns:["Russellville","Conway","Little Rock","Benton","Bryant"]
 };
-window.BIZ = BIZ;
+// SOD rules — EDITABLE settings (Derrick's real pricing)
+var SOD = {
+  sqftPerPallet:450,          // industry standard; confirm with Derrick
+  pricePerPallet:250,         // $ per pallet, before tax
+  taxRate:0.095,              // ⚠️ placeholder AR rate — confirm exact
+  baseDelivery:300,           // flat delivery for within-radius, up to pallet limit
+  freeRadiusMiles:30,         // base delivery covers this radius from the farm
+  perMileBeyond:4,            // $ per additional one-way mile beyond the radius
+  palletLimit:8               // >this many pallets → escalate to Derrick
+};
+window.BIZ = BIZ; window.SOD = SOD;
 
 /* ---------- Lead store (shared with dashboard) ---------- */
 var LS_KEY="wecare_leads";
@@ -34,16 +46,28 @@ function saveLead(lead){
 }
 window.WeCareLeads={load:loadLeads,save:saveLead,KEY:LS_KEY};
 
-/* ---------- Sod calculator ---------- */
-function sodEstimate(sqft){
+/* ---------- Sod calculator (Derrick's real per-pallet rules) ----------
+   Sage quotes MATERIAL + DELIVERY only — never installation.
+   Over the pallet limit, or beyond the delivery radius, it escalates. */
+function sodEstimate(sqft, milesFromFarm){
   sqft=Math.max(0,Math.round(sqft));
-  var pallets=Math.ceil(sqft/BIZ.sodPerPallet);
-  var material=sqft*BIZ.sodPricePerSqFt;
-  return {sqft:sqft, pallets:pallets, coverage:pallets*BIZ.sodPerPallet,
-          material:material, delivery:BIZ.deliveryFee, total:material+BIZ.deliveryFee};
+  var pallets=Math.ceil(sqft/SOD.sqftPerPallet) || 0;
+  var material=pallets*SOD.pricePerPallet;
+  var tax=material*SOD.taxRate;
+  // delivery: base within radius; +$/mi beyond (only if we know the distance)
+  var extraMiles = (milesFromFarm!=null && milesFromFarm>SOD.freeRadiusMiles)
+        ? (milesFromFarm - SOD.freeRadiusMiles) : 0;
+  var delivery = SOD.baseDelivery + extraMiles*SOD.perMileBeyond;
+  var escalate = pallets>SOD.palletLimit;   // >8 pallets → Derrick handles it
+  return {
+    sqft:sqft, pallets:pallets, coverage:pallets*SOD.sqftPerPallet,
+    material:material, tax:tax, delivery:delivery,
+    total:material+tax+delivery, escalate:escalate,
+    beyondRadius:(milesFromFarm!=null && milesFromFarm>SOD.freeRadiusMiles)
+  };
 }
 window.sodEstimate=sodEstimate;
-function money(n){return "$"+n.toLocaleString("en-US",{maximumFractionDigits:0})}
+function money(n){return "$"+Number(n||0).toLocaleString("en-US",{maximumFractionDigits:0})}
 
 // Wire the on-page calculator if present
 function initPageCalc(){
@@ -54,13 +78,22 @@ function initPageCalc(){
     else { sqft=parseFloat(form.sqft.value)||0; }
     var e=sodEstimate(sqft), out=document.getElementById("sodOut");
     if(!sqft){ out.innerHTML='<p style="margin:0;color:var(--muted)">Enter your lawn size to see pallets and a price estimate.</p>'; return; }
+    if(e.escalate){
+      out.innerHTML=
+        '<div class="big">'+e.pallets+' pallets</div>'+
+        '<p style="margin:.3rem 0 1rem;color:var(--muted)">covers ~'+e.coverage.toLocaleString()+' sq ft</p>'+
+        '<p style="margin:0 0 1rem">That’s a big order — for '+e.pallets+' pallets we’ll set you up with a custom delivery quote and the best pricing.</p>'+
+        '<button class="btn btn-leaf btn-sm" onclick="Sage.openWith(\'sod order '+e.sqft+'\')">Get my sod quote →</button>';
+      return;
+    }
     out.innerHTML=
       '<div class="big">'+e.pallets+' pallet'+(e.pallets>1?'s':'')+' of sod</div>'+
       '<p style="margin:.3rem 0 1rem;color:var(--muted)">covers ~'+e.coverage.toLocaleString()+' sq ft ('+e.sqft.toLocaleString()+' sq ft needed)</p>'+
-      '<div class="rowline"><span>Sod material (~'+money(BIZ.sodPricePerSqFt*100/100)+'/sq ft)</span><b>'+money(e.material)+'</b></div>'+
-      '<div class="rowline"><span>Local delivery</span><b>'+money(e.delivery)+'</b></div>'+
+      '<div class="rowline"><span>Sod material ('+e.pallets+' × '+money(SOD.pricePerPallet)+'/pallet)</span><b>'+money(e.material)+'</b></div>'+
+      '<div class="rowline"><span>Tax</span><b>'+money(e.tax)+'</b></div>'+
+      '<div class="rowline"><span>Delivery (within '+SOD.freeRadiusMiles+' mi of the farm)</span><b>'+money(e.delivery)+'</b></div>'+
       '<div class="rowline"><span>Estimated total</span><b style="color:var(--green-deep)">'+money(e.total)+'</b></div>'+
-      '<p style="font-size:.8rem;color:var(--muted);margin:.8rem 0 0">Estimate only — final price confirmed by We Care. Installation quoted separately.</p>'+
+      '<p style="font-size:.8rem;color:var(--muted);margin:.8rem 0 0">Estimate for sod material + delivery. Beyond '+SOD.freeRadiusMiles+' mi adds '+money(SOD.perMileBeyond)+'/mile — confirmed by your address. Installation is quoted separately.</p>'+
       '<button class="btn btn-leaf btn-sm" style="margin-top:12px" onclick="Sage.openWith(\'sod order '+e.sqft+'\')">Request this sod order →</button>';
   }
   form.addEventListener("input",calc);
@@ -79,10 +112,16 @@ var Sage=(function(){
   var data={};           // collected fields
   var greeted=false;
 
+  // quote:true = Sage can give a real number (sod only). quote:false = consultation, never priced.
   var SERVICES=[
-    {k:"sod",label:"Sod farm & delivery",kw:["sod","turf","grass pallet","sod farm","lay sod","bermuda","zoysia","fescue"]},
-    {k:"maintenance",label:"Lawn maintenance",kw:["mow","mowing","maintenance","weekly","biweekly","cut grass","lawn care","edging","cleanup","leaves"]},
-    {k:"landscape",label:"Landscape design/build",kw:["landscape","design","build","patio","flagstone","masonry","stone","retaining","water feature","pond","hardscape","garden"]}
+    {k:"sod",label:"Sod — farm-fresh, delivered",quote:true,
+      kw:["sod","turf","grass pallet","sod farm","lay sod","bermuda","zoysia","fescue","pallet"]},
+    {k:"luxury",label:"Luxury Landscapes (design/build)",quote:false,
+      kw:["landscape","design","build","patio","retaining","water feature","pond","drainage","irrigation","lighting","outdoor living","renovation","install"]},
+    {k:"concrete",label:"Concrete Artistry",quote:false,
+      kw:["concrete","carved","sculpt","artistry","faux rock","fire feature","stone","masonry","flagstone","custom wall","bench"]},
+    {k:"maintenance",label:"Lawn & Property Care",quote:false,
+      kw:["mow","mowing","maintenance","weekly","biweekly","cut grass","lawn care","edging","cleanup","leaves","property"]}
   ];
 
   function el(cls,html){var d=document.createElement("div");d.className=cls;d.innerHTML=html;return d;}
@@ -169,12 +208,16 @@ var Sage=(function(){
     });
     var extra="";
     if(data._svcKey==="sod"&&data.sqft){var e=sodEstimate(data.sqft);
-      extra="<br><br>For ~"+data.sqft.toLocaleString()+" sq ft that's about <b>"+e.pallets+" pallet"+(e.pallets>1?"s":"")+"</b> (~"+money(e.total)+" delivered, estimate).";}
+      if(e.escalate){ extra="<br><br>That’s about <b>"+e.pallets+" pallets</b> — a nice big order. Derrick will get you a custom delivery quote and the best pricing."; }
+      else { extra="<br><br>For ~"+data.sqft.toLocaleString()+" sq ft that’s about <b>"+e.pallets+" pallet"+(e.pallets>1?"s":"")+"</b> — roughly <b>"+money(e.total)+"</b> for material + delivery (estimate; installation quoted separately)."; }
+    } else if(data._svcKey && data._svcKey!=="sod"){
+      extra="<br><br>Since this is custom work, the next step is a quick consultation with Derrick so it’s priced right — I’ve flagged it as a priority for him.";
+    }
     say("You're all set, "+firstName(data.name)+"! ✅<br><br>I've logged your <b>"+data.service+"</b> request and the team at We Care will reach out to <b>"+escapeHtml(data.phone||"")+"</b> to confirm."+extra+
         "<br><br>Need it faster? Call us directly at <a href='tel:"+BIZ.phoneRaw+"'>"+BIZ.phone+"</a>.",
       function(){
         say("Anything else I can help with?");
-        chips([{label:"Estimate sod",value:"svc:sod"},{label:"Book maintenance",value:"svc:maintenance"},{label:"Talk to a person",value:"human"}]);
+        chips([{label:"Estimate sod",value:"svc:sod"},{label:"Concrete Artistry",value:"svc:concrete"},{label:"Talk to Derrick",value:"human"}]);
       });
     flow=null;data={};
   }
@@ -201,7 +244,8 @@ var Sage=(function(){
     if(/(how much|how many|calculat|estimate|price|cost).*(sod|turf|grass)/.test(q) || (/(sod|turf).*(price|cost|how much|how many)/.test(q))){
       var num=q.match(/([\d,]{2,})\s*(sq|square|sf|ft)/);
       if(num){var e=sodEstimate(parseInt(num[1].replace(/,/g,"")));
-        say("For about <b>"+e.sqft.toLocaleString()+" sq ft</b> you'd need roughly <b>"+e.pallets+" pallet"+(e.pallets>1?"s":"")+"</b> — around <b>"+money(e.total)+"</b> delivered (estimate).<br><br>Want me to set up the order?");
+        if(e.escalate){ say("For about <b>"+e.sqft.toLocaleString()+" sq ft</b> that’s roughly <b>"+e.pallets+" pallets</b> — a big order, so Derrick will set you up with a custom delivery quote. Want me to get that started?"); }
+        else { say("For about <b>"+e.sqft.toLocaleString()+" sq ft</b> you’d need roughly <b>"+e.pallets+" pallet"+(e.pallets>1?"s":"")+"</b> — around <b>"+money(e.total)+"</b> for material + delivery (estimate; installation separate).<br><br>Want me to set up the order?"); }
         chips([{label:"Yes, order sod",value:"svc:sod"},{label:"Change the size",value:"sodhelp"}]);return;}
       say("I can price that out fast. About how many <b>square feet</b> of sod do you need? If you know your lawn's length × width, I'll do the math.");
       flow={kind:"sodquick",step:99}; return;
@@ -219,22 +263,22 @@ var Sage=(function(){
 
     // FAQ
     if(/(phone|call|number|contact)/.test(q)){say("You can reach We Care at <a href='tel:"+BIZ.phoneRaw+"'>"+BIZ.phone+"</a>. Want me to have someone call <i>you</i> instead?");chips([{label:"Call me back",value:"human"}]);return;}
-    if(/(area|serve|location|where|town|near|hot springs|benton|malvern)/.test(q)){say("We serve <b>"+BIZ.area+"</b> — including "+BIZ.towns.slice(0,6).join(", ")+" and nearby. What's your town? I'll confirm.");return;}
+    if(/(area|serve|location|where|town|near|hot springs|benton|malvern|russellville|conway|little rock)/.test(q)){say("Our home base is <b>"+BIZ.primaryTowns.join(" & ")+"</b>, and for design/build and outdoor-artistry projects we also travel to "+BIZ.luxuryTowns.join(", ")+". Where are you? Even if you're a bit outside, tell me about the project and I'll get it in front of Derrick.");return;}
     if(/(hour|open|when.*open|time)/.test(q)){say("We're out on jobs Mon–Sat. Leave your info here anytime and We Care follows up quickly — often same day.");return;}
     if(/(how long|since|experience|years|established|1998)/.test(q)){say("We Care has served Central Arkansas since <b>"+BIZ.since+"</b> — that's over 25 years of landscaping, masonry, and sod. 🌿");return;}
-    if(/(who are you|your name|are you (a )?(bot|robot|ai|human)|sage|ivy)/.test(q)){say("I'm <b>Sage</b>, the We Care assistant 🌱 — I help you estimate sod, book maintenance, and get landscape quotes, 24/7. I can hand you to a real person anytime too.");return;}
+    if(/(who are you|your name|are you (a )?(bot|robot|ai|human)|sage|ivy)/.test(q)){say("I'm <b>Sage</b>, the We Care assistant 🌱 — I help with sod estimates, luxury landscape &amp; concrete-artistry projects, and lawn care — 24/7. I can hand you to a real person anytime too.");return;}
     if(/(human|person|real|someone|owner|talk to)/.test(q)){startFlow("callback",{key:"callback",service:"Call-back request"});return;}
     if(/(hi|hello|hey|howdy|yo)\b/.test(q)&&q.length<12){menu("Hi there! 👋 I'm Sage. How can I help today?");return;}
     if(/(thank|thanks|appreciate)/.test(q)){say("Anytime! 🌿 Anything else?");return;}
 
     // fallback -> offer menu
     say("I can help you with any of these — which one fits?");
-    chips([{label:"🌱 Sod estimate",value:"svc:sod"},{label:"✂️ Lawn maintenance",value:"svc:maintenance"},{label:"🪨 Landscape / patio",value:"svc:landscape"},{label:"📞 Talk to a person",value:"human"}]);
+    chips([{label:"🌱 Sod estimate",value:"svc:sod"},{label:"🎨 Concrete Artistry",value:"svc:concrete"},{label:"🏡 Luxury Landscapes",value:"svc:luxury"},{label:"✂️ Lawn & Property Care",value:"svc:maintenance"},{label:"📞 Talk to Derrick",value:"human"}]);
   }
 
   function menu(intro){
     say(intro||"How can I help you today?",function(){
-      chips([{label:"🌱 Estimate sod",value:"svc:sod"},{label:"✂️ Book lawn maintenance",value:"svc:maintenance"},{label:"🪨 Landscape / patio quote",value:"svc:landscape"},{label:"📞 Have someone call me",value:"human"}]);
+      chips([{label:"🌱 Estimate sod",value:"svc:sod"},{label:"🎨 Concrete Artistry",value:"svc:concrete"},{label:"🏡 Luxury Landscapes",value:"svc:luxury"},{label:"✂️ Lawn & Property Care",value:"svc:maintenance"},{label:"📞 Talk to Derrick",value:"human"}]);
     });
   }
 
@@ -274,7 +318,7 @@ var Sage=(function(){
   function open(){
     build();panel.classList.add("open");document.getElementById("ai-launch").style.display="none";
     if(!greeted){greeted=true;
-      say("Hi! I'm <b>Sage</b> 🌱 — your We Care assistant. I can estimate sod, book lawn maintenance, or start a landscape quote — right here, 24/7.",function(){menu("What would you like to do?")});
+      say("Hi! I'm <b>Sage</b> 🌱 — your We Care assistant. I can estimate sod, or start a design consultation for luxury landscapes and concrete artistry — right here, 24/7.",function(){menu("What would you like to do?")});
     }
     setTimeout(function(){inputEl&&inputEl.focus()},300);
   }
