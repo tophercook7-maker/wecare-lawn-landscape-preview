@@ -36,8 +36,8 @@ var STORES=[
   toRow:function(o){return {id:o.id,title:o.title||"",service:o.service||"",location:o.location||"",summary:o.summary||"",photos:o.photos||[],published:!!o.published,job_id:o.jobId||"",created:o.created};},
   fromRow:function(r){return {id:r.id,title:r.title,service:r.service,location:r.location,summary:r.summary,photos:r.photos||[],published:r.published,jobId:r.job_id,created:r.created};}},
  {key:"wecare_estimates", table:"estimates", shape:"array",
-  toRow:function(o){return {id:o.id,customer:o.customer,service:o.service||"",line_items:o.lineItems||[],labor_hours:o.laborHours,labor_rate:o.laborRate,markup:o.markup,subtotal:o.subtotal,total:o.total,notes:o.notes||"",status:o.status||"draft",created:o.created};},
-  fromRow:function(r){return {id:r.id,customer:r.customer,service:r.service,lineItems:r.line_items||[],laborHours:r.labor_hours,laborRate:r.labor_rate,markup:r.markup,subtotal:r.subtotal,total:r.total,notes:r.notes,status:r.status,created:r.created};}},
+  toRow:function(o){return {id:o.id,customer:o.customer,service:o.service||"",line_items:o.lineItems||[],labor_hours:o.laborHours,labor_rate:o.laborRate,markup:o.markup,subtotal:o.subtotal,total:o.total,notes:o.notes||"",status:o.status||"draft",lead_id:o.leadId||"",created:o.created};},
+  fromRow:function(r){return {id:r.id,customer:r.customer,service:r.service,lineItems:r.line_items||[],laborHours:r.labor_hours,laborRate:r.labor_rate,markup:r.markup,subtotal:r.subtotal,total:r.total,notes:r.notes,status:r.status,leadId:r.lead_id,created:r.created};}},
 ];
 var byKey={}; STORES.forEach(function(s){byKey[s.key]=s;});
 

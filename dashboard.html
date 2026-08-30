@@ -188,6 +188,7 @@ function leadCard(l){
       (l.when?'🗓️ '+esc(l.when):'')+
     '</div>'+
     '<div class="src">🤖 '+esc(l.source||"Website")+' · '+timeAgo(l.created)+'</div>'+
+    (function(){var e=estForLead(l.id);return e?'<div style="font-size:.8rem;color:var(--green-deep);font-weight:700;margin-top:6px">📄 Quote: '+money(e.total)+'</div>':'';})()+
     '<div class="acts">'+
       (nx?'<button class="adv" onclick="setStage(\''+l.id+'\',\''+nx+'\')">Move to '+nx+' →</button>':'<button class="adv" onclick="setStage(\''+l.id+'\',\'Won\')">✓ Won</button>')+
       (phone?'<button onclick="alert(\'Calling '+esc(l.phone)+'…\')">Call</button>':'')+
@@ -196,6 +197,7 @@ function leadCard(l){
   '</div>';
 }
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function estForLead(id){if(!id)return null;var all;try{all=JSON.parse(localStorage.getItem("wecare_estimates"))||[]}catch(e){all=[]}var m=all.filter(function(e){return e.leadId===id;});return m.length?m[0]:null;}
 
 function render(){
   var all=WeCareLeads.load();

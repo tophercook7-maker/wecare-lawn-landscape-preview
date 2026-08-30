@@ -51,6 +51,8 @@ td input.q{width:64px;text-align:right}td input.c{width:84px;text-align:right}
     <div>
       <div class="panel">
         <h2>Build an estimate</h2>
+        <div class="field"><label>Link to a lead <span style="font-weight:400;color:var(--muted);font-size:.8rem">(optional — pulls their name &amp; marks them Quoted)</span></label>
+          <select id="leadPick" onchange="pickLead()" style="width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;font-family:var(--ff);font-size:.9rem"><option value="">— New / not linked —</option></select></div>
         <div class="field"><label>Customer</label><input id="cust" placeholder="Name"></div>
         <div style="margin:6px 0 10px"><label style="font-size:.8rem;font-weight:600;color:var(--green-deep)">Start from a recipe:</label><br>
           <div id="recipes" style="margin-top:6px"></div>
@@ -77,7 +79,7 @@ td input.q{width:64px;text-align:right}td input.c{width:84px;text-align:right}
   </div>
 </div>
 
-<script src="js/wecare-cloud.js"></script>
+<script src="js/wecare-cloud.js?v=0830"></script>
 <script>
 var K="wecare_estimates";
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
@@ -133,13 +135,35 @@ function calc(){
     '<div class="tot grand"><span>Estimate</span><b>'+money(total)+'</b></div>';
   return {mat:mat,labor:labor,sub:sub,total:total,hrs:hrs,rate:rate,mk:mk};
 }
+var _estLeadId="";
+function leadsList(){try{return JSON.parse(localStorage.getItem("wecare_leads"))||[]}catch(e){return[]}}
+function fillLeadPicker(){
+  var sel=document.getElementById("leadPick"); if(!sel)return;
+  var cur=sel.value;
+  var leads=leadsList().filter(function(l){return l.stage!=="Won"&&l.stage!=="Lost";});
+  sel.innerHTML='<option value="">— New / not linked —</option>'+leads.map(function(l){
+    return '<option value="'+l.id+'">'+esc(l.name||"Lead")+(l.service?" · "+esc(l.service):"")+"</option>";
+  }).join("");
+  sel.value=cur;
+}
+function pickLead(){
+  var id=document.getElementById("leadPick").value; _estLeadId=id;
+  if(id){var l=leadsList().find(function(x){return x.id===id;}); if(l)document.getElementById("cust").value=l.name||"";}
+}
 function saveEstimate(){
   var cust=document.getElementById("cust").value.trim(); if(!cust){alert("Customer name?");return;}
   var t=calc(); var all=load(K,[]);
-  all.unshift({id:"E"+Date.now().toString(36),customer:cust,lineItems:lines.slice(),
+  all.unshift({id:"E"+Date.now().toString(36),customer:cust,leadId:_estLeadId||"",lineItems:lines.slice(),
     laborHours:t.hrs,laborRate:t.rate,markup:t.mk,subtotal:Math.round(t.sub),total:Math.round(t.total),
     status:"draft",created:new Date().toISOString()});
-  save(K,all); document.getElementById("cust").value=""; lines=[]; renderLines(); calc(); renderSaved();
+  save(K,all);
+  // link back to CRM: mark the lead Quoted
+  if(_estLeadId){
+    var leads=leadsList(),lx=leads.find(function(x){return x.id===_estLeadId;});
+    if(lx){ var order=["New","Contacted","Quoted"]; if(order.indexOf(lx.stage)<order.indexOf("Quoted")) lx.stage="Quoted"; localStorage.setItem("wecare_leads",JSON.stringify(leads)); }
+  }
+  document.getElementById("cust").value=""; _estLeadId=""; document.getElementById("leadPick").value=""; lines=[]; renderLines(); calc(); renderSaved();
+  alert("Estimate saved"+(cust?" for "+cust:"")+".");
 }
 function renderSaved(){
   var all=load(K,[]);
@@ -147,7 +171,8 @@ function renderSaved(){
     return '<div class="saved"><b>'+esc(e.customer)+'</b> — '+money(e.total)+'<br><span class="empty" style="font-style:normal">'+(e.lineItems||[]).length+' items · '+new Date(e.created).toLocaleDateString()+'</span></div>';
   }).join("") : '<div class="empty">No saved estimates yet.</div>';
 }
-renderRecipes(); useRecipe("Flagstone patio"); renderSaved();
-window.addEventListener("storage",renderSaved);
+renderRecipes(); useRecipe("Flagstone patio"); renderSaved(); fillLeadPicker();
+window.addEventListener("storage",function(){renderSaved();fillLeadPicker();});
+setInterval(fillLeadPicker,6000);
 </script>
 </body></html>
