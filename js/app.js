@@ -269,63 +269,38 @@ var Sage=(function(){
     return null;
   }
 
+  // ---- Sage's real brain: the server-side LLM function (Gemini + full spec) ----
+  var SAGE_FN="https://fqqbzsxvxpcfwovbunth.supabase.co/functions/v1/sage";
+  var llmHist=[];
+  function sodContextFrom(t){
+    var m=t.match(/([\d,]{3,})\s*(?:sq|square|sf|ft)/i), sq=0;
+    if(m) sq=parseInt(m[1].replace(/,/g,""));
+    else { var d=t.match(/(\d{1,4})\s*(?:x|by|×)\s*(\d{1,4})/i); if(d) sq=(+d[1])*(+d[2]); }
+    if(!sq || sq<50) return "";
+    var e=sodEstimate(sq);
+    if(e.escalate) return sq+" sq ft = "+e.pallets+" pallets (OVER the 8-pallet limit → do NOT quote a total; say Derrick will set up a custom delivery quote).";
+    return sq+" sq ft = "+e.pallets+" pallet(s): material "+money(e.material)+" + delivery "+money(e.delivery)+" (within 30mi) + AR sales tax by delivery address. Material+delivery only; installation quoted separately.";
+  }
   function answer(t){
-    var q=t.toLowerCase();
-    // Derrick has taken over this chat → Sage stays quiet, he's talking now.
-    if(isHuman()){ return; }
-    // If in a guided flow, treat input as an answer
-    if(flow){ collect(t); return; }
-
-    // sod order shortcut e.g. "sod order 1200"
-    var so=q.match(/sod (?:order|quote).*?([\d,]{2,})/);
-    if(so){ startFlow("sod",{key:"sod",service:serviceLabel("sod"),sqft:parseInt(so[1].replace(/,/g,""))}); return; }
-
-    // calculator intent
-    if(/(how much|how many|calculat|estimate|price|cost).*(sod|turf|grass)/.test(q) || (/(sod|turf).*(price|cost|how much|how many)/.test(q))){
-      var num=q.match(/([\d,]{2,})\s*(sq|square|sf|ft)/);
-      if(num){var e=sodEstimate(parseInt(num[1].replace(/,/g,"")));
-        if(e.escalate){ say("For about <b>"+e.sqft.toLocaleString()+" sq ft</b> that’s roughly <b>"+e.pallets+" pallets</b> — a big order, so Derrick will set you up with a custom delivery quote. Want me to get that started?"); }
-        else { say("For about <b>"+e.sqft.toLocaleString()+" sq ft</b> you’d need roughly <b>"+e.pallets+" pallet"+(e.pallets>1?"s":"")+"</b> — around <b>"+money(e.total)+"</b> for material + delivery (estimate; installation separate).<br><br>Want me to set up the order?"); }
-        chips([{label:"Yes, order sod",value:"svc:sod"},{label:"Change the size",value:"sodhelp"}]);return;}
-      say("I can price that out fast. About how many <b>square feet</b> of sod do you need? If you know your lawn's length × width, I'll do the math.");
-      flow={kind:"sodquick",step:99}; return;
-    }
-    if(flow&&flow.kind==="sodquick"){ /* handled above */ }
-
-    // service intents
-    var svc=detectService(q);
-    if(/(book|schedule|set up|sign up|appointment|come out|estimate|quote)/.test(q) && svc){
-      startFlow(svc.k,{key:svc.k,service:svc.label}); return;
-    }
-    if(svc && /(book|schedule|quote|estimate|price|interested|need|want|help)/.test(q)){
-      startFlow(svc.k,{key:svc.k,service:svc.label}); return;
-    }
-
-    // FAQ
-    if(/(phone|call|number|contact)/.test(q)){say("You can reach We Care at <a href='tel:"+BIZ.phoneRaw+"'>"+BIZ.phone+"</a>. Want me to have someone call <i>you</i> instead?");chips([{label:"Call me back",value:"human"}]);return;}
-    if(/(area|serve|location|where|town|near|hot springs|benton|malvern|russellville|conway|little rock)/.test(q)){say("Our home base is <b>"+BIZ.primaryTowns.join(" & ")+"</b>, and for design/build and outdoor-artistry projects we also travel to "+BIZ.luxuryTowns.join(", ")+". Where are you? Even if you're a bit outside, tell me about the project and I'll get it in front of Derrick.");return;}
-    if(/(hour|open|when.*open|time)/.test(q)){say("We're out on jobs Mon–Sat. Leave your info here anytime and We Care follows up quickly — often same day.");return;}
-    if(/(how long|since|experience|years|established|1998)/.test(q)){say("We Care has served Central Arkansas since <b>"+BIZ.since+"</b> — that's over 25 years of landscaping, masonry, and sod. 🌿");return;}
-    if(/(who are you|your name|are you (a )?(bot|robot|ai|human)|sage|ivy)/.test(q)){say("I'm <b>Sage</b>, the We Care assistant 🌱 — I help with sod estimates, luxury landscape &amp; concrete-artistry projects, and lawn care — 24/7. I can hand you to a real person anytime too.");return;}
-    if(/(human|person|real|someone|owner|talk to)/.test(q)){startFlow("callback",{key:"callback",service:"Call-back request"});return;}
-    if(/(hi|hello|hey|howdy|yo)\b/.test(q)&&q.length<12){menu("Hi there! 👋 I'm Sage. How can I help today?");return;}
-    if(/(thank|thanks|appreciate)/.test(q)){say("Anytime! 🌿 Anything else?");return;}
-
-    // ---- hesitation / objections: get MORE curious, never pushy (Derrick's spec) ----
-    if(/(too )?expensive|too much|cost too|pricey|out of my|can'?t afford/.test(q)){
-      say("It sounds like the investment may be higher than you expected. What were you anticipating it might take?");return;}
-    if(/(think about it|need to think|not sure|let me think|gotta think)/.test(q)){
-      say("Of course. It seems like there may still be something you're uncertain about. What would be most helpful to think through before you decide?");return;}
-    if(/(other (estimate|quote|bid)|shopping around|getting quotes|comparing)/.test(q)){
-      say("That makes sense — it sounds like you want to be sure you're comparing the right things. What will matter most to you when you decide which company to use?");return;}
-    if(/(not ready|maybe later|down the road|not right now|hold off)/.test(q)){
-      say("No problem at all. What would need to happen before scheduling would make sense?");return;}
-    if(/(budget|price range|how much.*cost|ballpark)/.test(q) && !/sod|turf/.test(q)){
-      say("Projects like this vary quite a bit depending on the stonework, planting, drainage, and custom artistry involved. What kind of investment range were you hoping to stay within? If you're not sure yet, would it be a bad idea for me to explain the typical ranges first?");return;}
-
-    // fallback -> offer menu
-    say("I can help you with any of these — which one fits?");
-    chips([{label:"🌱 Sod estimate",value:"svc:sod"},{label:"🎨 Concrete Artistry",value:"svc:concrete"},{label:"🏡 Luxury Landscapes",value:"svc:luxury"},{label:"✂️ Lawn & Property Care",value:"svc:maintenance"},{label:"📞 Talk to Derrick",value:"human"}]);
+    if(isHuman()) return;                        // Derrick took over → Sage stays quiet
+    llmHist.push({role:"user",content:t});
+    typing();
+    fetch(SAGE_FN,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({messages:llmHist.slice(-14), sodContext:sodContextFrom(t)})})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        stopTyping();
+        var reply=(d&&d.reply)?d.reply:"";
+        if(!reply) reply="I want to make sure I get this right for you — the best next step is a quick word with Derrick. What's a good name and number, and I'll have him reach out? Or call us at "+BIZ.phone+".";
+        llmHist.push({role:"assistant",content:reply});
+        var b=el("ai-msg bot", escapeHtml(reply).replace(/\n/g,"<br>"));
+        msgs.appendChild(b); scroll(); logTurn("sage",reply);
+      })
+      .catch(function(){
+        stopTyping();
+        var b=el("ai-msg bot","I'm having a little trouble connecting right now — you can reach We Care directly at "+BIZ.phone+" and we'll take great care of you. 🌿");
+        msgs.appendChild(b); scroll();
+      });
   }
 
   function menu(intro){
@@ -336,12 +311,17 @@ var Sage=(function(){
 
   function handle(value,display){
     clearChips();
+    var label=display||value;
     if(display)me(display); else me(value);
-    // special values
-    if(value.indexOf("svc:")===0){var k=value.slice(4);startFlow(k,{key:k,service:serviceLabel(k)});return;}
-    if(value==="human"){startFlow("callback",{key:"callback",service:"Call-back request"});return;}
-    if(value==="sodhelp"){say("No problem — just tell me the new square footage (or length × width).");flow={kind:"sodquick",step:99};return;}
-    answer(value);
+    // chips are quick-starts → turn them into a natural message for Sage's LLM brain
+    var msgText=label;
+    if(value.indexOf("svc:")===0){
+      var k=value.slice(4);
+      var m={sod:"I'm interested in sod.",luxury:"I'm interested in a landscape design/build project.",
+             concrete:"I'm interested in custom carved concrete work.",maintenance:"I'm interested in lawn & property maintenance."};
+      msgText=m[k]||serviceLabel(k);
+    } else if(value==="human"){ msgText="I'd like to talk to Derrick / have a real person reach out."; }
+    answer(msgText);
   }
 
   /* ---- public API ---- */
