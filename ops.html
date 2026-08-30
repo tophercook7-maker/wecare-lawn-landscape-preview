@@ -98,6 +98,21 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
       </div>
     </div>
   </div>
+
+  <div class="panel" style="margin-top:16px">
+    <h2>📋 SOP Library <span class="mini" style="font-weight:400">— you write them, the crew opens them right on the job</span></h2>
+    <div id="sopList"></div>
+    <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">
+      <h3 style="margin:0 0 10px;font-family:var(--ff-d);font-size:1.05rem;color:var(--green-ink)" id="sopFormTitle">Add an SOP</h3>
+      <input type="hidden" id="sopId">
+      <div class="field"><label>Title</label><input id="sopTitle" placeholder="e.g. Mowing SOP"></div>
+      <div class="field"><label>For service</label><select id="sopSvc"><option value="">Any / general</option><option>Lawn maintenance</option><option>Landscape design/build</option><option>Concrete Artistry</option><option>Sod install</option><option>Drainage</option><option>Irrigation</option><option>Water feature</option><option>Hardscape/patio</option></select></div>
+      <div class="field"><label>Steps <span class="mini">(one per line — crew checks them off on the job)</span></label><textarea id="sopSteps" rows="5" placeholder="Confirm gate is closed behind you&#10;Mow at the correct height for the season&#10;Edge all borders and walkways&#10;Blow off drives, walks, and patio&#10;Photo the finished yard"></textarea></div>
+      <div class="field"><label>Notes <span class="mini">(optional — safety, reminders)</span></label><textarea id="sopNotes" rows="2" placeholder="Anything the crew should know…"></textarea></div>
+      <button class="btn p" onclick="saveSOP()">Save SOP</button>
+      <button class="btn" onclick="resetSOPForm()" id="sopCancel" style="display:none;margin-left:6px">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <script src="js/wecare-auth.js"></script>
@@ -112,7 +127,7 @@ var CREW=[
   {id:"christian",name:"Christian Benton",role:"Maintenance Technician"},
   {id:"chris",name:"Chris Crain",role:"Maintenance Technician"},
 ];
-var K_PUNCH="wecare_punches",K_JOBS="wecare_workorders",K_FIX="wecare_punch_fixes";
+var K_PUNCH="wecare_punches",K_JOBS="wecare_workorders",K_FIX="wecare_punch_fixes",K_SOPS="wecare_sops";
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function nm(id){var c=CREW.find(function(x){return x.id===id});return c?c.name:id}
@@ -232,6 +247,69 @@ function createWO(){
   render();
 }
 function resolveFix(id){var f=load(K_FIX,[]);var x=f.find(function(y){return y.id===id});if(x)x.resolved=true;save(K_FIX,f);render();}
+
+/* ---- SOP Library (management-editable; crew opens on the job) ---- */
+function seedSOPs(){
+  if(load(K_SOPS,null)!==null) return;  // only seed once
+  var t=new Date().toISOString();
+  save(K_SOPS,[
+    {id:"sop-mow",title:"Mowing SOP",service:"Lawn maintenance",updated:t,notes:"Double-check gates so pets stay safe.",
+     steps:["Confirm the gate is closed behind you","Pick up sticks, toys, and debris first","Mow at the correct height for the season","Edge all borders, beds, and walkways","String-trim around fences, trees, and posts","Blow off drives, walks, and patio","Photo the finished yard before you leave"]},
+    {id:"sop-sod",title:"Sod Installation SOP",service:"Sod install",updated:t,notes:"Water within 30 minutes of laying.",
+     steps:["Confirm pallet count matches the work order","Kill/scrape existing grass and weeds","Grade and level the soil, remove rocks","Lay sod in a brick-stagger pattern, tight seams","Roll the sod to press out air pockets","Water thoroughly right away","Leave watering instructions with the customer"]},
+    {id:"sop-concrete",title:"Carved Concrete SOP",service:"Concrete Artistry",updated:t,notes:"This is our signature work — photograph every stage.",
+     steps:["Review the design/sketch with the customer","Photo the site BEFORE starting","Build the form and armature","Pour and rough-shape the base","Hand-carve the detail while workable","Apply color/stain per the design","Seal the finished piece","Photo the finished work from 3 angles"]},
+  ]);
+}
+function renderSOPs(){
+  var el=document.getElementById("sopList"); if(!el) return;
+  var sops=load(K_SOPS,[]);
+  el.innerHTML = sops.length ? sops.map(function(s){
+    return '<div style="border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:8px">'+
+      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap">'+
+        '<b style="color:var(--green-ink);font-family:var(--ff-d)">'+esc(s.title)+'</b>'+
+        '<span class="mini">'+(s.service?esc(s.service)+' · ':'')+(s.steps||[]).length+' steps</span></div>'+
+      ((s.steps||[]).length?'<ol style="margin:8px 0 0;padding-left:20px;font-size:.85rem;color:var(--body)">'+s.steps.map(function(st){return '<li>'+esc(st)+'</li>';}).join('')+'</ol>':'')+
+      (s.notes?'<div class="mini" style="margin-top:6px">📝 '+esc(s.notes)+'</div>':'')+
+      '<div style="margin-top:8px"><button class="btn" style="padding:4px 10px" onclick="editSOP(\''+s.id+'\')">Edit</button> '+
+        '<button class="btn" style="padding:4px 10px" onclick="deleteSOP(\''+s.id+'\')">Delete</button></div>'+
+    '</div>';
+  }).join("") : '<div class="empty">No SOPs yet. Add your first one below — the crew will see it on any matching job.</div>';
+}
+function saveSOP(){
+  var title=document.getElementById("sopTitle").value.trim();
+  if(!title){alert("Give the SOP a title.");return;}
+  var steps=document.getElementById("sopSteps").value.split("\n").map(function(x){return x.trim();}).filter(Boolean);
+  var sops=load(K_SOPS,[]);
+  var id=document.getElementById("sopId").value;
+  var rec={id:id||("sop-"+Date.now().toString(36)),title:title,service:document.getElementById("sopSvc").value,
+    steps:steps,notes:document.getElementById("sopNotes").value.trim(),updated:new Date().toISOString()};
+  if(id){var i=sops.findIndex(function(s){return s.id===id});if(i>=0)sops[i]=rec;else sops.push(rec);}
+  else sops.push(rec);
+  save(K_SOPS,sops); resetSOPForm(); renderSOPs();
+}
+function editSOP(id){
+  var s=load(K_SOPS,[]).find(function(x){return x.id===id}); if(!s)return;
+  document.getElementById("sopId").value=s.id;
+  document.getElementById("sopTitle").value=s.title;
+  document.getElementById("sopSvc").value=s.service||"";
+  document.getElementById("sopSteps").value=(s.steps||[]).join("\n");
+  document.getElementById("sopNotes").value=s.notes||"";
+  document.getElementById("sopFormTitle").textContent="Edit SOP";
+  document.getElementById("sopCancel").style.display="";
+  document.getElementById("sopTitle").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function deleteSOP(id){
+  if(!confirm("Delete this SOP?"))return;
+  save(K_SOPS,load(K_SOPS,[]).filter(function(s){return s.id!==id}));
+  renderSOPs();
+}
+function resetSOPForm(){
+  ["sopId","sopTitle","sopSteps","sopNotes"].forEach(function(i){document.getElementById(i).value="";});
+  document.getElementById("sopSvc").value="";
+  document.getElementById("sopFormTitle").textContent="Add an SOP";
+  document.getElementById("sopCancel").style.display="none";
+}
 function exportCSV(){
   var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={};
   load(K_PUNCH,[]).forEach(function(p){if(!p.out)return;var t0=new Date(p.in).getTime();if(t0<ws)return;tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000;});
@@ -242,9 +320,11 @@ function exportCSV(){
 }
 document.getElementById("woCrew").innerHTML=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+c.name.split(" ")[0]+'</label>'}).join("");
 document.getElementById("otAfter").addEventListener("input",render);
-window.addEventListener("storage",render);
+window.addEventListener("storage",function(){render();renderSOPs();});
 setInterval(render,5000);
+seedSOPs();
 render();
+renderSOPs();
 </script>
 </body>
 </html>

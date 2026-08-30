@@ -56,6 +56,11 @@ h2{font-family:var(--ff-d);color:var(--green-ink,#153a2a);font-size:1.15rem;marg
 .steps button.active{background:var(--green-deep);color:#fff;border-color:var(--green-deep)}
 .sop{margin-top:10px;font-size:.85rem}
 .sop summary{cursor:pointer;font-weight:600;color:var(--teal-deep)}
+.soplist{margin-top:8px;display:flex;flex-direction:column;gap:2px}
+.sopstep{display:flex;align-items:flex-start;gap:9px;padding:7px 8px;border-radius:8px;cursor:pointer}
+.sopstep:active{background:var(--sand,#f0eee4)}
+.sopstep input{margin-top:2px;width:18px;height:18px;flex:none}
+.sopstep input:checked + span{color:var(--muted);text-decoration:line-through}
 .linkrow{display:flex;gap:8px;margin-top:10px}
 .linkrow button{flex:1;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:9px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--green-deep)}
 .demo{background:#fdf6ea;border:1px solid #e6cd97;border-radius:10px;padding:9px 13px;font-size:.8rem;color:var(--amber);margin-bottom:12px}

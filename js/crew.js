@@ -18,6 +18,7 @@ var CREW = [
 /* ---- shared stores (owner dashboard reads the same keys) ---- */
 var K_PUNCH="wecare_punches";      // [{id, empId, empName, jobId, in, out, inGeo, outGeo, edits:[]}]
 var K_JOBS ="wecare_workorders";   // [{id, customer, service, address, scope, sop, assignedTo[], date, status, estHours}]
+var K_SOPS ="wecare_sops";         // SOP library (owner-written) [{id,title,service,steps[],notes}]
 var K_ME   ="wecare_crew_me";      // current employee id on THIS phone
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -155,6 +156,26 @@ function render(){
 }
 
 var STATUSES=[["enroute","En route"],["arrived","Arrived"],["started","Started"],["done","Done"]];
+/* find the owner-written SOP for a job: match by name, else by service */
+function findSOP(j){
+  var sops=load(K_SOPS,[]); if(!sops.length) return null;
+  return sops.find(function(s){return s.title===j.sop;}) ||
+         sops.find(function(s){return s.service && s.service===j.service;}) || null;
+}
+function sopChecks(jobId){try{return JSON.parse(localStorage.getItem("wecare_sopcheck_"+jobId))||{}}catch(e){return {}}}
+function sopBlock(j){
+  var s=findSOP(j);
+  if(!s){ return j.sop?'<details class="sop"><summary>📋 '+esc(j.sop)+'</summary><div class="muted" style="margin-top:6px">No steps added yet — ask the office to add this SOP.</div></details>':''; }
+  var chk=sopChecks(j.id);
+  var steps=(s.steps||[]).map(function(st,i){
+    var on=chk[i]?'checked':'';
+    return '<label class="sopstep"><input type="checkbox" data-job="'+j.id+'" data-i="'+i+'" '+on+'> <span>'+esc(st)+'</span></label>';
+  }).join("");
+  return '<details class="sop"><summary>📋 '+esc(s.title)+' · '+(s.steps||[]).length+' steps</summary>'+
+    '<div class="soplist">'+steps+'</div>'+
+    (s.notes?'<div class="muted" style="margin-top:6px">📝 '+esc(s.notes)+'</div>':'')+
+    '</details>';
+}
 function jobCard(j){
   var maps="https://maps.apple.com/?daddr="+encodeURIComponent(j.address);
   var gmaps="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(j.address);
@@ -162,7 +183,7 @@ function jobCard(j){
     '<div class="h"><span class="cust">'+esc(j.customer)+'</span><span class="svc">'+esc(j.service)+'</span></div>'+
     '<div class="addr">📍 '+esc(j.address)+'</div>'+
     '<div class="muted" style="font-size:.88rem">'+esc(j.scope)+'</div>'+
-    (j.sop?'<details class="sop"><summary>📋 '+esc(j.sop)+'</summary><div class="muted" style="margin-top:6px">Open the step-by-step for this job type. (SOP library — you drop the docs, crew opens them here.)</div></details>':'')+
+    sopBlock(j)+
     '<div class="linkrow"><button onclick="window.open(\''+maps+'\')">🍎 Apple Maps</button><button onclick="window.open(\''+gmaps+'\')">📍 Google Maps</button></div>'+
     '<div class="steps">'+STATUSES.map(function(s){return '<button data-st="'+s[0]+'" class="'+(j.status===s[0]?'active':'')+'">'+s[1]+'</button>'}).join("")+'</div>'+
   '</div>';
@@ -174,6 +195,14 @@ function wireJobs(){
       b.onclick=function(){
         var jobs=load(K_JOBS,[]); var j=jobs.find(function(x){return x.id===id});
         if(j){ j.status=b.dataset.st; save(K_JOBS,jobs); toast(j.customer+": "+b.textContent); render(); }
+      };
+    });
+    el.querySelectorAll(".soplist input[type=checkbox]").forEach(function(cb){
+      cb.onchange=function(){
+        var job=cb.dataset.job, i=cb.dataset.i, k="wecare_sopcheck_"+job;
+        var m; try{m=JSON.parse(localStorage.getItem(k))||{}}catch(e){m={}}
+        if(cb.checked)m[i]=1;else delete m[i];
+        try{localStorage.setItem(k,JSON.stringify(m))}catch(e){}
       };
     });
   });
