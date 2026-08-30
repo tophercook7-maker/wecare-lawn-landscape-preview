@@ -176,12 +176,46 @@ function reviewControls(j){
   if(rs==="hold") return bar+'<span class="pill" style="background:rgba(193,81,47,.14);color:var(--red)">⏸ Review on hold (issue)</span> <button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'requested\')">▶ Release request</button></div>';
   if(rs==="done") return bar+'<span class="pill st-done">⭐ Reviewed ✓</span></div>';
   // requested
-  return bar+'<span class="pill st-started">⭐ Review requested</span> '+
+  var out=bar+'<span class="pill st-started">⭐ Review requested</span> '+
+    '<button class="btn" style="padding:5px 10px" onclick="reviewDraft(\''+j.id+'\')">✍️ Draft &amp; copy request</button> '+
     '<button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'hold\')">⏸ Hold (issue)</button> '+
-    '<button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'done\')">✓ Got the review</button></div>';
+    '<button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'done\')">✓ Got the review</button>';
+  if(_draftFor===j.id){
+    out+='<div style="margin-top:9px;background:var(--card2,#f7f5ee);border:1px solid var(--line);border-radius:8px;padding:10px">'+
+      '<textarea id="dft-'+j.id+'" style="width:100%;min-height:96px;font:inherit;border:1px solid var(--line);border-radius:6px;padding:8px;resize:vertical">'+esc(reviewMsg(j))+'</textarea>'+
+      '<div style="display:flex;gap:8px;margin-top:7px;flex-wrap:wrap;align-items:center">'+
+        '<button class="btn" style="padding:5px 10px" onclick="copyDraft(\''+j.id+'\')">📋 Copy</button>'+
+        '<button class="btn" style="padding:5px 10px" onclick="setReviewLink()">🔗 Set review link</button>'+
+        '<span id="cpd-'+j.id+'" style="font-size:.82rem;color:var(--muted)">Copy this, then send by text or email to the customer.</span>'+
+      '</div></div>';
+  }
+  return out+'</div>';
+}
+var _draftFor=null;
+function reviewLink(){return localStorage.getItem("wecare_review_link")||"";}
+function reviewMsg(j){
+  var name=(j.customer||"there").split(" ")[0];
+  var svc=(j.service||"project").toLowerCase();
+  var link=reviewLink()||"[paste your Google review link — tap “Set review link”]";
+  return "Hi "+name+", it's Derrick with We Care — it was a real pleasure getting your "+svc+" done. "+
+    "If you were happy with how it turned out, a quick review would mean the world to us and helps other neighbors find us:\n"+
+    link+"\n\nThank you! — We Care · 501-627-4384";
+}
+function reviewDraft(id){ _draftFor=(_draftFor===id?null:id); render(); }
+function copyDraft(id){
+  var t=document.getElementById("dft-"+id); if(!t)return;
+  t.select();
+  var ok=false; try{ok=document.execCommand("copy");}catch(e){}
+  if(navigator.clipboard){ navigator.clipboard.writeText(t.value).catch(function(){}); ok=true; }
+  var s=document.getElementById("cpd-"+id); if(s){s.textContent=ok?"✓ Copied — paste into a text or email to the customer.":"Select the text and copy it.";}
+}
+function setReviewLink(){
+  var cur=reviewLink();
+  var v=prompt("Paste We Care's Google review link (customers tap it to leave a review):", cur);
+  if(v!==null){ localStorage.setItem("wecare_review_link", v.trim()); render(); }
 }
 function markPaid(id){var j=load(K_JOBS,[]);var x=j.find(function(y){return y.id===id});if(x){x.paid=true;x.reviewStatus="requested";}save(K_JOBS,j);render();}
-function setReview(id,st){var j=load(K_JOBS,[]);var x=j.find(function(y){return y.id===id});if(x)x.reviewStatus=st;save(K_JOBS,j);render();}
+function setReview(id,st){var j=load(K_JOBS,[]);var x=j.find(function(y){return y.id===id});if(x)x.reviewStatus=st;_draftFor=null;save(K_JOBS,j);render();}
 function createWO(){
   var cust=document.getElementById("woCust").value.trim(); if(!cust){alert("Customer name?");return;}
   var crew=[].slice.call(document.querySelectorAll("#woCrew input:checked")).map(function(i){return i.value});
