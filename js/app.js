@@ -330,7 +330,7 @@ var Sage=(function(){
     llmHist.push({role:"user",content:t});
     typing();
     fetch(SAGE_FN,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({messages:llmHist.slice(-14), sodContext:sodContextFrom(t)})})
+      body:JSON.stringify({messages:llmHist.slice(-14), sodContext:sodContextFrom(t), pageContext:(window.SAGE_PAGE||"")})})
       .then(function(r){return r.json();})
       .then(function(d){
         stopTyping();
