@@ -219,6 +219,10 @@ function render(){
 }
 function stat(n,l,sub){return '<div class="stat"><div class="n">'+n+'</div><div class="l">'+l+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'}
 
+/* ---- one-tap send: opens the owner's own Messages / email, pre-filled ---- */
+function smsLink(phone,body){var p=String(phone||"").replace(/[^\d+]/g,"");return "sms:"+p+"?&body="+encodeURIComponent(body);}
+function mailLink(email,subject,body){return "mailto:"+encodeURIComponent(email||"")+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);}
+
 /* ---- Follow-up cadence engine: 1d → 3d → 7d → 14d, then stop ---- */
 var FU_INTERVALS=[1,3,7,14];                                   // days after the prior touch
 var FU_LABELS=["1st follow-up","2nd follow-up","3rd follow-up","final follow-up"];
@@ -264,6 +268,8 @@ function renderFollowups(all){
         ' <span class="fu-tag">'+FU_LABELS[step]+' · '+overdueText(x.s.overdue)+'</span></div>'+
       '<div class="msg" id="fu-'+l.id+'">'+esc(msg)+'</div>'+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+        (l.phone?'<a class="btn btn-primary btn-sm" href="'+smsLink(l.phone,msg)+'">📱 Text</a>':'')+
+        (l.email?'<a class="btn btn-outline btn-sm" href="'+mailLink(l.email,"Following up — We Care",msg)+'">✉️ Email</a>':'')+
         '<button class="btn btn-outline btn-sm" onclick="copyFu(\''+l.id+'\')">📋 Copy</button>'+
         '<button class="btn btn-outline btn-sm" onclick="logFollowup(\''+l.id+'\')">✓ Logged it</button>'+
         '<button class="btn btn-outline btn-sm" onclick="setStage(\''+l.id+'\',\'Won\')">🏆 Won</button>'+
@@ -310,11 +316,17 @@ function renderConsults(){
       '<div class="mini">'+esc(c.service||"Consultation")+(c.address?' · '+esc(c.address):'')+(c.source?' · '+esc(c.source):'')+'</div>'+
       (c.notes?'<div class="mini" style="margin-top:3px">📝 '+esc(c.notes)+'</div>':'')+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+        (c.phone?'<a class="btn btn-primary btn-sm" href="'+smsLink(c.phone,conConfirmMsg(c))+'">📱 Text to confirm</a>':'')+
         (c.status==="requested"?'<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'confirmed\')">✓ Confirm</button>':'')+
         '<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'completed\')">✓ Done</button>'+
         '<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'canceled\')">Cancel</button>'+
       '</div></div>';
   }).join("");
+}
+function conConfirmMsg(c){
+  var fn=(c.name||"there").split(" ")[0];
+  var when=c.date?new Date(c.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}):"your consultation";
+  return "Hi "+fn+", it's Derrick with We Care — confirming your consultation for "+when+(c.time?" at "+fmtConTime(c.time):"")+". Looking forward to it! Reply here or call 501-627-4384 if anything changes.";
 }
 function conStatus(id,st){ var a=conLoad(),c=a.find(function(x){return x.id===id}); if(c)c.status=st; conSave(a); renderConsults(); }
 function addConsult(){

@@ -89,6 +89,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
       <div class="panel">
         <h2>➕ New work order</h2>
         <div class="field"><label>Customer</label><input id="woCust" placeholder="Name"></div>
+        <div class="field"><label>Phone <span class="mini">(for review/confirmation texts)</span></label><input id="woPhone" placeholder="(501) 555-0123"></div>
         <div class="field"><label>Service</label><select id="woSvc"><option>Lawn maintenance</option><option>Landscape design/build</option><option>Concrete Artistry</option><option>Sod install</option><option>Drainage</option><option>Irrigation</option><option>Water feature</option><option>Hardscape/patio</option></select></div>
         <div class="field"><label>Address</label><input id="woAddr" placeholder="Street, town"></div>
         <div class="field"><label>Scope of work</label><textarea id="woScope" rows="2" placeholder="What's being done…"></textarea></div>
@@ -207,9 +208,10 @@ function reviewControls(j){
     out+='<div style="margin-top:9px;background:var(--card2,#f7f5ee);border:1px solid var(--line);border-radius:8px;padding:10px">'+
       '<textarea id="dft-'+j.id+'" style="width:100%;min-height:96px;font:inherit;border:1px solid var(--line);border-radius:6px;padding:8px;resize:vertical">'+esc(reviewMsg(j))+'</textarea>'+
       '<div style="display:flex;gap:8px;margin-top:7px;flex-wrap:wrap;align-items:center">'+
+        (j.phone?'<button class="btn p" style="padding:5px 10px" onclick="textReview(\''+j.id+'\')">📱 Text it</button>':'')+
         '<button class="btn" style="padding:5px 10px" onclick="copyDraft(\''+j.id+'\')">📋 Copy</button>'+
         '<button class="btn" style="padding:5px 10px" onclick="setReviewLink()">🔗 Set review link</button>'+
-        '<span id="cpd-'+j.id+'" style="font-size:.82rem;color:var(--muted)">Copy this, then send by text or email to the customer.</span>'+
+        '<span id="cpd-'+j.id+'" style="font-size:.82rem;color:var(--muted)">'+(j.phone?'Tap Text to send from your phone, or Copy.':'Copy this, then send by text or email. (Add a phone to the job for one-tap texting.)')+'</span>'+
       '</div></div>';
   }
   return out+'</div>';
@@ -232,6 +234,13 @@ function copyDraft(id){
   if(navigator.clipboard){ navigator.clipboard.writeText(t.value).catch(function(){}); ok=true; }
   var s=document.getElementById("cpd-"+id); if(s){s.textContent=ok?"✓ Copied — paste into a text or email to the customer.":"Select the text and copy it.";}
 }
+function smsLink(phone,body){var p=String(phone||"").replace(/[^\d+]/g,"");return "sms:"+p+"?&body="+encodeURIComponent(body);}
+function textReview(id){
+  var j=load(K_JOBS,[]).find(function(x){return x.id===id}); if(!j)return;
+  if(!j.phone){alert("No phone on this work order — add one to text the customer.");return;}
+  var t=document.getElementById("dft-"+id); var msg=t?t.value:reviewMsg(j);
+  window.location.href=smsLink(j.phone,msg);
+}
 function setReviewLink(){
   var cur=reviewLink();
   var v=prompt("Paste We Care's Google review link (customers tap it to leave a review):", cur);
@@ -243,12 +252,12 @@ function createWO(){
   var cust=document.getElementById("woCust").value.trim(); if(!cust){alert("Customer name?");return;}
   var crew=[].slice.call(document.querySelectorAll("#woCrew input:checked")).map(function(i){return i.value});
   var jobs=load(K_JOBS,[]);
-  jobs.push({id:"W"+Date.now().toString(36),customer:cust,service:document.getElementById("woSvc").value,
+  jobs.push({id:"W"+Date.now().toString(36),customer:cust,phone:document.getElementById("woPhone").value.trim(),service:document.getElementById("woSvc").value,
     address:document.getElementById("woAddr").value.trim(),scope:document.getElementById("woScope").value.trim(),
     sop:document.getElementById("woSvc").value+" SOP",assignedTo:crew,date:new Date().toISOString().slice(0,10),
     status:"assigned",estHours:parseFloat(document.getElementById("woHrs").value)||null});
   save(K_JOBS,jobs);
-  ["woCust","woAddr","woScope","woHrs"].forEach(function(id){document.getElementById(id).value=""});
+  ["woCust","woPhone","woAddr","woScope","woHrs"].forEach(function(id){document.getElementById(id).value=""});
   document.querySelectorAll("#woCrew input:checked").forEach(function(i){i.checked=false});
   render();
 }
