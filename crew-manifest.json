@@ -1,0 +1,11 @@
+{
+  "name": "We Care Crew",
+  "short_name": "WC Crew",
+  "start_url": "crew.html",
+  "display": "standalone",
+  "background_color": "#1f5d3d",
+  "theme_color": "#1f5d3d",
+  "icons": [
+    {"src":"img/mark.png","sizes":"512x512","type":"image/png","purpose":"any"}
+  ]
+}
