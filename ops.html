@@ -130,7 +130,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 
   <div class="panel" style="margin-top:16px">
     <h2>💵 Job costing <span class="mini" style="font-weight:400">— real labor hours per job, straight from the clock-ins</span></h2>
-    <p class="mini" style="margin-top:-2px">Blended labor rate $<input id="laborRate" type="number" min="0" step="1" placeholder="—" style="width:64px;padding:2px 6px;border:1px solid var(--line);border-radius:6px">/hr · set it to see cost; leave blank for hours only. (Add real per-person rates later.)</p>
+    <p class="mini" style="margin-top:-2px">Labor cost uses each person's real rate (set in the roster). Fallback rate for anyone without one: $<input id="laborRate" type="number" min="0" step="1" placeholder="—" style="width:56px;padding:2px 6px;border:1px solid var(--line);border-radius:6px">/hr.</p>
     <div id="costing"></div>
   </div>
 
@@ -175,13 +175,14 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 <script src="js/wecare-cloud.js?v=0830"></script>
 <script>
 var CREW=[
-  {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true},
-  {id:"jason",name:"Jason Kennedy",role:"Landscape Production Manager"},
-  {id:"hayden",name:"Hayden Collier",role:"Landscape Installation Tech"},
-  {id:"justin",name:"Justin Cavenza",role:"Landscape Installation Tech"},
-  {id:"christian",name:"Christian Benton",role:"Maintenance Technician"},
-  {id:"chris",name:"Chris Crain",role:"Maintenance Technician"},
+  {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
+  {id:"jason",name:"Jason Kennedy",role:"Landscape Production Manager",rate:25},
+  {id:"hayden",name:"Hayden Collier",role:"Landscape Installation Tech",rate:15},
+  {id:"justin",name:"Justin Cavenza",role:"Landscape Installation Tech",rate:15},
+  {id:"christian",name:"Christian Benton",role:"Maintenance Technician",rate:23},
+  {id:"chris",name:"Chris Crain",role:"Maintenance Technician",rate:18.75,dayRate:150},
 ];
+function empRate(id){var c=CREW.find(function(x){return x.id===id;});return (c&&c.rate!=null)?c.rate:(parseFloat(localStorage.getItem("wecare_labor_rate"))||0);}
 var K_PUNCH="wecare_punches",K_JOBS="wecare_workorders",K_FIX="wecare_punch_fixes",K_SOPS="wecare_sops";
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -201,16 +202,21 @@ function render(){
       '<span class="mini">'+(job?esc(job.customer):'—')+' · '+fmtDur(Date.now()-new Date(p.in).getTime())+(p.inGeo?' · 📍':'')+'</span></div>';
   }).join("") : '<div class="empty">Nobody clocked in right now.</div>';
 
-  // weekly hours
-  var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={};
+  // weekly hours + pay (per-person rates; Chris Crain = $150/workday)
+  var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={},days={};
   punches.forEach(function(p){ if(!p.out)return; var t0=new Date(p.in).getTime(); if(t0<ws)return;
-    tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000; });
+    tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000;
+    (days[p.empId]||(days[p.empId]={}))[new Date(p.in).toISOString().slice(0,10)]=1; });
+  var totPay=0;
   var rows=CREW.filter(function(c){return tot[c.id]}).map(function(c){
     var h=tot[c.id],reg=Math.min(h,ot),o=Math.max(0,h-ot);
-    return '<tr><td>'+esc(c.name)+'</td><td class="num">'+reg.toFixed(1)+'</td><td class="num">'+(o>0?o.toFixed(1):'—')+'</td><td class="num"><b>'+h.toFixed(1)+'</b></td></tr>';
+    var pay = c.dayRate ? c.dayRate*Object.keys(days[c.id]||{}).length : (reg*(c.rate||0)+o*(c.rate||0)*1.5);
+    totPay+=pay;
+    return '<tr><td>'+esc(c.name)+(c.dayRate?' <span class="mini">($'+c.dayRate+'/day)</span>':'')+'</td><td class="num">'+reg.toFixed(1)+'</td><td class="num">'+(o>0?o.toFixed(1):'—')+'</td><td class="num">'+h.toFixed(1)+'</td><td class="num"><b>$'+pay.toFixed(2)+'</b></td></tr>';
   }).join("");
   document.getElementById("hours").innerHTML = rows ?
-    '<table><tr><th>Employee</th><th class="num">Reg</th><th class="num">OT</th><th class="num">Total</th></tr>'+rows+'</table>'
+    '<table><tr><th>Employee</th><th class="num">Reg</th><th class="num">OT</th><th class="num">Hrs</th><th class="num">Pay</th></tr>'+rows+
+    '<tr style="border-top:2px solid var(--line);font-weight:700"><td>Total payroll</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">$'+totPay.toFixed(2)+'</td></tr></table>'
     : '<div class="empty">No hours logged this week yet.</div>';
 
   // orders
@@ -317,18 +323,17 @@ function resolveFix(id){var f=load(K_FIX,[]);var x=f.find(function(y){return y.i
 function renderCosting(){
   var el=document.getElementById("costing"); if(!el) return;
   var jobs=load(K_JOBS,[]), punches=load(K_PUNCH,[]);
-  var rate=parseFloat(localStorage.getItem("wecare_labor_rate"))||0;
-  var actual={};   // jobId -> hours
+  var actual={}, labor={};   // jobId -> hours / labor$ (per-person rates)
   punches.forEach(function(p){
     if(!p.out) return; var h=(new Date(p.out).getTime()-new Date(p.in).getTime())/3600000;
-    if(h>0 && p.jobId) actual[p.jobId]=(actual[p.jobId]||0)+h;
+    if(h>0 && p.jobId){ actual[p.jobId]=(actual[p.jobId]||0)+h; labor[p.jobId]=(labor[p.jobId]||0)+h*empRate(p.empId); }
   });
   var list=jobs.filter(function(j){return actual[j.id] || j.estHours;})
     .sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
   if(!list.length){ el.innerHTML='<div class="empty">No labor logged against jobs yet. Once the crew clocks into work orders, hours and costs show up here.</div>'; return; }
   var totLab=0,totMat=0,totRev=0,totProfit=0,anyProfit=false;
   var rows=list.map(function(j){
-    var act=actual[j.id]||0, est=j.estHours||0, lab=act*rate; totLab+=lab;
+    var act=actual[j.id]||0, est=j.estHours||0, lab=labor[j.id]||0; totLab+=lab;
     var mat=(j.materials!=null?j.materials:""), price=(j.price!=null?j.price:"");
     var matN=parseFloat(mat)||0, priceN=parseFloat(price)||0; totMat+=matN; totRev+=priceN;
     var profit=priceN-lab-matN;
@@ -338,12 +343,12 @@ function renderCosting(){
     var inp='style="width:66px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;text-align:right;font:inherit"';
     return '<tr><td>'+esc(j.customer)+'<div class="mini">'+esc(j.service)+'</div></td>'+
       '<td class="num">'+act.toFixed(1)+(est?'<span class="mini">/'+est.toFixed(1)+'</span>':'')+'</td>'+
-      '<td class="num">'+(rate>0?'$'+lab.toFixed(0):'—')+'</td>'+
+      '<td class="num">$'+lab.toFixed(0)+'</td>'+
       '<td class="num"><input type="number" value="'+mat+'" placeholder="0" '+inp+' onchange="setJobCost(\''+j.id+'\',\'materials\',this.value)"></td>'+
       '<td class="num"><input type="number" value="'+price+'" placeholder="0" '+inp+' onchange="setJobCost(\''+j.id+'\',\'price\',this.value)"></td>'+
       '<td class="num" style="color:'+profCol+';font-weight:700">'+profTxt+'</td></tr>';
   }).join("");
-  var totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>Total</td><td class="num"></td><td class="num">'+(rate>0?'$'+totLab.toFixed(0):'—')+'</td><td class="num">$'+totMat.toFixed(0)+'</td><td class="num">$'+totRev.toFixed(0)+'</td><td class="num" style="color:'+(totProfit>=0?'var(--green)':'var(--red)')+'">'+(anyProfit?'$'+totProfit.toFixed(0):'—')+'</td></tr>';
+  var totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>Total</td><td class="num"></td><td class="num">'+'$'+totLab.toFixed(0)+'</td><td class="num">$'+totMat.toFixed(0)+'</td><td class="num">$'+totRev.toFixed(0)+'</td><td class="num" style="color:'+(totProfit>=0?'var(--green)':'var(--red)')+'">'+(anyProfit?'$'+totProfit.toFixed(0):'—')+'</td></tr>';
   el.innerHTML='<div style="overflow-x:auto"><table><tr><th>Job</th><th class="num">Hrs a/e</th><th class="num">Labor</th><th class="num">Mat’ls</th><th class="num">Charged</th><th class="num">Profit</th></tr>'+rows+totRow+'</table></div>';
 }
 function setJobCost(id,field,val){
@@ -534,10 +539,10 @@ function resetSOPForm(){
   document.getElementById("sopCancel").style.display="none";
 }
 function exportCSV(){
-  var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={};
-  load(K_PUNCH,[]).forEach(function(p){if(!p.out)return;var t0=new Date(p.in).getTime();if(t0<ws)return;tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000;});
-  var rows=["Employee,Regular,Overtime,Total"];
-  CREW.forEach(function(c){if(!tot[c.id])return;var h=tot[c.id],reg=Math.min(h,ot),o=Math.max(0,h-ot);rows.push('"'+c.name+'",'+reg.toFixed(2)+','+o.toFixed(2)+','+h.toFixed(2));});
+  var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={},days={};
+  load(K_PUNCH,[]).forEach(function(p){if(!p.out)return;var t0=new Date(p.in).getTime();if(t0<ws)return;tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000;(days[p.empId]||(days[p.empId]={}))[new Date(p.in).toISOString().slice(0,10)]=1;});
+  var rows=["Employee,Regular,Overtime,Total Hours,Pay"];
+  CREW.forEach(function(c){if(!tot[c.id])return;var h=tot[c.id],reg=Math.min(h,ot),o=Math.max(0,h-ot);var pay=c.dayRate?c.dayRate*Object.keys(days[c.id]||{}).length:(reg*(c.rate||0)+o*(c.rate||0)*1.5);rows.push('"'+c.name+'",'+reg.toFixed(2)+','+o.toFixed(2)+','+h.toFixed(2)+','+pay.toFixed(2));});
   var b=new Blob([rows.join("\n")],{type:"text/csv"}),u=URL.createObjectURL(b),a=document.createElement("a");
   a.href=u;a.download="wecare-payroll-week.csv";a.click();
 }
