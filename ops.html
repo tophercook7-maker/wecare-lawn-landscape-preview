@@ -124,6 +124,12 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   </div>
 
   <div class="panel" style="margin-top:16px">
+    <h2>★ Case studies <span class="mini" style="font-weight:400">— turn a finished job into a portfolio piece for the website</span></h2>
+    <p class="mini" style="margin-top:-2px">On a completed job above, tap “★ Make case study” to start one from its photos. Add a short story, then publish it to <a href="case-studies.html" target="_blank">Our Work</a>.</p>
+    <div id="caseList"></div>
+  </div>
+
+  <div class="panel" style="margin-top:16px">
     <h2>📋 SOP Library <span class="mini" style="font-weight:400">— you write them, the crew opens them right on the job</span></h2>
     <div id="sopList"></div>
     <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">
@@ -190,6 +196,7 @@ function render(){
       '<div class="mini">'+esc(j.service)+' · '+esc(j.address)+'</div>'+
       '<div class="crew">👷 '+(j.assignedTo||[]).map(nm).join(", ")+(j.estHours?' · est '+j.estHours+'h':'')+'</div>'+
       ((j.photos&&j.photos.length)?'<div class="wophotos">'+j.photos.map(function(u){return '<a href="'+u+'" target="_blank"><img src="'+u+'" loading="lazy" alt="job photo"></a>';}).join("")+'</div>':'')+
+      (j.status==="done"?'<button class="btn" style="margin-top:8px;padding:5px 10px" onclick="makeCaseStudy(\''+j.id+'\')">★ Make case study</button>':'')+
       reviewControls(j)+'</div>';
   }).join("") : '<div class="empty">No work orders today. Create one →</div>';
 
@@ -342,6 +349,42 @@ function exportOne(key,label){
   _dl("wecare-"+label+"-"+_today()+".csv", _toCSV(arr), "text/csv");
 }
 
+/* ---- Case studies: finished job → portfolio piece ---- */
+var K_CASES="wecare_casestudies";
+function cityFromAddr(a){ if(!a)return ""; var p=a.split(","); return (p.length>1?p[p.length-1]:p[0]).trim(); }
+function makeCaseStudy(jobId){
+  var j=load(K_JOBS,[]).find(function(x){return x.id===jobId;}); if(!j)return;
+  var cases=load(K_CASES,[]);
+  if(cases.some(function(c){return c.jobId===jobId;})){ alert("Already started a case study for this job — see the Case studies panel below."); return; }
+  var city=cityFromAddr(j.address);
+  cases.push({id:"CS"+Date.now().toString(36),title:(j.service||"Project")+(city?" in "+city:""),service:j.service||"",location:city,summary:"",photos:(j.photos||[]).slice(),published:false,jobId:jobId,created:new Date().toISOString()});
+  save(K_CASES,cases); renderCases();
+  alert("Draft case study created in the Case studies panel below — add a short story and publish it.");
+}
+function renderCases(){
+  var el=document.getElementById("caseList"); if(!el) return;
+  var cases=load(K_CASES,[]).sort(function(a,b){return (b.created||"").localeCompare(a.created||"");});
+  if(!cases.length){ el.innerHTML='<div class="empty">No case studies yet. On a completed job above, tap “★ Make case study.”</div>'; return; }
+  el.innerHTML=cases.map(function(c){
+    var thumbs=(c.photos||[]).map(function(u){return '<img src="'+u+'" style="width:46px;height:46px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">';}).join("");
+    return '<div style="border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:8px">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><b style="color:var(--green-ink);font-family:var(--ff-d)">'+esc(c.title)+'</b>'+
+        '<span class="pill '+(c.published?'st-done':'st-assigned')+'">'+(c.published?'Published':'Draft')+'</span></div>'+
+      '<div class="mini">'+esc(c.service)+(c.location?' · '+esc(c.location):'')+'</div>'+
+      (thumbs?'<div style="display:flex;gap:4px;flex-wrap:wrap;margin:7px 0">'+thumbs+'</div>':'<div class="mini" style="margin:6px 0">No photos on this job — add some from the crew app first.</div>')+
+      '<textarea id="cs-'+c.id+'" rows="2" placeholder="Short story: what they wanted and what you built…" style="width:100%;font:inherit;border:1px solid var(--line);border-radius:6px;padding:7px">'+esc(c.summary)+'</textarea>'+
+      '<div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn" style="padding:4px 10px" onclick="saveCaseSummary(\''+c.id+'\')">Save</button>'+
+        '<button class="btn '+(c.published?'':'p')+'" style="padding:4px 10px" onclick="toggleCasePub(\''+c.id+'\')">'+(c.published?'Unpublish':'Publish to site')+'</button>'+
+        '<button class="btn" style="padding:4px 10px" onclick="delCase(\''+c.id+'\')">Delete</button>'+
+      '</div></div>';
+  }).join("");
+}
+function _csSyncSummary(id){var t=document.getElementById("cs-"+id);return t?t.value:null;}
+function saveCaseSummary(id){var c=load(K_CASES,[]),x=c.find(function(y){return y.id===id});if(x){var s=_csSyncSummary(id);if(s!==null)x.summary=s;}save(K_CASES,c);renderCases();}
+function toggleCasePub(id){var c=load(K_CASES,[]),x=c.find(function(y){return y.id===id});if(x){var s=_csSyncSummary(id);if(s!==null)x.summary=s;x.published=!x.published;}save(K_CASES,c);renderCases();}
+function delCase(id){if(!confirm("Delete this case study?"))return;save(K_CASES,load(K_CASES,[]).filter(function(c){return c.id!==id;}));renderCases();}
+
 /* ---- SOP Library (management-editable; crew opens on the job) ---- */
 function seedSOPs(){
   if(load(K_SOPS,null)!==null) return;  // only seed once
@@ -417,12 +460,13 @@ document.getElementById("otAfter").addEventListener("input",render);
 var _lr=document.getElementById("laborRate");
 _lr.value=localStorage.getItem("wecare_labor_rate")||"";
 _lr.addEventListener("input",function(){localStorage.setItem("wecare_labor_rate",_lr.value);renderCosting();});
-window.addEventListener("storage",function(){render();renderSOPs();renderCosting();});
-setInterval(function(){render();renderCosting();},5000);
+window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();});
+setInterval(function(){render();renderCosting();renderCases();},5000);
 seedSOPs();
 render();
 renderSOPs();
 renderCosting();
+renderCases();
 </script>
 </body>
 </html>
