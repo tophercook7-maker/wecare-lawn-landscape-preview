@@ -54,6 +54,9 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .export{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--green-deep)}
 .fix{background:#fdf6ea;border:1px solid #e6cd97;border-radius:9px;padding:10px 13px;margin-bottom:8px;font-size:.88rem}
 .empty{color:var(--muted);font-style:italic;font-size:.86rem;padding:8px 0}
+.wophotos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wophotos a{display:block;width:60px;height:60px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.wophotos img{width:100%;height:100%;object-fit:cover;display:block}
 </style>
 </head>
 <body>
@@ -172,6 +175,7 @@ function render(){
     return '<div class="wo"><div class="h"><span class="cust">'+esc(j.customer)+'</span><span class="pill st-'+(j.status||'assigned')+'">'+(j.status||'assigned')+'</span></div>'+
       '<div class="mini">'+esc(j.service)+' · '+esc(j.address)+'</div>'+
       '<div class="crew">👷 '+(j.assignedTo||[]).map(nm).join(", ")+(j.estHours?' · est '+j.estHours+'h':'')+'</div>'+
+      ((j.photos&&j.photos.length)?'<div class="wophotos">'+j.photos.map(function(u){return '<a href="'+u+'" target="_blank"><img src="'+u+'" loading="lazy" alt="job photo"></a>';}).join("")+'</div>':'')+
       reviewControls(j)+'</div>';
   }).join("") : '<div class="empty">No work orders today. Create one →</div>';
 

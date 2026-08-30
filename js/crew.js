@@ -186,7 +186,17 @@ function jobCard(j){
     sopBlock(j)+
     '<div class="linkrow"><button onclick="window.open(\''+maps+'\')">🍎 Apple Maps</button><button onclick="window.open(\''+gmaps+'\')">📍 Google Maps</button></div>'+
     '<div class="steps">'+STATUSES.map(function(s){return '<button data-st="'+s[0]+'" class="'+(j.status===s[0]?'active':'')+'">'+s[1]+'</button>'}).join("")+'</div>'+
+    photosBlock(j)+
   '</div>';
+}
+function photosBlock(j){
+  var ph=(j.photos||[]);
+  var thumbs=ph.map(function(u){return '<a href="'+u+'" target="_blank" class="jphoto"><img src="'+u+'" loading="lazy" alt="job photo"></a>';}).join("");
+  return '<div class="photos">'+
+    '<div class="ptitle">📷 Job photos'+(ph.length?' · '+ph.length:'')+'</div>'+
+    '<div class="pgrid">'+thumbs+
+      '<label class="paddbtn">＋ Add<input type="file" accept="image/*" capture="environment" class="photo-input" data-job="'+j.id+'" multiple hidden></label>'+
+    '</div><div class="pstatus" id="pstatus-'+j.id+'"></div></div>';
 }
 function wireJobs(){
   document.querySelectorAll(".job").forEach(function(el){
@@ -203,6 +213,20 @@ function wireJobs(){
         var m; try{m=JSON.parse(localStorage.getItem(k))||{}}catch(e){m={}}
         if(cb.checked)m[i]=1;else delete m[i];
         try{localStorage.setItem(k,JSON.stringify(m))}catch(e){}
+      };
+    });
+    el.querySelectorAll(".photo-input").forEach(function(inp){
+      inp.onchange=function(){
+        var id=inp.dataset.job, files=[].slice.call(inp.files); if(!files.length)return;
+        var st=document.getElementById("pstatus-"+id); if(st)st.textContent="Uploading "+files.length+" photo"+(files.length>1?"s":"")+"…";
+        if(!(window.WeCareCloud&&WeCareCloud.uploadPhoto)){ if(st)st.textContent="Photos need a connection — try again in a moment."; return; }
+        Promise.all(files.map(function(f){return WeCareCloud.uploadPhoto(f,id);}))
+          .then(function(urls){
+            var jobs=load(K_JOBS,[]),j=jobs.find(function(x){return x.id===id});
+            if(j){ j.photos=(j.photos||[]).concat(urls); save(K_JOBS,jobs); }
+            render();
+          })
+          .catch(function(){ if(st)st.textContent="Upload failed — check signal and try again."; });
       };
     });
   });

@@ -18,8 +18,8 @@ var STORES=[
   toRow:function(o){return {id:o.id,customer:o.customer||{},service:o.service,msgs:o.msgs||[],control:o.control,status:o.status,unseen:!!o.unseen,created:o.created,updated:o.updated};},
   fromRow:function(r){return {id:r.id,customer:r.customer||{},service:r.service,msgs:r.msgs||[],control:r.control,status:r.status,unseen:r.unseen,created:r.created,updated:r.updated};}},
  {key:"wecare_workorders", table:"work_orders", shape:"array",
-  toRow:function(o){return {id:o.id,customer:o.customer,phone:o.phone||"",service:o.service,address:o.address,scope:o.scope,sop:o.sop,assigned_to:o.assignedTo||[],date:o.date,status:o.status,est_hours:o.estHours||null,paid:!!o.paid,review_status:o.reviewStatus||"",materials:(o.materials||o.materials===0)?o.materials:null,price:(o.price||o.price===0)?o.price:null};},
-  fromRow:function(r){return {id:r.id,customer:r.customer,phone:r.phone||"",service:r.service,address:r.address,scope:r.scope,sop:r.sop,assignedTo:r.assigned_to||[],date:r.date,status:r.status,estHours:r.est_hours,paid:r.paid,reviewStatus:r.review_status||"",materials:r.materials,price:r.price};}},
+  toRow:function(o){return {id:o.id,customer:o.customer,phone:o.phone||"",service:o.service,address:o.address,scope:o.scope,sop:o.sop,assigned_to:o.assignedTo||[],date:o.date,status:o.status,est_hours:o.estHours||null,paid:!!o.paid,review_status:o.reviewStatus||"",materials:(o.materials||o.materials===0)?o.materials:null,price:(o.price||o.price===0)?o.price:null,photos:o.photos||[]};},
+  fromRow:function(r){return {id:r.id,customer:r.customer,phone:r.phone||"",service:r.service,address:r.address,scope:r.scope,sop:r.sop,assignedTo:r.assigned_to||[],date:r.date,status:r.status,estHours:r.est_hours,paid:r.paid,reviewStatus:r.review_status||"",materials:r.materials,price:r.price,photos:r.photos||[]};}},
  {key:"wecare_punches", table:"punches", shape:"array",
   toRow:function(o){return {id:o.id,emp_id:o.empId,emp_name:o.empName,job_id:o.jobId,clock_in:o.in,clock_out:o.out,in_geo:o.inGeo,out_geo:o.outGeo,edits:o.edits||[]};},
   fromRow:function(r){return {id:r.id,empId:r.emp_id,empName:r.emp_name,jobId:r.job_id,in:r.clock_in,out:r.clock_out,inGeo:r.in_geo,outGeo:r.out_geo,edits:r.edits||[]};}},
@@ -111,7 +111,17 @@ function initialSync(){
   pullAll();
   setInterval(pullAll, 6000);   // live-ish sync across devices
 }
-window.WeCareCloud={pull:pullAll, url:URL_};
+// upload a job photo to Supabase Storage → returns the public URL
+function uploadPhoto(file, jobId){
+  var ext=(file.name||"jpg").split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+  var path="wo/"+(jobId||"misc")+"/"+Date.now()+"-"+Math.floor(Math.random()*1e6)+"."+ext;
+  return fetch(URL_+"/storage/v1/object/job-photos/"+path,{
+    method:"POST",
+    headers:{apikey:ANON,Authorization:"Bearer "+ANON,"Content-Type":file.type||"image/jpeg","x-upsert":"true"},
+    body:file
+  }).then(function(r){ if(!r.ok) throw new Error("upload failed"); return URL_+"/storage/v1/object/public/job-photos/"+path; });
+}
+window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto};
 if(document.readyState!=="loading") initialSync();
 else document.addEventListener("DOMContentLoaded", initialSync);
 })();
