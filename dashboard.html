@@ -76,6 +76,7 @@
     <button class="btn btn-outline btn-sm" onclick="location.href='index.html'">← Website</button>
     <button class="btn btn-outline btn-sm" onclick="seedDemo()">Load sample bookings</button>
     <button class="btn btn-outline btn-sm" onclick="clearAll()">Clear all</button>
+    <input id="leadSearch" placeholder="🔍 Search leads…" oninput="render()" style="flex:1;min-width:160px;max-width:280px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;font:inherit">
     <span class="spacer"></span>
     <span class="mini" id="updated"></span>
   </div>
@@ -201,15 +202,17 @@ function estForLead(id){if(!id)return null;var all;try{all=JSON.parse(localStora
 
 function render(){
   var all=WeCareLeads.load();
+  var qEl=document.getElementById("leadSearch"), qq=(qEl&&qEl.value||"").trim().toLowerCase();
+  var shown=qq?all.filter(function(l){return [l.name,l.phone,l.service,l.address,l.detail,l.when,l.source].join(" ").toLowerCase().indexOf(qq)>=0;}):all;
   var by={New:[],Contacted:[],Quoted:[],Won:[]};
-  all.forEach(function(l){(by[l.stage]||by.New).push(l)});
+  shown.forEach(function(l){(by[l.stage]||by.New).push(l)});
   ["New","Contacted","Quoted","Won"].forEach(function(s){
     var col=document.getElementById("col"+s);
-    col.innerHTML=by[s].length?by[s].map(leadCard).join(""):'<div class="empty">No '+s.toLowerCase()+' leads</div>';
+    col.innerHTML=by[s].length?by[s].map(leadCard).join(""):'<div class="empty">'+(qq?'No matches':'No '+s.toLowerCase()+' leads')+'</div>';
     document.getElementById("c"+s).textContent=by[s].length;
   });
-  // stats
-  var newCount=by.New.length, won=by.Won.length, total=all.length;
+  // stats (always on all leads, not the filtered view)
+  var newCount=all.filter(function(l){return l.stage==="New";}).length, won=all.filter(function(l){return l.stage==="Won";}).length, total=all.length;
   var pipeline=all.filter(function(l){return l.stage!=="Won"}).reduce(function(a,l){return a+(l.sqft?sodEstimate(l.sqft).total:0)},0);
   document.getElementById("stats").innerHTML=
     stat(total,"Total bookings","🌱 all-time")+
