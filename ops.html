@@ -276,21 +276,29 @@ function renderCosting(){
   var list=jobs.filter(function(j){return actual[j.id] || j.estHours;})
     .sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
   if(!list.length){ el.innerHTML='<div class="empty">No labor logged against jobs yet. Once the crew clocks into work orders, hours and costs show up here.</div>'; return; }
-  var totH=0, totC=0;
+  var totLab=0,totMat=0,totRev=0,totProfit=0,anyProfit=false;
   var rows=list.map(function(j){
-    var act=actual[j.id]||0, est=j.estHours||0; totH+=act; totC+=act*rate;
-    var cost=rate>0?('$'+(act*rate).toFixed(2)):'—';
-    var dv= est?(act-est):null;
-    var dvtxt = dv===null?'—':((dv>0?'+':'')+dv.toFixed(1)+'h');
-    var dvcol = dv===null?'var(--muted)':(dv>0.05?'var(--red)':(dv<-0.05?'var(--green)':'var(--muted)'));
+    var act=actual[j.id]||0, est=j.estHours||0, lab=act*rate; totLab+=lab;
+    var mat=(j.materials!=null?j.materials:""), price=(j.price!=null?j.price:"");
+    var matN=parseFloat(mat)||0, priceN=parseFloat(price)||0; totMat+=matN; totRev+=priceN;
+    var profit=priceN-lab-matN;
+    if(price!==""){ anyProfit=true; totProfit+=profit; }
+    var profTxt=price===""?'—':('$'+profit.toFixed(0));
+    var profCol=price===""?'var(--muted)':(profit>=0?'var(--green)':'var(--red)');
+    var inp='style="width:66px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;text-align:right;font:inherit"';
     return '<tr><td>'+esc(j.customer)+'<div class="mini">'+esc(j.service)+'</div></td>'+
-      '<td class="num">'+(est?est.toFixed(1):'—')+'</td>'+
-      '<td class="num">'+act.toFixed(1)+'</td>'+
-      '<td class="num" style="color:'+dvcol+'">'+dvtxt+'</td>'+
-      '<td class="num">'+cost+'</td></tr>';
+      '<td class="num">'+act.toFixed(1)+(est?'<span class="mini">/'+est.toFixed(1)+'</span>':'')+'</td>'+
+      '<td class="num">'+(rate>0?'$'+lab.toFixed(0):'—')+'</td>'+
+      '<td class="num"><input type="number" value="'+mat+'" placeholder="0" '+inp+' onchange="setJobCost(\''+j.id+'\',\'materials\',this.value)"></td>'+
+      '<td class="num"><input type="number" value="'+price+'" placeholder="0" '+inp+' onchange="setJobCost(\''+j.id+'\',\'price\',this.value)"></td>'+
+      '<td class="num" style="color:'+profCol+';font-weight:700">'+profTxt+'</td></tr>';
   }).join("");
-  var totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>Total</td><td class="num"></td><td class="num">'+totH.toFixed(1)+'</td><td class="num"></td><td class="num">'+(rate>0?'$'+totC.toFixed(2):'—')+'</td></tr>';
-  el.innerHTML='<table><tr><th>Job</th><th class="num">Est hrs</th><th class="num">Actual</th><th class="num">Δ vs est</th><th class="num">Labor $</th></tr>'+rows+totRow+'</table>';
+  var totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>Total</td><td class="num"></td><td class="num">'+(rate>0?'$'+totLab.toFixed(0):'—')+'</td><td class="num">$'+totMat.toFixed(0)+'</td><td class="num">$'+totRev.toFixed(0)+'</td><td class="num" style="color:'+(totProfit>=0?'var(--green)':'var(--red)')+'">'+(anyProfit?'$'+totProfit.toFixed(0):'—')+'</td></tr>';
+  el.innerHTML='<div style="overflow-x:auto"><table><tr><th>Job</th><th class="num">Hrs a/e</th><th class="num">Labor</th><th class="num">Mat’ls</th><th class="num">Charged</th><th class="num">Profit</th></tr>'+rows+totRow+'</table></div>';
+}
+function setJobCost(id,field,val){
+  var jobs=load(K_JOBS,[]),j=jobs.find(function(x){return x.id===id});
+  if(j){ j[field]=(val===""?null:parseFloat(val)); save(K_JOBS,jobs); renderCosting(); }
 }
 
 /* ---- SOP Library (management-editable; crew opens on the job) ---- */
