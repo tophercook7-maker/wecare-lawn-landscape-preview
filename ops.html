@@ -100,6 +100,12 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   </div>
 
   <div class="panel" style="margin-top:16px">
+    <h2>💵 Job costing <span class="mini" style="font-weight:400">— real labor hours per job, straight from the clock-ins</span></h2>
+    <p class="mini" style="margin-top:-2px">Blended labor rate $<input id="laborRate" type="number" min="0" step="1" placeholder="—" style="width:64px;padding:2px 6px;border:1px solid var(--line);border-radius:6px">/hr · set it to see cost; leave blank for hours only. (Add real per-person rates later.)</p>
+    <div id="costing"></div>
+  </div>
+
+  <div class="panel" style="margin-top:16px">
     <h2>📋 SOP Library <span class="mini" style="font-weight:400">— you write them, the crew opens them right on the job</span></h2>
     <div id="sopList"></div>
     <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">
@@ -248,6 +254,36 @@ function createWO(){
 }
 function resolveFix(id){var f=load(K_FIX,[]);var x=f.find(function(y){return y.id===id});if(x)x.resolved=true;save(K_FIX,f);render();}
 
+/* ---- Job costing: actual labor hours per job from the clock-ins ---- */
+function renderCosting(){
+  var el=document.getElementById("costing"); if(!el) return;
+  var jobs=load(K_JOBS,[]), punches=load(K_PUNCH,[]);
+  var rate=parseFloat(localStorage.getItem("wecare_labor_rate"))||0;
+  var actual={};   // jobId -> hours
+  punches.forEach(function(p){
+    if(!p.out) return; var h=(new Date(p.out).getTime()-new Date(p.in).getTime())/3600000;
+    if(h>0 && p.jobId) actual[p.jobId]=(actual[p.jobId]||0)+h;
+  });
+  var list=jobs.filter(function(j){return actual[j.id] || j.estHours;})
+    .sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
+  if(!list.length){ el.innerHTML='<div class="empty">No labor logged against jobs yet. Once the crew clocks into work orders, hours and costs show up here.</div>'; return; }
+  var totH=0, totC=0;
+  var rows=list.map(function(j){
+    var act=actual[j.id]||0, est=j.estHours||0; totH+=act; totC+=act*rate;
+    var cost=rate>0?('$'+(act*rate).toFixed(2)):'—';
+    var dv= est?(act-est):null;
+    var dvtxt = dv===null?'—':((dv>0?'+':'')+dv.toFixed(1)+'h');
+    var dvcol = dv===null?'var(--muted)':(dv>0.05?'var(--red)':(dv<-0.05?'var(--green)':'var(--muted)'));
+    return '<tr><td>'+esc(j.customer)+'<div class="mini">'+esc(j.service)+'</div></td>'+
+      '<td class="num">'+(est?est.toFixed(1):'—')+'</td>'+
+      '<td class="num">'+act.toFixed(1)+'</td>'+
+      '<td class="num" style="color:'+dvcol+'">'+dvtxt+'</td>'+
+      '<td class="num">'+cost+'</td></tr>';
+  }).join("");
+  var totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>Total</td><td class="num"></td><td class="num">'+totH.toFixed(1)+'</td><td class="num"></td><td class="num">'+(rate>0?'$'+totC.toFixed(2):'—')+'</td></tr>';
+  el.innerHTML='<table><tr><th>Job</th><th class="num">Est hrs</th><th class="num">Actual</th><th class="num">Δ vs est</th><th class="num">Labor $</th></tr>'+rows+totRow+'</table>';
+}
+
 /* ---- SOP Library (management-editable; crew opens on the job) ---- */
 function seedSOPs(){
   if(load(K_SOPS,null)!==null) return;  // only seed once
@@ -320,11 +356,15 @@ function exportCSV(){
 }
 document.getElementById("woCrew").innerHTML=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+c.name.split(" ")[0]+'</label>'}).join("");
 document.getElementById("otAfter").addEventListener("input",render);
-window.addEventListener("storage",function(){render();renderSOPs();});
-setInterval(render,5000);
+var _lr=document.getElementById("laborRate");
+_lr.value=localStorage.getItem("wecare_labor_rate")||"";
+_lr.addEventListener("input",function(){localStorage.setItem("wecare_labor_rate",_lr.value);renderCosting();});
+window.addEventListener("storage",function(){render();renderSOPs();renderCosting();});
+setInterval(function(){render();renderCosting();},5000);
 seedSOPs();
 render();
 renderSOPs();
+renderCosting();
 </script>
 </body>
 </html>
