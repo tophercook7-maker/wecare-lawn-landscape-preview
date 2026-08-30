@@ -104,6 +104,26 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   </div>
 
   <div class="panel" style="margin-top:16px">
+    <h2>🔁 Recurring maintenance <span class="mini" style="font-weight:400">— set it once, the work orders create themselves on schedule</span></h2>
+    <div id="recurList"></div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700;color:var(--green-deep);font-size:.9rem">➕ Add a recurring job</summary>
+      <div style="margin-top:10px;display:grid;gap:8px">
+        <input id="rcCust" placeholder="Customer name">
+        <input id="rcPhone" placeholder="Phone (optional)">
+        <select id="rcSvc"><option>Lawn maintenance</option><option>Landscape design/build</option><option>Concrete Artistry</option><option>Sod install</option><option>Drainage</option><option>Irrigation</option><option>Water feature</option><option>Hardscape/patio</option></select>
+        <input id="rcAddr" placeholder="Address">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="rcFreq" style="flex:1"><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every 4 weeks</option></select>
+          <select id="rcDow" style="flex:1"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select>
+        </div>
+        <div class="field" style="margin:0"><label>Assign crew</label><div class="chips" id="rcCrew"></div></div>
+        <input id="rcHrs" type="number" step="0.5" placeholder="Est. labor hours (e.g. 1.5)">
+        <button class="btn p" onclick="addRecurring()">Schedule it</button>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel" style="margin-top:16px">
     <h2>💵 Job costing <span class="mini" style="font-weight:400">— real labor hours per job, straight from the clock-ins</span></h2>
     <p class="mini" style="margin-top:-2px">Blended labor rate $<input id="laborRate" type="number" min="0" step="1" placeholder="—" style="width:64px;padding:2px 6px;border:1px solid var(--line);border-radius:6px">/hr · set it to see cost; leave blank for hours only. (Add real per-person rates later.)</p>
     <div id="costing"></div>
@@ -349,6 +369,67 @@ function exportOne(key,label){
   _dl("wecare-"+label+"-"+_today()+".csv", _toCSV(arr), "text/csv");
 }
 
+/* ---- Recurring maintenance: auto-generate work orders on schedule ---- */
+var K_RECUR="wecare_recurring";
+var DOWN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function ymd(d){return d.toISOString().slice(0,10);}
+function nextDOW(dow){var d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+((dow-d.getDay()+7)%7));return d;}
+function stepDays(f){return f==="biweekly"?14:f==="monthly"?28:7;}
+function freqLabel(f){return f==="biweekly"?"Every 2 weeks":f==="monthly"?"Every 4 weeks":"Every week";}
+function recurNextDue(s){
+  var anchor=s.anchor?new Date(s.anchor+"T12:00:00"):nextDOW(s.dow||1);
+  var step=stepDays(s.freq),today=new Date();today.setHours(0,0,0,0);
+  var d=new Date(anchor); while(d.getTime()<today.getTime()) d.setDate(d.getDate()+step);
+  return ymd(d);
+}
+function generateRecurring(){
+  var recur=load(K_RECUR,[]).filter(function(s){return s.active!==false;});
+  if(!recur.length) return;
+  var jobs=load(K_JOBS,[]),changed=false;
+  recur.forEach(function(s){
+    var d=recurNextDue(s);
+    if(!jobs.some(function(j){return j.recurId===s.id&&j.date===d;})){
+      jobs.push({id:"W"+Date.now().toString(36)+Math.floor(Math.random()*1000),customer:s.customer,phone:s.phone||"",service:s.service,address:s.address||"",scope:"Recurring "+(s.service||"maintenance").toLowerCase(),sop:(s.service||"")+" SOP",assignedTo:s.crew||[],date:d,status:"assigned",estHours:s.estHours||null,recurId:s.id});
+      changed=true;
+    }
+  });
+  if(changed) save(K_JOBS,jobs);
+}
+function renderRecur(){
+  var el=document.getElementById("recurList"); if(!el) return;
+  var recur=load(K_RECUR,[]);
+  if(!recur.length){ el.innerHTML='<div class="empty">No recurring jobs yet. Add one below — great for weekly/biweekly mowing.</div>'; return; }
+  el.innerHTML=recur.map(function(s){
+    var due=recurNextDue(s);
+    return '<div style="border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:8px'+(s.active===false?';opacity:.55':'')+'">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><b style="color:var(--green-ink)">'+esc(s.customer)+'</b>'+
+        '<span class="mini">'+freqLabel(s.freq)+' · '+DOWN[s.dow||1]+'</span></div>'+
+      '<div class="mini">'+esc(s.service)+(s.address?' · '+esc(s.address):'')+' · 👷 '+(s.crew||[]).map(nm).join(", ")+'</div>'+
+      '<div class="mini">Next: '+(s.active===false?'(paused)':new Date(due+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}))+'</div>'+
+      '<div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn" style="padding:4px 10px" onclick="toggleRecur(\''+s.id+'\')">'+(s.active===false?'▶ Resume':'⏸ Pause')+'</button>'+
+        '<button class="btn" style="padding:4px 10px" onclick="delRecur(\''+s.id+'\')">Delete</button>'+
+      '</div></div>';
+  }).join("");
+}
+function addRecurring(){
+  var cust=document.getElementById("rcCust").value.trim(); if(!cust){alert("Customer name?");return;}
+  var dow=parseInt(document.getElementById("rcDow").value,10)||1;
+  var crew=[].slice.call(document.querySelectorAll("#rcCrew input:checked")).map(function(i){return i.value;});
+  var recur=load(K_RECUR,[]);
+  recur.push({id:"R"+Date.now().toString(36),customer:cust,phone:document.getElementById("rcPhone").value.trim(),
+    service:document.getElementById("rcSvc").value,address:document.getElementById("rcAddr").value.trim(),
+    crew:crew,freq:document.getElementById("rcFreq").value,dow:dow,estHours:parseFloat(document.getElementById("rcHrs").value)||null,
+    anchor:ymd(nextDOW(dow)),active:true,created:new Date().toISOString()});
+  save(K_RECUR,recur);
+  ["rcCust","rcPhone","rcAddr","rcHrs"].forEach(function(i){document.getElementById(i).value="";});
+  document.querySelectorAll("#rcCrew input:checked").forEach(function(i){i.checked=false;});
+  generateRecurring(); renderRecur(); render();
+  alert("Recurring job set — first work order created for its next date.");
+}
+function toggleRecur(id){var r=load(K_RECUR,[]),x=r.find(function(y){return y.id===id;});if(x)x.active=x.active===false;save(K_RECUR,r);renderRecur();}
+function delRecur(id){if(!confirm("Delete this recurring schedule? (Existing work orders stay.)"))return;save(K_RECUR,load(K_RECUR,[]).filter(function(s){return s.id!==id;}));renderRecur();}
+
 /* ---- Case studies: finished job → portfolio piece ---- */
 var K_CASES="wecare_casestudies";
 function cityFromAddr(a){ if(!a)return ""; var p=a.split(","); return (p.length>1?p[p.length-1]:p[0]).trim(); }
@@ -455,18 +536,22 @@ function exportCSV(){
   var b=new Blob([rows.join("\n")],{type:"text/csv"}),u=URL.createObjectURL(b),a=document.createElement("a");
   a.href=u;a.download="wecare-payroll-week.csv";a.click();
 }
-document.getElementById("woCrew").innerHTML=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+c.name.split(" ")[0]+'</label>'}).join("");
+var crewChecks=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+c.name.split(" ")[0]+'</label>'}).join("");
+document.getElementById("woCrew").innerHTML=crewChecks;
+document.getElementById("rcCrew").innerHTML=crewChecks;
 document.getElementById("otAfter").addEventListener("input",render);
 var _lr=document.getElementById("laborRate");
 _lr.value=localStorage.getItem("wecare_labor_rate")||"";
 _lr.addEventListener("input",function(){localStorage.setItem("wecare_labor_rate",_lr.value);renderCosting();});
-window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();});
-setInterval(function(){render();renderCosting();renderCases();},5000);
+window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();renderRecur();});
+setInterval(function(){generateRecurring();render();renderCosting();renderCases();renderRecur();},5000);
 seedSOPs();
+generateRecurring();
 render();
 renderSOPs();
 renderCosting();
 renderCases();
+renderRecur();
 </script>
 </body>
 </html>
