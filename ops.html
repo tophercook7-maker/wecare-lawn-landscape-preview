@@ -110,6 +110,20 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   </div>
 
   <div class="panel" style="margin-top:16px">
+    <h2>📦 Your data <span class="mini" style="font-weight:400">— you own all of it, export anytime, no lock-in</span></h2>
+    <p class="mini" style="margin-top:-2px">Every lead, job, hour, booking, and estimate belongs to We Care. Download a full backup or any single list whenever you want.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn p" onclick="exportAllJSON()">⬇ Full backup (JSON)</button>
+      <button class="btn" onclick="exportOne('wecare_leads','leads')">Leads</button>
+      <button class="btn" onclick="exportOne('wecare_workorders','work-orders')">Work orders</button>
+      <button class="btn" onclick="exportOne('wecare_punches','time-clock')">Time clock</button>
+      <button class="btn" onclick="exportOne('wecare_consults','consultations')">Consultations</button>
+      <button class="btn" onclick="exportOne('wecare_estimates','estimates')">Estimates</button>
+      <button class="btn" onclick="exportOne('wecare_sops','sops')">SOPs</button>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:16px">
     <h2>📋 SOP Library <span class="mini" style="font-weight:400">— you write them, the crew opens them right on the job</span></h2>
     <div id="sopList"></div>
     <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">
@@ -303,6 +317,29 @@ function renderCosting(){
 function setJobCost(id,field,val){
   var jobs=load(K_JOBS,[]),j=jobs.find(function(x){return x.id===id});
   if(j){ j[field]=(val===""?null:parseFloat(val)); save(K_JOBS,jobs); renderCosting(); }
+}
+
+/* ---- Data export: Derrick owns everything, no lock-in (§25) ---- */
+var EXPORT_KEYS=["wecare_leads","wecare_workorders","wecare_punches","wecare_punch_fixes","wecare_consults","wecare_estimates","wecare_sops","wecare_convos"];
+function _dl(name,content,mime){var b=new Blob([content],{type:mime||"text/plain"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(u);},120);}
+function _today(){return new Date().toISOString().slice(0,10);}
+function exportAllJSON(){
+  var out={business:"We Care",exported:new Date().toISOString()};
+  EXPORT_KEYS.forEach(function(k){ try{out[k]=JSON.parse(localStorage.getItem(k))||null;}catch(e){out[k]=null;} });
+  _dl("wecare-backup-"+_today()+".json", JSON.stringify(out,null,2), "application/json");
+}
+function _toCSV(arr){
+  if(!arr||!arr.length) return "";
+  var cols={}; arr.forEach(function(o){Object.keys(o||{}).forEach(function(k){cols[k]=1;});});
+  var keys=Object.keys(cols);
+  var cell=function(v){ if(v==null)return ""; if(typeof v==="object")v=JSON.stringify(v); v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  return keys.join(",")+"\n"+arr.map(function(o){return keys.map(function(k){return cell(o?o[k]:"");}).join(",");}).join("\n");
+}
+function exportOne(key,label){
+  var raw; try{raw=JSON.parse(localStorage.getItem(key));}catch(e){raw=null;}
+  var arr=Array.isArray(raw)?raw:(raw?Object.keys(raw).map(function(id){return raw[id];}):[]);
+  if(!arr.length){alert("No "+label.replace(/-/g," ")+" to export yet.");return;}
+  _dl("wecare-"+label+"-"+_today()+".csv", _toCSV(arr), "text/csv");
 }
 
 /* ---- SOP Library (management-editable; crew opens on the job) ---- */
