@@ -147,7 +147,8 @@ function render(){
   document.getElementById("orders").innerHTML = td.length ? td.map(function(j){
     return '<div class="wo"><div class="h"><span class="cust">'+esc(j.customer)+'</span><span class="pill st-'+(j.status||'assigned')+'">'+(j.status||'assigned')+'</span></div>'+
       '<div class="mini">'+esc(j.service)+' · '+esc(j.address)+'</div>'+
-      '<div class="crew">👷 '+(j.assignedTo||[]).map(nm).join(", ")+(j.estHours?' · est '+j.estHours+'h':'')+'</div></div>';
+      '<div class="crew">👷 '+(j.assignedTo||[]).map(nm).join(", ")+(j.estHours?' · est '+j.estHours+'h':'')+'</div>'+
+      reviewControls(j)+'</div>';
   }).join("") : '<div class="empty">No work orders today. Create one →</div>';
 
   // fixes
@@ -165,6 +166,22 @@ function render(){
 }
 function stat(n,l){return '<div class="stat"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>'}
 
+function reviewControls(j){
+  if((j.status||"")!=="done") return "";   // only completed jobs
+  var bar='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">';
+  if(!j.paid){
+    return bar+'<button class="btn" onclick="markPaid(\''+j.id+'\')">💵 Mark paid → request review</button></div>';
+  }
+  var rs=j.reviewStatus||"requested";
+  if(rs==="hold") return bar+'<span class="pill" style="background:rgba(193,81,47,.14);color:var(--red)">⏸ Review on hold (issue)</span> <button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'requested\')">▶ Release request</button></div>';
+  if(rs==="done") return bar+'<span class="pill st-done">⭐ Reviewed ✓</span></div>';
+  // requested
+  return bar+'<span class="pill st-started">⭐ Review requested</span> '+
+    '<button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'hold\')">⏸ Hold (issue)</button> '+
+    '<button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'done\')">✓ Got the review</button></div>';
+}
+function markPaid(id){var j=load(K_JOBS,[]);var x=j.find(function(y){return y.id===id});if(x){x.paid=true;x.reviewStatus="requested";}save(K_JOBS,j);render();}
+function setReview(id,st){var j=load(K_JOBS,[]);var x=j.find(function(y){return y.id===id});if(x)x.reviewStatus=st;save(K_JOBS,j);render();}
 function createWO(){
   var cust=document.getElementById("woCust").value.trim(); if(!cust){alert("Customer name?");return;}
   var crew=[].slice.call(document.querySelectorAll("#woCrew input:checked")).map(function(i){return i.value});
