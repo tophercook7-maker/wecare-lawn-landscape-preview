@@ -14,7 +14,7 @@ var BIZ = {
   name:"We Care",
   phone:"501-627-4384", phoneRaw:"5016274384",   // ⚠️ confirm Sage's texting #
   since:1998, area:"Hot Springs & Central Arkansas",
-  farm:"Plainview, AR",       // sod delivery origin (59 Hwy 314) — confirm
+  farm:"27 Crain Lane, Plainview, AR",   // sod delivery origin (Derrick 08-29)
   // Primary service area + luxury travel area (Sage never auto-rejects out of area)
   primaryTowns:["Hot Springs","Hot Springs Village"],
   luxuryTowns:["Russellville","Conway","Little Rock","Benton","Bryant"]
@@ -23,7 +23,7 @@ var BIZ = {
 var SOD = {
   sqftPerPallet:450,          // industry standard; confirm with Derrick
   pricePerPallet:250,         // $ per pallet, before tax
-  taxRate:0.095,              // ⚠️ placeholder AR rate — confirm exact
+  taxRate:null,               // Derrick: NO flat rate — AR tax calc by delivery address (state+county+city). Address-based lookup wired in Phase 3.
   baseDelivery:300,           // flat delivery for within-radius, up to pallet limit
   freeRadiusMiles:30,         // base delivery covers this radius from the farm
   perMileBeyond:4,            // $ per additional one-way mile beyond the radius
@@ -78,7 +78,7 @@ function sodEstimate(sqft, milesFromFarm){
   sqft=Math.max(0,Math.round(sqft));
   var pallets=Math.ceil(sqft/SOD.sqftPerPallet) || 0;
   var material=pallets*SOD.pricePerPallet;
-  var tax=material*SOD.taxRate;
+  var tax=(SOD.taxRate==null)?null:material*SOD.taxRate;   // null = calc by delivery address
   // delivery: base within radius; +$/mi beyond (only if we know the distance)
   var extraMiles = (milesFromFarm!=null && milesFromFarm>SOD.freeRadiusMiles)
         ? (milesFromFarm - SOD.freeRadiusMiles) : 0;
@@ -87,7 +87,7 @@ function sodEstimate(sqft, milesFromFarm){
   return {
     sqft:sqft, pallets:pallets, coverage:pallets*SOD.sqftPerPallet,
     material:material, tax:tax, delivery:delivery,
-    total:material+tax+delivery, escalate:escalate,
+    total:material+(tax||0)+delivery, escalate:escalate,
     beyondRadius:(milesFromFarm!=null && milesFromFarm>SOD.freeRadiusMiles)
   };
 }
@@ -115,10 +115,10 @@ function initPageCalc(){
       '<div class="big">'+e.pallets+' pallet'+(e.pallets>1?'s':'')+' of sod</div>'+
       '<p style="margin:.3rem 0 1rem;color:var(--muted)">covers ~'+e.coverage.toLocaleString()+' sq ft ('+e.sqft.toLocaleString()+' sq ft needed)</p>'+
       '<div class="rowline"><span>Sod material ('+e.pallets+' × '+money(SOD.pricePerPallet)+'/pallet)</span><b>'+money(e.material)+'</b></div>'+
-      '<div class="rowline"><span>Tax</span><b>'+money(e.tax)+'</b></div>'+
+      '<div class="rowline"><span>AR sales tax</span><b>calculated by delivery address</b></div>'+
       '<div class="rowline"><span>Delivery (within '+SOD.freeRadiusMiles+' mi of the farm)</span><b>'+money(e.delivery)+'</b></div>'+
-      '<div class="rowline"><span>Estimated total</span><b style="color:var(--green-deep)">'+money(e.total)+'</b></div>'+
-      '<p style="font-size:.8rem;color:var(--muted);margin:.8rem 0 0">Estimate for sod material + delivery. Beyond '+SOD.freeRadiusMiles+' mi adds '+money(SOD.perMileBeyond)+'/mile — confirmed by your address. Installation is quoted separately.</p>'+
+      '<div class="rowline"><span>Subtotal (before tax)</span><b style="color:var(--green-deep)">'+money(e.total)+'</b></div>'+
+      '<p style="font-size:.8rem;color:var(--muted);margin:.8rem 0 0">Estimate for sod material + delivery. AR sales tax is added based on your delivery address. Beyond '+SOD.freeRadiusMiles+' mi adds '+money(SOD.perMileBeyond)+'/mile. Installation quoted separately.</p>'+
       '<button class="btn btn-leaf btn-sm" style="margin-top:12px" onclick="Sage.openWith(\'sod order '+e.sqft+'\')">Request this sod order →</button>';
   }
   form.addEventListener("input",calc);
