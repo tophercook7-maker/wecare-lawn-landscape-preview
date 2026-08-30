@@ -216,7 +216,7 @@ function render(){
       '<div class="mini">'+esc(j.service)+' · '+esc(j.address)+'</div>'+
       '<div class="crew">👷 '+(j.assignedTo||[]).map(nm).join(", ")+(j.estHours?' · est '+j.estHours+'h':'')+'</div>'+
       ((j.photos&&j.photos.length)?'<div class="wophotos">'+j.photos.map(function(u){return '<a href="'+u+'" target="_blank"><img src="'+u+'" loading="lazy" alt="job photo"></a>';}).join("")+'</div>':'')+
-      (j.status==="done"?'<button class="btn" style="margin-top:8px;padding:5px 10px" onclick="makeCaseStudy(\''+j.id+'\')">★ Make case study</button>':'')+
+      (j.status==="done"?'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" style="padding:5px 10px" onclick="makeCaseStudy(\''+j.id+'\')">★ Make case study</button><a class="btn" style="padding:5px 10px" href="invoice.html?job='+j.id+'" target="_blank">🧾 Invoice</a></div>':'')+
       reviewControls(j)+'</div>';
   }).join("") : '<div class="empty">No work orders today. Create one →</div>';
 

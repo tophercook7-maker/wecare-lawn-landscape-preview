@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>We Care — Invoice</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--green-ink:#153a2a;--green-deep:#1f5d3d;--teal-deep:#2b6b78;--ink:#16302a;--body:#33443f;--muted:#6d7d77;--line:#e2ddd0;--paper:#f3f2ec;--surface:#fff;--ff-d:"Fraunces",Georgia,serif;--ff:"Figtree",-apple-system,sans-serif;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--body);font-family:var(--ff);line-height:1.5}
+.bar{max-width:720px;margin:0 auto;padding:14px 20px;display:flex;gap:10px;justify-content:flex-end}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:9px 15px;font-weight:700;font-size:.9rem;cursor:pointer;color:var(--green-deep)}
+.btn.p{background:var(--green-deep);color:#fff;border-color:var(--green-deep)}
+.inv{max-width:720px;margin:0 auto 40px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:38px 40px;box-shadow:0 6px 24px rgba(20,48,42,.08)}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;border-bottom:2px solid var(--green-deep);padding-bottom:18px}
+.head img{height:56px}
+.head .co b{font-family:var(--ff-d);color:var(--green-ink);font-size:1.4rem;display:block}
+.head .co span{font-size:.85rem;color:var(--muted)}
+.head .inv-meta{text-align:right}
+.head .inv-meta .t{font-family:var(--ff-d);font-size:1.6rem;color:var(--green-deep);letter-spacing:.05em}
+.head .inv-meta .m{font-size:.85rem;color:var(--muted)}
+.to{margin:22px 0}
+.to .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.to .nm{font-size:1.1rem;color:var(--ink);font-weight:700;margin-top:2px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 6px}
+td{padding:12px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+td.amt,th.amt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.amt input{width:120px;text-align:right;font:inherit;border:1px dashed var(--line);border-radius:6px;padding:6px 8px}
+.total{display:flex;justify-content:flex-end;gap:30px;margin-top:16px;font-family:var(--ff-d);font-size:1.5rem;color:var(--green-deep)}
+.pay{margin-top:26px;background:#f6f4ec;border-radius:10px;padding:14px 16px;font-size:.9rem}
+.pay b{color:var(--green-ink)}
+.foot{text-align:center;color:var(--muted);font-size:.82rem;margin-top:24px}
+.miss{max-width:720px;margin:60px auto;text-align:center;color:var(--muted)}
+@media print{.bar{display:none}body{background:#fff}.inv{border:0;box-shadow:none;margin:0;border-radius:0}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <button class="btn" onclick="history.length>1?history.back():location.href='ops.html'">← Back</button>
+  <button class="btn p" onclick="window.print()">🖨 Print / Save PDF</button>
+</div>
+<div id="inv"></div>
+
+<script src="js/wecare-cloud.js?v=0830"></script>
+<script>
+function q(k){return new URLSearchParams(location.search).get(k);}
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
+function money(n){return "$"+Number(n||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]});}
+var jobId=q("job"), rendered=false;
+function invNo(id){return "WC-"+String(id||"").replace(/[^A-Za-z0-9]/g,"").slice(-6).toUpperCase();}
+function render(){
+  var job=load("wecare_workorders",[]).find(function(j){return j.id===jobId;});
+  var box=document.getElementById("inv");
+  if(!job){ if(!rendered) box.innerHTML='<div class="miss">Loading invoice… if this doesn\'t load, open it from a work order in Field Ops.</div>'; return; }
+  rendered=true;
+  var price=(job.price!=null?job.price:"");
+  var dateStr=new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"});
+  box.innerHTML=
+    '<div class="inv">'+
+      '<div class="head">'+
+        '<div class="co"><img src="img/logo.png" alt="We Care"><b>We Care</b><span>Hot Springs &amp; Central Arkansas<br>(501) 627-4384 · wecarelandscapes.expert</span></div>'+
+        '<div class="inv-meta"><div class="t">INVOICE</div><div class="m">No. '+invNo(job.id)+'<br>'+dateStr+'</div></div>'+
+      '</div>'+
+      '<div class="to"><div class="lbl">Bill to</div><div class="nm">'+esc(job.customer||"Customer")+'</div>'+
+        '<div class="m" style="color:var(--muted);font-size:.9rem">'+(job.address?esc(job.address)+'<br>':'')+(job.phone?esc(job.phone):'')+'</div></div>'+
+      '<table><tr><th>Description</th><th class="amt">Amount</th></tr>'+
+        '<tr><td><b>'+esc(job.service||"Service")+'</b>'+(job.scope?'<div style="color:var(--muted);font-size:.9rem;margin-top:3px">'+esc(job.scope)+'</div>':'')+'</td>'+
+        '<td class="amt"><input id="amt" type="number" step="0.01" value="'+price+'" placeholder="0.00" oninput="setTotal()"></td></tr>'+
+      '</table>'+
+      '<div class="total">Total <span id="total">'+money(price||0)+'</span></div>'+
+      '<div class="pay"><b>Payment:</b> We accept Cash, Check, Venmo, and CashApp. Card payments available online — just ask. <br>Thank you for your business!</div>'+
+      '<div class="foot">We Care · family-run since 1998 · (501) 627-4384</div>'+
+    '</div>';
+}
+function setTotal(){var v=parseFloat(document.getElementById("amt").value)||0;document.getElementById("total").textContent=money(v);}
+window.addEventListener("storage",render);
+setInterval(function(){if(!rendered)render();},2000);
+render();
+</script>
+</body>
+</html>
