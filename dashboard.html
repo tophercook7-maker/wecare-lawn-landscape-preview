@@ -100,6 +100,22 @@
     <div id="followups"></div>
   </div>
 
+  <div class="panel">
+    <h3 style="margin-top:0;font-family:var(--serif);color:var(--green-ink)">📅 Consultations <span id="conCount" style="background:var(--teal);color:#fff;border-radius:999px;padding:1px 9px;font-size:.75rem;vertical-align:middle;display:none">0</span></h3>
+    <p class="mini" style="margin-top:-6px">Booked from the website's “Book a consultation” page and from you. New requests need a quick confirm.</p>
+    <div id="consults"></div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700;color:var(--green-deep);font-size:.9rem">➕ Add a consultation</summary>
+      <div style="margin-top:10px;display:grid;gap:8px">
+        <input id="conName" placeholder="Customer name">
+        <input id="conPhone" placeholder="Phone">
+        <select id="conSvc"><option value="">Service…</option><option>Landscape design &amp; build</option><option>Carved concrete artistry</option><option>Hardscape / patio</option><option>Pondless water feature</option><option>Drainage &amp; erosion</option><option>Irrigation</option><option>Sod</option><option>Lawn &amp; property maintenance</option><option>Something else</option></select>
+        <div style="display:flex;gap:8px"><input id="conDate" type="date" style="flex:1"><input id="conTime" type="time" style="flex:1"></div>
+        <input id="conNotes" placeholder="Notes (optional)">
+        <button class="btn btn-primary btn-sm" onclick="addConsult()">Schedule it</button>
+      </div>
+    </details>
+  </div>
+
 </div>
 
 <style>
@@ -199,6 +215,7 @@ function render(){
     stat(money(pipeline),"Sod pipeline","est. open value");
   document.getElementById("updated").textContent="Updated "+new Date().toLocaleTimeString();
   renderFollowups(all);
+  renderConsults();
 }
 function stat(n,l,sub){return '<div class="stat"><div class="n">'+n+'</div><div class="l">'+l+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'}
 
@@ -265,6 +282,54 @@ function stopFollowups(id){
 function copyFu(id){var t=document.getElementById("fu-"+id).textContent;
   navigator.clipboard&&navigator.clipboard.writeText(t);
   event.target.textContent="✓ Copied";setTimeout(function(){event.target.textContent="📋 Copy"},1500);}
+
+/* ---- Consultations scheduler ---- */
+var CON_KEY="wecare_consults";
+function conLoad(){try{return JSON.parse(localStorage.getItem(CON_KEY))||[]}catch(e){return []}}
+function conSave(a){try{localStorage.setItem(CON_KEY,JSON.stringify(a))}catch(e){}}
+function fmtConDate(d){ if(!d)return "No date"; try{return new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}catch(e){return d;} }
+function fmtConTime(t){ if(!t)return ""; var p=t.split(":"),h=+p[0],m=p[1]; var ap=h>=12?"PM":"AM"; h=h%12||12; return h+":"+m+" "+ap; }
+var CON_PILL={requested:["#b5751f","New — confirm"],confirmed:["#2f8055","Confirmed"],completed:["#6d7d77","Completed"],canceled:["#c1512f","Canceled"]};
+function renderConsults(){
+  var box=document.getElementById("consults"), badge=document.getElementById("conCount");
+  var today=new Date().toISOString().slice(0,10);
+  var all=conLoad();
+  var up=all.filter(function(c){return c.status!=="completed"&&c.status!=="canceled"&&(!c.date||c.date>=today);})
+    .sort(function(a,b){return (a.date+a.time).localeCompare(b.date+b.time);});
+  var reqs=all.filter(function(c){return c.status==="requested";}).length;
+  if(badge){badge.textContent=reqs;badge.style.display=reqs?"":"none";}
+  if(!up.length){ box.innerHTML='<p class="mini">No upcoming consultations. New website bookings will land here.</p>'; return; }
+  box.innerHTML=up.map(function(c){
+    var pill=CON_PILL[c.status]||CON_PILL.requested;
+    var ph=(c.phone||"").replace(/[^\d]/g,"");
+    return '<div class="fu" style="background:#fff">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline">'+
+        '<b style="color:var(--green-ink)">'+fmtConDate(c.date)+(c.time?' · '+fmtConTime(c.time):'')+'</b>'+
+        '<span style="font-weight:700;font-size:.72rem;border-radius:999px;padding:1px 9px;background:'+pill[0]+'22;color:'+pill[0]+'">'+pill[1]+'</span></div>'+
+      '<div style="margin-top:4px">'+esc(c.name||"Customer")+(c.phone?' · <a href="tel:'+ph+'">'+esc(c.phone)+'</a>':'')+'</div>'+
+      '<div class="mini">'+esc(c.service||"Consultation")+(c.address?' · '+esc(c.address):'')+(c.source?' · '+esc(c.source):'')+'</div>'+
+      (c.notes?'<div class="mini" style="margin-top:3px">📝 '+esc(c.notes)+'</div>':'')+
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+        (c.status==="requested"?'<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'confirmed\')">✓ Confirm</button>':'')+
+        '<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'completed\')">✓ Done</button>'+
+        '<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'canceled\')">Cancel</button>'+
+      '</div></div>';
+  }).join("");
+}
+function conStatus(id,st){ var a=conLoad(),c=a.find(function(x){return x.id===id}); if(c)c.status=st; conSave(a); renderConsults(); }
+function addConsult(){
+  var nm=document.getElementById("conName").value.trim();
+  var date=document.getElementById("conDate").value;
+  if(!nm){alert("Customer name?");return;}
+  if(!date){alert("Pick a date.");return;}
+  var a=conLoad();
+  a.push({id:"C"+Date.now().toString(36),name:nm,phone:document.getElementById("conPhone").value.trim(),email:"",
+    service:document.getElementById("conSvc").value,address:"",date:date,time:document.getElementById("conTime").value,
+    notes:document.getElementById("conNotes").value.trim(),status:"confirmed",source:"Added by office",leadId:"",created:new Date().toISOString()});
+  conSave(a);
+  ["conName","conPhone","conNotes","conTime"].forEach(function(i){document.getElementById(i).value="";});
+  renderConsults();
+}
 
 function seedDemo(){
   var now=Date.now();
@@ -350,7 +415,7 @@ function pingCheck(){
   if(news>_prevCount){ try{new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=").play();}catch(e){} }
   _prevCount=news;
 }
-window.addEventListener("storage",function(e){ if(e.key===WeCareConvos.KEY){renderLive();pingCheck();} });
+window.addEventListener("storage",function(e){ if(e.key===WeCareConvos.KEY){renderLive();pingCheck();} else {render();} });
 setInterval(function(){renderLive();pingCheck();},1500);
 
 // auto-seed if empty so the pitch looks alive; refresh when returning to tab
