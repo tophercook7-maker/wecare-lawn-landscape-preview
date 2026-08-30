@@ -305,6 +305,26 @@ var Sage=(function(){
     if(e.escalate) return sq+" sq ft = "+e.pallets+" pallets (OVER the 8-pallet limit → do NOT quote a total; say Derrick will set up a custom delivery quote).";
     return sq+" sq ft = "+e.pallets+" pallet(s): material "+money(e.material)+" + delivery "+money(e.delivery)+" (within 30mi) + AR sales tax by delivery address. Material+delivery only; installation quoted separately.";
   }
+  var _booked=false;
+  function maybeBook(reply){
+    // Sage emits [[BOOK]]{json} when it has booked a consultation. Create it, strip the marker.
+    var m=reply.match(/\[\[BOOK\]\]\s*(\{[\s\S]*?\})/);
+    if(!m) return reply;
+    var clean=reply.replace(m[0],"").trim();
+    if(_booked) return clean;                     // one booking per chat
+    try{
+      var o=JSON.parse(m[1]);
+      if(o && (o.name||o.phone)){
+        var rec={id:"C"+Date.now().toString(36),name:o.name||"",phone:o.phone||"",email:o.email||"",
+          service:o.service||"",address:o.address||"",date:o.date||"",time:o.time||"",
+          notes:o.notes||"",status:"requested",source:"Sage (AI chat)",leadId:"",created:new Date().toISOString()};
+        var key="wecare_consults", all; try{all=JSON.parse(localStorage.getItem(key))||[]}catch(e){all=[]}
+        all.push(rec); localStorage.setItem(key,JSON.stringify(all));
+        _booked=true;
+      }
+    }catch(e){}
+    return clean;
+  }
   function answer(t){
     if(isHuman()) return;                        // Derrick took over → Sage stays quiet
     llmHist.push({role:"user",content:t});
@@ -316,6 +336,7 @@ var Sage=(function(){
         stopTyping();
         var reply=(d&&d.reply)?d.reply:"";
         if(!reply) reply="I want to make sure I get this right for you — the best next step is a quick word with Derrick. What's a good name and number, and I'll have him reach out? Or call us at "+BIZ.phone+".";
+        reply=maybeBook(reply);                    // handle any consultation booking, strip marker
         llmHist.push({role:"assistant",content:reply});
         var b=el("ai-msg bot", escapeHtml(reply).replace(/\n/g,"<br>"));
         msgs.appendChild(b); scroll(); logTurn("sage",reply);
