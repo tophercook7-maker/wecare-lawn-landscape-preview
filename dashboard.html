@@ -43,6 +43,7 @@
   .ai-note .ic{font-size:1.5rem}
   .followups .fu{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;background:var(--sand)}
   .followups .fu .to{font-weight:700;color:var(--green-deep);font-size:.9rem}
+  .followups .fu .fu-tag{display:inline-block;font-weight:700;font-size:.72rem;background:rgba(232,81,79,.14);color:#c1512f;border-radius:999px;padding:1px 9px;margin-left:4px;vertical-align:middle}
   .followups .fu .msg{font-size:.9rem;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:8px;font-style:italic}
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
   .toolbar .spacer{flex:1}
@@ -94,8 +95,8 @@
   </div>
 
   <div class="panel followups">
-    <h3 style="margin-top:0;font-family:var(--serif);color:var(--green-ink)">✉️ AI-drafted follow-ups</h3>
-    <p class="mini" style="margin-top:-6px">Sage writes these automatically for your newest leads. Tap to copy, then send by text or email.</p>
+    <h3 style="margin-top:0;font-family:var(--serif);color:var(--green-ink)">🔔 Follow-ups due <span id="fuCount" style="background:#e8514f;color:#fff;border-radius:999px;padding:1px 9px;font-size:.75rem;vertical-align:middle;display:none">0</span></h3>
+    <p class="mini" style="margin-top:-6px">Automatic cadence: 1 day → 3 days → 7 days → 14 days, then it stops. Sage drafts each message — copy &amp; send, then tap “Logged it” to advance.</p>
     <div id="followups"></div>
   </div>
 
@@ -201,24 +202,69 @@ function render(){
 }
 function stat(n,l,sub){return '<div class="stat"><div class="n">'+n+'</div><div class="l">'+l+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'}
 
+/* ---- Follow-up cadence engine: 1d → 3d → 7d → 14d, then stop ---- */
+var FU_INTERVALS=[1,3,7,14];                                   // days after the prior touch
+var FU_LABELS=["1st follow-up","2nd follow-up","3rd follow-up","final follow-up"];
+function fuState(l){
+  if(l.stage==="Won"||l.fuStop) return {done:true};
+  var touches=l.touches||[];
+  if(touches.length>=FU_INTERVALS.length) return {done:true,exhausted:true};
+  var base=touches.length?new Date(touches[touches.length-1]).getTime():new Date(l.created).getTime();
+  var due=base+FU_INTERVALS[touches.length]*86400000;
+  return {done:false,step:touches.length,due:due,overdue:Date.now()-due};
+}
+function overdueText(ms){
+  if(ms<0){var d=Math.ceil(-ms/86400000);var h=Math.ceil(-ms/3600000);return "due in "+(-ms<86400000?h+"h":d+"d");}
+  var d=Math.floor(ms/86400000),h=Math.floor(ms/3600000);
+  if(ms<3600000) return "due now"; if(ms<86400000) return h+"h overdue"; return d+"d overdue";
+}
+function fuMsg(l,step){
+  var fn=(l.name||"there").split(" ")[0];
+  var svc=(l.service||"project").toLowerCase();
+  var tail=" — We Care · 501-627-4384";
+  var sod=l.sqft?sodEstimate(l.sqft):null;
+  if(step===0){
+    if(sod) return "Hi "+fn+", it's Derrick with We Care — thanks for your sod request! For ~"+l.sqft.toLocaleString()+" sq ft that's about "+sod.pallets+" pallet"+(sod.pallets>1?"s":"")+" (~"+money(sod.total)+" delivered). When would you like it?"+tail;
+    return "Hi "+fn+", it's Derrick with We Care following up on your "+svc+" request"+(l.address?" at "+l.address:"")+". I'd love to get you on the schedule — what day works best?"+tail;
+  }
+  if(step===1) return "Hi "+fn+", just circling back on your "+svc+" — happy to answer any questions or set up a quick look. Still interested?"+tail;
+  if(step===2) return "Hi "+fn+", I don't want to be a pest — just making sure you got my notes on your "+svc+". If the timing's better down the road, no problem at all — just say the word."+tail;
+  return "Hi "+fn+", I'll close this out on my end for now so I'm not filling your inbox — but the door's always open. Whenever you're ready for your "+svc+", we'd be glad to help."+tail;
+}
 function renderFollowups(all){
-  var news=all.filter(function(l){return l.stage==="New"}).slice(0,3);
-  var box=document.getElementById("followups");
-  if(!news.length){box.innerHTML='<p class="mini">No pending follow-ups — you\'re all caught up. 🎉</p>';return;}
-  box.innerHTML=news.map(function(l){
-    var fn=(l.name||"there").split(" ")[0];
-    var msg;
-    if(l.sqft){var e=sodEstimate(l.sqft);
-      msg="Hi "+fn+", it's We Care Lawn & Landscape. Thanks for your sod request! For ~"+l.sqft.toLocaleString()+" sq ft you're looking at about "+e.pallets+" pallet"+(e.pallets>1?"s":"")+" (~"+money(e.total)+" delivered). When works for delivery? — 501-627-4384";}
-    else{msg="Hi "+fn+", it's We Care Lawn & Landscape following up on your "+(l.service||"service").toLowerCase()+" request"+(l.address?" at "+l.address:"")+". We'd love to get you scheduled — what day works best? — 501-627-4384";}
-    return '<div class="fu"><div class="to">To '+esc(l.name||"lead")+(l.phone?' · '+esc(l.phone):'')+'</div>'+
+  var box=document.getElementById("followups"), badge=document.getElementById("fuCount");
+  var due=[], upcoming=0;
+  all.forEach(function(l){ var s=fuState(l); if(s.done)return; if(s.overdue>=0) due.push({l:l,s:s}); else upcoming++; });
+  due.sort(function(a,b){return b.s.overdue-a.s.overdue;});
+  if(badge){ badge.textContent=due.length; badge.style.display=due.length?"":"none"; }
+  if(!due.length){
+    box.innerHTML='<p class="mini">You\'re all caught up — no follow-ups due. 🎉'+(upcoming?' '+upcoming+' lead'+(upcoming>1?'s':'')+' on the follow-up schedule.':'')+'</p>';
+    return;
+  }
+  box.innerHTML=due.map(function(x){
+    var l=x.l, step=x.s.step, msg=fuMsg(l,step);
+    return '<div class="fu"><div class="to">To '+esc(l.name||"lead")+(l.phone?' · '+esc(l.phone):'')+
+        ' <span class="fu-tag">'+FU_LABELS[step]+' · '+overdueText(x.s.overdue)+'</span></div>'+
       '<div class="msg" id="fu-'+l.id+'">'+esc(msg)+'</div>'+
-      '<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="copyFu(\''+l.id+'\')">📋 Copy message</button></div>';
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn btn-outline btn-sm" onclick="copyFu(\''+l.id+'\')">📋 Copy</button>'+
+        '<button class="btn btn-outline btn-sm" onclick="logFollowup(\''+l.id+'\')">✓ Logged it</button>'+
+        '<button class="btn btn-outline btn-sm" onclick="setStage(\''+l.id+'\',\'Won\')">🏆 Won</button>'+
+        '<button class="btn btn-outline btn-sm" onclick="stopFollowups(\''+l.id+'\')">Stop</button>'+
+      '</div></div>';
   }).join("");
+}
+function logFollowup(id){
+  var all=WeCareLeads.load(), l=all.find(function(x){return x.id===id});
+  if(l){ l.touches=(l.touches||[]).concat([new Date().toISOString()]); localStorage.setItem(WeCareLeads.KEY,JSON.stringify(all)); render(); }
+}
+function stopFollowups(id){
+  var all=WeCareLeads.load(), l=all.find(function(x){return x.id===id});
+  if(l){ l.fuStop=true; localStorage.setItem(WeCareLeads.KEY,JSON.stringify(all)); render(); }
 }
 function copyFu(id){var t=document.getElementById("fu-"+id).textContent;
   navigator.clipboard&&navigator.clipboard.writeText(t);
-  event.target.textContent="✓ Copied";setTimeout(function(){event.target.textContent="📋 Copy message"},1500);}
+  event.target.textContent="✓ Copied";setTimeout(function(){event.target.textContent="📋 Copy"},1500);}
 
 function seedDemo(){
   var now=Date.now();
