@@ -326,10 +326,11 @@ function renderConsults(){
       '</div></div>';
   }).join("");
 }
+function statusUrl(c){return location.origin+"/status.html?c="+c.id;}
 function conConfirmMsg(c){
   var fn=(c.name||"there").split(" ")[0];
   var when=c.date?new Date(c.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}):"your consultation";
-  return "Hi "+fn+", it's Derrick with We Care — confirming your consultation for "+when+(c.time?" at "+fmtConTime(c.time):"")+". Looking forward to it! Reply here or call 501-627-4384 if anything changes.";
+  return "Hi "+fn+", it's Derrick with We Care — confirming your consultation for "+when+(c.time?" at "+fmtConTime(c.time):"")+". Looking forward to it! Track it here: "+statusUrl(c)+" — or call 501-627-4384 if anything changes.";
 }
 function conStatus(id,st){ var a=conLoad(),c=a.find(function(x){return x.id===id}); if(c)c.status=st; conSave(a); renderConsults(); }
 function addConsult(){
