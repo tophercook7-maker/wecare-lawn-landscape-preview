@@ -1,0 +1,14 @@
+{
+  "name": "We Care — Owner",
+  "short_name": "We Care Owner",
+  "description": "We Care owner tools — dashboard, field ops, leads, and the weekly pulse.",
+  "start_url": "pulse.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#173b2c",
+  "theme_color": "#1f5d3d",
+  "icons": [
+    { "src": "img/mark.png", "sizes": "684x501", "type": "image/png", "purpose": "any" },
+    { "src": "img/logo.png", "sizes": "684x760", "type": "image/png", "purpose": "any" }
+  ]
+}
