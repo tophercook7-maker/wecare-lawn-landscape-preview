@@ -272,6 +272,30 @@ var Sage=(function(){
   // ---- Sage's real brain: the server-side LLM function (Gemini + full spec) ----
   var SAGE_FN="https://fqqbzsxvxpcfwovbunth.supabase.co/functions/v1/sage";
   var llmHist=[];
+  var _leadSaved=false;
+  function maybeCaptureLead(){
+    if(_leadSaved) return;
+    var text=llmHist.filter(function(m){return m.role==="user";}).map(function(m){return m.content;}).join("  ");
+    var phone=(text.match(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/)||[])[0];
+    if(!phone) return;                       // no contact yet → nothing to file
+    var name=""; var nm=text.match(/\b(?:i'?m|i am|my name'?s|my name is|this is|it'?s)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+    if(nm) name=nm[1];
+    var email=(text.match(/[\w.+-]+@[\w-]+\.[\w.-]+/)||[])[0]||"";
+    var svc="General inquiry", low=text.toLowerCase();
+    if(/concrete|carved|sculpt/.test(low))svc="Concrete Artistry";
+    else if(/sod|turf/.test(low))svc="Sod";
+    else if(/drain|erosion|flood|washout/.test(low))svc="Drainage";
+    else if(/water feature|pond|waterfall/.test(low))svc="Water feature";
+    else if(/patio|hardscape|stone|wall|paver/.test(low))svc="Hardscape";
+    else if(/irrigation|sprinkler/.test(low))svc="Irrigation";
+    else if(/mow|maintenance|lawn care|cleanup/.test(low))svc="Lawn & Property Care";
+    else if(/design|landscap|install|renovat/.test(low))svc="Landscape design/build";
+    var detail=llmHist.filter(function(m){return m.role==="user";}).slice(-3).map(function(m){return m.content;}).join(" · ");
+    window.WeCareLeads.save({name:name||"Website visitor", phone:phone, email:email, service:svc,
+      detail:detail.slice(0,300), source:"Sage chat", stage:"New"});
+    if(convoId) window.WeCareConvos.patch(convoId,{customer:{name:name||"",phone:phone,email:email}, service:svc});
+    _leadSaved=true;
+  }
   function sodContextFrom(t){
     var m=t.match(/([\d,]{3,})\s*(?:sq|square|sf|ft)/i), sq=0;
     if(m) sq=parseInt(m[1].replace(/,/g,""));
@@ -295,6 +319,7 @@ var Sage=(function(){
         llmHist.push({role:"assistant",content:reply});
         var b=el("ai-msg bot", escapeHtml(reply).replace(/\n/g,"<br>"));
         msgs.appendChild(b); scroll(); logTurn("sage",reply);
+        maybeCaptureLead();
       })
       .catch(function(){
         stopTyping();
