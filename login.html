@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>We Care — Sign In</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#3d8b9a;--teal-deep:#2b6b78;--green-deep:#1f5d3d;--green-ink:#153a2a;--leaf:#7bb03e;
+  --ink:#16302a;--body:#33443f;--muted:#6d7d77;--paper:#eef1ee;--surface:#fff;--line:#e0e4e0;
+  --ok:#2f8055;--red:#c1512f;--ff-d:"Fraunces",Georgia,serif;--ff:"Figtree",-apple-system,sans-serif;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#10201a;--surface:#16281f;--line:#274235;--ink:#eef4f0;--body:#c3d1c9;--muted:#8fa298;--green-ink:#eaf5ee;}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;
+  background:linear-gradient(135deg,#173b2c,#2c6d7b);color:var(--body);font-family:var(--ff);line-height:1.5}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:30px 28px;max-width:400px;width:100%;
+  box-shadow:0 24px 60px rgba(20,48,42,.3)}
+.b{display:flex;align-items:center;gap:10px;font-family:var(--ff-d);font-size:1.25rem;color:var(--green-ink);margin-bottom:4px}
+.b img{height:34px}
+h1{font-family:var(--ff-d);color:var(--green-ink);font-size:1.5rem;margin:14px 0 4px}
+p.sub{color:var(--muted);font-size:.92rem;margin:0 0 18px}
+label{display:block;font-size:.82rem;font-weight:600;color:var(--ink);margin:0 0 6px}
+input{width:100%;font:inherit;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink)}
+button{width:100%;margin-top:14px;font:inherit;font-weight:700;padding:12px;border:0;border-radius:9px;cursor:pointer;
+  background:linear-gradient(135deg,var(--green-deep),var(--teal-deep));color:#fff}
+button:disabled{opacity:.6;cursor:default}
+.msg{margin-top:14px;font-size:.9rem;padding:10px 12px;border-radius:9px;display:none}
+.msg.ok{display:block;background:rgba(47,128,85,.12);color:var(--ok)}
+.msg.err{display:block;background:rgba(193,81,47,.12);color:var(--red)}
+.foot{margin-top:18px;font-size:.8rem;color:var(--muted);text-align:center}
+.foot a{color:var(--teal-deep)}
+.pilot{margin-top:16px;font-size:.8rem;background:#fdf6ea;border:1px solid #e6cd97;color:#7a5a1f;border-radius:9px;padding:10px 12px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pilot{background:#2a2416;border-color:#5a4a24;color:#d9a441}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="b"><img src="img/mark.png" alt="">We Care</div>
+  <h1>Team Sign In</h1>
+  <p class="sub">For owners &amp; crew. Enter your email and we'll send you a secure sign-in link — no password to remember.</p>
+
+  <label for="email">Email address</label>
+  <input id="email" type="email" autocomplete="email" placeholder="you@wecarelandscapes.expert" inputmode="email">
+  <button id="go" onclick="send()">Email me a sign-in link</button>
+  <div id="msg" class="msg"></div>
+
+  <div id="pilot" class="pilot" style="display:none"></div>
+  <div class="foot"><a href="index.html">← Back to the website</a></div>
+</div>
+
+<script src="js/wecare-auth.js"></script>
+<script>
+var next=new URLSearchParams(location.search).get("next")||"dashboard.html";
+// if login isn't enforced yet, tell the user this is staged (no lockout)
+if(window.WeCareAuth && WeCareAuth.requireLogin===false){
+  var p=document.getElementById("pilot");
+  p.style.display="block";
+  p.innerHTML="<b>Pilot mode:</b> the site doesn't require sign-in yet, so you can use the owner tools directly. Sign-in is ready to switch on when you'd like it.";
+}
+// already signed in? bounce to the page they wanted
+if(window.WeCareAuth && WeCareAuth.user()){ location.replace(next); }
+
+function msg(t,cls){var m=document.getElementById("msg");m.className="msg "+cls;m.textContent=t;}
+function send(){
+  var email=(document.getElementById("email").value||"").trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg("Please enter a valid email address.","err"); return; }
+  var btn=document.getElementById("go"); btn.disabled=true; btn.textContent="Sending…";
+  WeCareAuth.sendMagicLink(email).then(function(r){
+    btn.disabled=false; btn.textContent="Email me a sign-in link";
+    if(r.ok){ msg("Check your email — we sent a sign-in link to "+email+". Open it on this device.","ok"); }
+    else{ msg(r.error||"Couldn't send the link. Ask Derrick to add your email as a user first.","err"); }
+  });
+}
+document.getElementById("email").addEventListener("keydown",function(e){ if(e.key==="Enter") send(); });
+</script>
+</body>
+</html>
