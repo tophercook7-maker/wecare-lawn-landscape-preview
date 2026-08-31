@@ -37,7 +37,7 @@ button.go{width:100%;margin-top:18px;font:inherit;font-weight:700;font-size:1rem
   <p class="note">For Derrick &amp; Brandi. The crew uses the crew app with their own PIN.</p>
 </div>
 
-<script src="js/wecare-cloud.js?v=0834"></script>
+<script src="js/wecare-cloud.js?v=0835"></script>
 <script>
 function q(k){return new URLSearchParams(location.search).get(k);}
 var NEXT=q("next")||"pulse.html";
@@ -53,7 +53,7 @@ function paint(){
   if(mode==="create"){
     el("ttl").textContent="Create your office password";
     el("sub").textContent="Derrick or Brandi: set the password you'll both use to open the office tools.";
-    f.innerHTML='<label>New office password (min 4)</label><input id="p1" type="password" autocomplete="new-password">'+
+    f.innerHTML='<label>New office password (min 6)</label><input id="p1" type="password" autocomplete="new-password">'+
                 '<label>Confirm password</label><input id="p2" type="password" autocomplete="new-password">';
     el("go").textContent="Create password"; el("go").style.display="";
     el("alt").style.display="none";
@@ -61,7 +61,7 @@ function paint(){
     el("ttl").textContent="Change office password";
     el("sub").textContent="Enter the current password, then your new one.";
     f.innerHTML='<label>Current password</label><input id="pc" type="password">'+
-                '<label>New password (min 4)</label><input id="p1" type="password" autocomplete="new-password">'+
+                '<label>New password (min 6)</label><input id="p1" type="password" autocomplete="new-password">'+
                 '<label>Confirm new password</label><input id="p2" type="password" autocomplete="new-password">';
     el("go").textContent="Update password"; el("go").style.display="";
     el("alt").textContent="← Back"; el("alt").style.display="";
@@ -86,7 +86,7 @@ function submit(){
   clearErr();
   if(mode==="create"){
     var a=el("p1").value, b=el("p2").value;
-    if(a.length<4){showErr("Use at least 4 characters.");return;}
+    if(a.length<6){showErr("Use at least 6 characters.");return;}
     if(a!==b){showErr("The passwords don't match.");return;}
     el("go").disabled=true;
     WeCareCloud.team("office_set",{password:a}).then(function(res){
@@ -95,7 +95,7 @@ function submit(){
     });
   } else if(changing){
     var cur=el("pc").value, n1=el("p1").value, n2=el("p2").value;
-    if(n1.length<4){showErr("New password must be at least 4 characters.");return;}
+    if(n1.length<6){showErr("New password must be at least 6 characters.");return;}
     if(n1!==n2){showErr("The new passwords don't match.");return;}
     el("go").disabled=true;
     WeCareCloud.team("office_set",{password:n1,current:cur}).then(function(res){

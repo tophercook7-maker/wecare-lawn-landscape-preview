@@ -249,7 +249,7 @@ function jobCard(j){
 }
 function photosBlock(j){
   var ph=(j.photos||[]);
-  var thumbs=ph.map(function(u){return '<a href="'+u+'" target="_blank" class="jphoto"><img src="'+u+'" loading="lazy" alt="job photo"></a>';}).join("");
+  var thumbs=ph.map(function(u){var s=safeUrl(u);return s?'<a href="'+s+'" target="_blank" rel="noopener" class="jphoto"><img src="'+s+'" loading="lazy" alt="job photo"></a>':'';}).join("");
   return '<div class="photos">'+
     '<div class="ptitle">📷 Job photos'+(ph.length?' · '+ph.length:'')+'</div>'+
     '<div class="pgrid">'+thumbs+
@@ -291,7 +291,8 @@ function wireJobs(){
 }
 
 function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(function(){t.classList.remove("show")},1800);}
-function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function safeUrl(u){u=String(u==null?"":u);return /^https?:\/\//i.test(u)?esc(u):"";}
 
 /* punch-fix request */
 function requestFix(){

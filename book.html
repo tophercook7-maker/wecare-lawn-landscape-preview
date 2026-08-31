@@ -98,6 +98,7 @@ button.go:disabled{opacity:.6}
       <div class="big">🌿</div>
       <h2>You're on the list!</h2>
       <p id="doneMsg"></p>
+      <p><a id="trackLink" class="go" style="display:inline-block;width:auto;padding:11px 20px;text-decoration:none" href="#">📍 Track your request</a></p>
       <p class="lead">Need us sooner? Call <a href="tel:5016274384">(501) 627-4384</a>.</p>
     </div>
   </div>
@@ -105,7 +106,7 @@ button.go:disabled{opacity:.6}
   <p class="foot"><a href="index.html">← Back to WeCare Landscapes</a></p>
 </div>
 
-<script src="js/wecare-cloud.js?v=0834"></script>
+<script src="js/wecare-cloud.js?v=0835"></script>
 <script>
 var SLOTS=[["AM","🌅 Morning\n9:00 – 12:00"],["PM","🌤️ Afternoon\n12:00 – 3:00"]];
 var picked="";
@@ -139,17 +140,23 @@ function submitBooking(){
   if(!picked){msg("Please pick a time.");return;}
   if(!nm){msg("Please add your name.");return;}
   if(ph.replace(/[^\d]/g,"").length<7){msg("Please add a phone number so we can confirm.");return;}
-  var rec={id:"C"+Date.now().toString(36),name:nm,phone:ph,email:document.getElementById("em").value.trim(),
+  var rec={id:"C"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8),name:nm,phone:ph,email:document.getElementById("em").value.trim(),
     service:svc,address:document.getElementById("ad").value.trim(),date:dateEl.value,time:picked,
     notes:document.getElementById("nt").value.trim(),status:"requested",source:"Website booking",leadId:"",
     created:new Date().toISOString()};
-  var all=load("wecare_consults",[]); all.push(rec); localStorage.setItem("wecare_consults",JSON.stringify(all));
-  document.getElementById("form").style.display="none";
-  var d=new Date(rec.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
-  var win=picked==="AM"?"the morning (9:00–12:00)":"the afternoon (12:00–3:00)";
-  document.getElementById("doneMsg").textContent="We got your request for "+win+" on "+d+". Derrick will text or call "+ph+" to confirm your approximate arrival time — and you'll get a heads-up when he's on the way.";
-  document.getElementById("done").style.display="";
-  window.scrollTo(0,0);
+  var go=document.getElementById("go"); go.disabled=true; var goTxt=go.textContent; go.textContent="Sending…";
+  // Only show success AFTER the booking is confirmed saved to the cloud.
+  WeCareCloud.save("wecare_consults",rec).then(function(ok){
+    if(!ok){ go.disabled=false; go.textContent=goTxt; msg("We couldn't send that just now — please check your connection and try again, or call (501) 627-4384."); return; }
+    var all=load("wecare_consults",[]); all.push(rec); try{localStorage.setItem("wecare_consults",JSON.stringify(all));}catch(e){}
+    document.getElementById("form").style.display="none";
+    var d=new Date(rec.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+    var win=picked==="AM"?"the morning (9:00–12:00)":"the afternoon (12:00–3:00)";
+    document.getElementById("doneMsg").textContent="We got your request for "+win+" on "+d+". Derrick will text or call "+ph+" to confirm your approximate arrival time — and you'll get a heads-up when he's on the way.";
+    document.getElementById("trackLink").href="status.html?c="+encodeURIComponent(rec.id);
+    document.getElementById("done").style.display="";
+    window.scrollTo(0,0);
+  });
 }
 </script>
 </body>

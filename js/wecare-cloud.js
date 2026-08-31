@@ -152,7 +152,16 @@ function team(action, payload){
     .then(function(r){return r.json();})
     .catch(function(e){return {error:String(e)};});
 }
-window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team};
+// CONFIRMED write: upsert one record and resolve true/false so callers (e.g. the
+// public booking + contact forms) can show success only after the save is durable.
+function saveConfirmed(key, obj){
+  var store=byKey[key]; if(!store||!obj||!obj.id) return Promise.resolve(false);
+  var sh=_shadow[key]||(_shadow[key]={}); sh[obj.id]=JSON.stringify(obj); // pre-seed so the interceptor doesn't double-send
+  return fetch(REST+store.table+"?on_conflict=id",{method:"POST",
+    headers:Object.assign({},H,{"Prefer":"resolution=merge-duplicates,return=minimal"}),
+    body:JSON.stringify(store.toRow(obj))}).then(function(r){return r.ok;}).catch(function(){return false;});
+}
+window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed};
 if(document.readyState!=="loading") initialSync();
 else document.addEventListener("DOMContentLoaded", initialSync);
 })();

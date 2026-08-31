@@ -157,7 +157,7 @@
 
 <script src="js/wecare-auth.js?v=0830"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
-<script src="js/wecare-cloud.js?v=0834"></script>
+<script src="js/wecare-cloud.js?v=0835"></script>
 <script src="js/app.js?v=0830"></script>
 <script>
 var STAGES=["New","Contacted","Quoted","Won"];
@@ -204,7 +204,7 @@ function leadCard(l){
     '</div>'+
   '</div>';
 }
-function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function estForLead(id){if(!id)return null;var all;try{all=JSON.parse(localStorage.getItem("wecare_estimates"))||[]}catch(e){all=[]}var m=all.filter(function(e){return e.leadId===id;});return m.length?m[0]:null;}
 
 function render(){
