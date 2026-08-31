@@ -91,7 +91,11 @@ function pushChanges(store, rawValue){
     upsert(store, store.toRow(o));
   });
 }
+// customer-facing tables: when NOT a logged-in owner, writes go through the service-role
+// public_write function (so the anon key never needs direct write access to them).
+var PUBLIC_TABLES={leads:1,consultations:1,conversations:1};
 function upsert(store, row){
+  if(!sessionValid() && PUBLIC_TABLES[store.table]){ team("public_write",{table:store.table,row:row}); return; }
   fetch(REST+store.table+"?on_conflict=id", {
     method:"POST",
     headers:Object.assign({}, authHeaders(), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
@@ -185,9 +189,11 @@ function team(action, payload){
 function saveConfirmed(key, obj){
   var store=byKey[key]; if(!store||!obj||!obj.id) return Promise.resolve(false);
   var sh=_shadow[key]||(_shadow[key]={}); sh[obj.id]=JSON.stringify(obj); // pre-seed so the interceptor doesn't double-send
+  var row=store.toRow(obj);
+  if(!sessionValid() && PUBLIC_TABLES[store.table]){ return team("public_write",{table:store.table,row:row}).then(function(res){return !!(res&&res.ok);}); }
   return fetch(REST+store.table+"?on_conflict=id",{method:"POST",
-    headers:Object.assign({},H,{"Prefer":"resolution=merge-duplicates,return=minimal"}),
-    body:JSON.stringify(store.toRow(obj))}).then(function(r){return r.ok;}).catch(function(){return false;});
+    headers:Object.assign({},authHeaders(),{"Prefer":"resolution=merge-duplicates,return=minimal"}),
+    body:JSON.stringify(row)}).then(function(r){return r.ok;}).catch(function(){return false;});
 }
 window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed,
   login:login, logout:logout, refreshSession:refreshSession, changePassword:changePassword,
