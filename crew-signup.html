@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Team Setup — WeCare Landscapes</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal-deep:#2b6b78;--green:#2f8055;--green-deep:#1f5d3d;--green-ink:#153a2a;--ink:#16302a;--body:#33443f;--muted:#6d7d77;--paper:#eef1ee;--surface:#fff;--sand:#f0eee4;--line:#e0e4e0;--ok:#2f8055;--red:#c1512f;--ff-d:"Fraunces",Georgia,serif;--ff:"Figtree",-apple-system,sans-serif;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#10201a;--surface:#16281f;--sand:#1a2f25;--line:#274235;--ink:#eef4f0;--body:#c3d1c9;--muted:#8fa298;--green-ink:#eaf5ee;}}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--body);font-family:var(--ff);line-height:1.55}
+.top{background:linear-gradient(135deg,#173b2c,#2c6d7b);color:#fff;padding:16px 0}
+.top .wrap{max-width:560px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:10px}
+.top img{height:34px}.top b{font-family:var(--ff-d);font-size:1.15rem}
+.wrap{max-width:560px;margin:0 auto;padding:0 20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 22px;margin:24px auto;box-shadow:0 12px 40px rgba(20,48,42,.1)}
+h1{font-family:var(--ff-d);color:var(--green-ink);font-size:1.5rem;margin:0 0 4px}
+.lead{color:var(--muted);margin:0 0 18px;font-size:.95rem}
+label{display:block;font-size:.82rem;font-weight:700;color:var(--ink);margin:14px 0 5px}
+input,select{width:100%;font:inherit;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:460px){.row{grid-template-columns:1fr}}
+.hint{font-size:.78rem;color:var(--muted);margin-top:5px}
+.pinwrap input{letter-spacing:.4em;text-align:center;font-size:1.3rem;font-weight:700}
+.sec{background:var(--sand);border-radius:12px;padding:12px 15px;margin-top:16px;font-size:.85rem}
+.sec b{color:var(--green-ink)}
+button.go{width:100%;margin-top:20px;font:inherit;font-weight:700;font-size:1rem;padding:14px;border:0;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,var(--green-deep),var(--teal-deep));color:#fff}
+.msg{margin-top:14px;font-size:.92rem;padding:11px 13px;border-radius:9px;display:none}
+.msg.err{display:block;background:rgba(193,81,47,.12);color:var(--red)}
+.ok-card{text-align:center;padding:10px 0}.ok-card .big{font-size:2.4rem}.ok-card h2{font-family:var(--ff-d);color:var(--green-ink)}
+.foot{text-align:center;color:var(--muted);font-size:.82rem;padding:0 0 40px}.foot a{color:var(--teal-deep)}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap"><img src="img/logo-white.png" alt=""><b>WeCare Landscapes · Team Setup</b></div></div>
+
+<div class="wrap">
+  <div class="card" id="form">
+    <h1>Set up your crew account</h1>
+    <p class="lead">Takes 2 minutes. This tells Derrick who you are and creates your personal <b>clock-in PIN</b> — the code you'll use to clock in and out. Do this once, then hand the phone to the next person.</p>
+
+    <label for="who">Who are you?</label>
+    <select id="who"><option value="">Choose your name…</option></select>
+
+    <div id="newName" style="display:none">
+      <label for="nm">Your full name</label>
+      <input id="nm" placeholder="First and last">
+      <label for="rl">Your role / job title</label>
+      <input id="rl" placeholder="e.g. Maintenance Technician">
+    </div>
+
+    <label for="ph">Cell phone</label>
+    <input id="ph" type="tel" inputmode="tel" placeholder="(501) 555-0123">
+    <label for="em">Email <span class="hint" style="font-weight:400">(optional)</span></label>
+    <input id="em" type="email" placeholder="you@email.com">
+    <label for="ad">Home address</label>
+    <input id="ad" placeholder="Street, city, ST ZIP">
+    <div class="row">
+      <div><label for="ecn">Emergency contact — name</label><input id="ecn" placeholder="Name"></div>
+      <div><label for="ecp">Emergency contact — phone</label><input id="ecp" type="tel" inputmode="tel" placeholder="(501) 555-0100"></div>
+    </div>
+    <label for="sd">Start date <span class="hint" style="font-weight:400">(optional)</span></label>
+    <input id="sd" type="date">
+
+    <div class="sec">
+      <b>🔒 Create your clock-in PIN</b><br>
+      Pick a 4-digit code you'll remember. You'll enter it to clock in and out so no one can clock in as you.
+    </div>
+    <div class="row pinwrap">
+      <div><label for="p1">4-digit PIN</label><input id="p1" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="••••"></div>
+      <div><label for="p2">Confirm PIN</label><input id="p2" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="••••"></div>
+    </div>
+
+    <button class="go" onclick="submitEmp()">Create my account</button>
+    <p class="hint" style="margin-top:10px">Your info is used by WeCare Landscapes to run payroll and reach you about work. Tax and direct-deposit paperwork is handled separately with Derrick on paper.</p>
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <div class="card" id="done" style="display:none">
+    <div class="ok-card"><div class="big">✅</div><h2 id="doneH">You're all set!</h2>
+      <p id="doneMsg"></p>
+      <p class="lead">Open the crew app, tap your name, and enter your PIN to clock in.</p>
+      <p><a href="crew.html">Go to the Crew app →</a></p>
+      <p style="margin-top:18px"><a href="crew-signup.html" onclick="location.reload();return false;">＋ Set up the next person</a></p>
+    </div>
+  </div>
+
+  <p class="foot"><a href="crew.html">← Crew app</a></p>
+</div>
+
+<script src="js/wecare-cloud.js?v=0831"></script>
+<script>
+var DEFAULT_CREW=[
+  {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true},
+  {id:"jason",name:"Jason Kennedy",role:"Landscape Production Manager"},
+  {id:"hayden",name:"Hayden Collier",role:"Landscape Installation Tech"},
+  {id:"justin",name:"Justin Cavenza",role:"Landscape Installation Tech"},
+  {id:"christian",name:"Christian Benton",role:"Maintenance Technician"},
+  {id:"chris",name:"Chris Crain",role:"Maintenance Technician"}
+];
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function emps(){var s=load("wecare_employees",null);return (s&&s.length)?s:DEFAULT_CREW;}
+function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,24)||("emp"+Date.now().toString(36));}
+// populate the "who are you" list from the roster + a "new" option
+(function(){
+  var sel=document.getElementById("who");
+  emps().forEach(function(e){ var o=document.createElement("option"); o.value=e.id; o.textContent=e.name+(e.role?" · "+e.role:""); sel.appendChild(o); });
+  var n=document.createElement("option"); n.value="__new__"; n.textContent="I'm new — not listed"; sel.appendChild(n);
+  sel.onchange=function(){ document.getElementById("newName").style.display = sel.value==="__new__"?"":"none";
+    // prefill from existing record if present
+    var e=emps().find(function(x){return x.id===sel.value;});
+    if(e){ if(e.phone)document.getElementById("ph").value=e.phone; if(e.email)document.getElementById("em").value=e.email;
+           if(e.address)document.getElementById("ad").value=e.address; if(e.emergencyName)document.getElementById("ecn").value=e.emergencyName;
+           if(e.emergencyPhone)document.getElementById("ecp").value=e.emergencyPhone; if(e.startDate)document.getElementById("sd").value=e.startDate; }
+  };
+})();
+function msg(t){var m=document.getElementById("msg");m.className="msg err";m.textContent=t;}
+function submitEmp(){
+  var who=document.getElementById("who").value;
+  if(!who){msg("Please choose your name (or 'I'm new').");return;}
+  var name,role,id,admin=false;
+  if(who==="__new__"){
+    name=document.getElementById("nm").value.trim(); role=document.getElementById("rl").value.trim();
+    if(!name){msg("Please enter your name.");return;}
+    id=slug(name);
+  } else {
+    var base=DEFAULT_CREW.concat(load("wecare_employees",[])).find(function(x){return x.id===who;});
+    name=base?base.name:who; role=base?base.role:""; id=who; admin=!!(base&&base.admin);
+  }
+  var ph=document.getElementById("ph").value.trim();
+  if(ph.replace(/[^\d]/g,"").length<7){msg("Please add a cell phone number.");return;}
+  var p1=document.getElementById("p1").value.trim(), p2=document.getElementById("p2").value.trim();
+  if(!/^\d{4}$/.test(p1)){msg("Your PIN must be exactly 4 digits.");return;}
+  if(p1!==p2){msg("The two PINs don't match — try again.");return;}
+  // merge onto any existing record (keep rate/role/admin the owner set)
+  var all=load("wecare_employees",null); if(!all||!all.length) all=DEFAULT_CREW.slice();
+  var rec=all.find(function(x){return x.id===id;});
+  var fields={id:id,name:name,phone:ph,email:document.getElementById("em").value.trim(),
+    address:document.getElementById("ad").value.trim(),emergencyName:document.getElementById("ecn").value.trim(),
+    emergencyPhone:document.getElementById("ecp").value.trim(),startDate:document.getElementById("sd").value,
+    pin:p1,active:true,status:"active"};
+  if(rec){ for(var k in fields) rec[k]=fields[k]; if(role&&!rec.role) rec.role=role; }
+  else { fields.role=role; fields.admin=admin; all.push(fields); }
+  save("wecare_employees",all);
+  document.getElementById("form").style.display="none";
+  document.getElementById("doneH").textContent="You're all set, "+name.split(" ")[0]+"!";
+  document.getElementById("doneMsg").textContent="Your account is created and your 4-digit PIN is saved. Derrick can see your info in the office now.";
+  document.getElementById("done").style.display="";
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

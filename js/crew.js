@@ -5,8 +5,8 @@
 (function(){
 "use strict";
 
-/* ---- crew roster (Derrick's real team) ---- */
-var CREW = [
+/* ---- default roster (fallback until the cloud employees directory loads) ---- */
+var DEFAULT_CREW = [
   {id:"derrick", name:"Derrick Collier", role:"Owner & Operations Director", admin:true},
   {id:"jason",   name:"Jason Kennedy",   role:"Landscape Production Manager"},
   {id:"hayden",  name:"Hayden Collier",  role:"Landscape Installation Tech"},
@@ -19,10 +19,14 @@ var CREW = [
 var K_PUNCH="wecare_punches";      // [{id, empId, empName, jobId, in, out, inGeo, outGeo, edits:[]}]
 var K_JOBS ="wecare_workorders";   // [{id, customer, service, address, scope, sop, assignedTo[], date, status, estHours}]
 var K_SOPS ="wecare_sops";         // SOP library (owner-written) [{id,title,service,steps[],notes}]
+var K_EMP  ="wecare_employees";    // employee directory (owner-managed): profile + clock-in PIN
 var K_ME   ="wecare_crew_me";      // current employee id on THIS phone
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-window.WeCareOps={K_PUNCH:K_PUNCH,K_JOBS:K_JOBS,CREW:CREW,load:load,save:save};
+/* full directory (stored if present, else defaults) and the sign-in list (active only) */
+function allEmps(){ var s=load(K_EMP,null); return (s&&s.length)?s:DEFAULT_CREW; }
+function CREW_(){ return allEmps().filter(function(e){return e.active!==false;}); }
+window.WeCareOps={K_PUNCH:K_PUNCH,K_JOBS:K_JOBS,get CREW(){return CREW_();},load:load,save:save};
 
 /* ---- seed a couple of demo work orders so it's not empty ---- */
 function seedJobs(){
@@ -41,18 +45,53 @@ function seedJobs(){
 }
 
 var me=null, tickHandle=null;
-function meObj(){return CREW.find(function(c){return c.id===me})}
+function meObj(){return allEmps().find(function(c){return c.id===me}) || {id:me,name:me,role:""};}
 
 /* ---------- who am I ---------- */
+function authedFlag(id){return "wecare_authed_"+id;}
+function isAuthed(id){try{return sessionStorage.getItem(authedFlag(id))==="1";}catch(e){return false;}}
+function setAuthed(id){try{sessionStorage.setItem(authedFlag(id),"1");}catch(e){}}
 function openWho(){
   var list=document.getElementById("whoList");
-  list.innerHTML=CREW.map(function(c){
-    return '<button class="pickbtn" data-id="'+c.id+'">'+c.name+'<div class="role">'+c.role+'</div></button>';
-  }).join("");
-  list.querySelectorAll(".pickbtn").forEach(function(b){
-    b.onclick=function(){ me=b.dataset.id; save(K_ME,me); document.getElementById("whoModal").classList.remove("open"); render(); };
+  list.innerHTML=CREW_().map(function(c){
+    var locked=c.pin?' 🔒':'';
+    return '<button class="pickbtn" data-id="'+c.id+'">'+c.name+locked+'<div class="role">'+(c.role||'')+'</div></button>';
+  }).join("")+'<a href="crew-signup.html" class="pickbtn" style="display:block;text-align:center;text-decoration:none;color:var(--teal-deep,#2b6b78)">＋ New here? Set up your account</a>';
+  list.querySelectorAll(".pickbtn[data-id]").forEach(function(b){
+    b.onclick=function(){ signInAs(b.dataset.id); };
   });
   document.getElementById("whoModal").classList.add("open");
+}
+function signInAs(id){
+  var emp=allEmps().find(function(x){return x.id===id;});
+  if(emp && emp.pin){ askPin(id, emp.pin, function(){ me=id; save(K_ME,me); setAuthed(id); closeWho(); render(); }); }
+  else { me=id; save(K_ME,me); setAuthed(id); closeWho(); render(); }
+}
+function closeWho(){var m=document.getElementById("whoModal"); if(m)m.classList.remove("open");}
+/* ---- PIN entry (the crew "security key") ---- */
+function askPin(id, correct, onOk){
+  var emp=allEmps().find(function(x){return x.id===id;})||{name:"you"};
+  var ov=document.getElementById("pinModal");
+  document.getElementById("pinName").textContent=(emp.name||"").split(" ")[0]||"there";
+  var inp=document.getElementById("pinInput"), err=document.getElementById("pinErr");
+  inp.value=""; err.style.display="none";
+  ov.classList.add("open"); setTimeout(function(){inp.focus();},50);
+  function cleanup(){ov.classList.remove("open"); inp.onkeyup=null;
+    document.getElementById("pinOk").onclick=null; document.getElementById("pinCancel").onclick=null; document.getElementById("pinForgot").onclick=null;}
+  function tryit(){
+    if(inp.value===String(correct)){ cleanup(); onOk(); }
+    else { err.textContent="That PIN doesn't match. Try again, or ask Derrick to reset it."; err.style.display="block"; inp.value=""; inp.focus(); }
+  }
+  document.getElementById("pinOk").onclick=tryit;
+  inp.onkeyup=function(e){ if(e.key==="Enter") tryit(); };
+  document.getElementById("pinCancel").onclick=function(){ cleanup(); };
+  document.getElementById("pinForgot").onclick=function(){ err.textContent="No problem — ask Derrick to reset your PIN in the office (Field Ops → Team)."; err.style.display="block"; };
+}
+/* gate any clock action behind the PIN once per session */
+function ensureAuthed(cb){
+  var emp=meObj();
+  if(emp && emp.pin && !isAuthed(me)){ askPin(me, emp.pin, function(){ setAuthed(me); cb(); }); }
+  else cb();
 }
 
 /* ---------- punches ---------- */
@@ -77,18 +116,22 @@ function geo(cb){
 function clockIn(){
   var jobId=document.getElementById("jobPick").value;
   if(!jobId){ toast("Pick the job you're working first"); return; }
-  geo(function(g){
-    var all=load(K_PUNCH,[]);
-    all.push({id:"P"+Date.now().toString(36),empId:me,empName:meObj().name,jobId:jobId,
-      in:new Date().toISOString(),out:null,inGeo:g,outGeo:null,edits:[]});
-    save(K_PUNCH,all); toast("Clocked in ✓"); render();
+  ensureAuthed(function(){
+    geo(function(g){
+      var all=load(K_PUNCH,[]);
+      all.push({id:"P"+Date.now().toString(36),empId:me,empName:meObj().name,jobId:jobId,
+        in:new Date().toISOString(),out:null,inGeo:g,outGeo:null,edits:[]});
+      save(K_PUNCH,all); toast("Clocked in ✓"); render();
+    });
   });
 }
 function clockOut(){
-  geo(function(g){
-    var all=load(K_PUNCH,[]), p=all.find(function(x){return x.empId===me && !x.out});
-    if(p){ p.out=new Date().toISOString(); p.outGeo=g; save(K_PUNCH,all); }
-    toast("Clocked out ✓"); render();
+  ensureAuthed(function(){
+    geo(function(g){
+      var all=load(K_PUNCH,[]), p=all.find(function(x){return x.empId===me && !x.out});
+      if(p){ p.out=new Date().toISOString(); p.outGeo=g; save(K_PUNCH,all); }
+      toast("Clocked out ✓"); render();
+    });
   });
 }
 

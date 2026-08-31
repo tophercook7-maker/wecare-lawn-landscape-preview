@@ -125,12 +125,26 @@ a.dashlink{display:block;text-align:center;color:var(--teal-deep);font-weight:60
   <div id="whoList"></div>
 </div></div>
 
+<!-- PIN entry (crew security key) -->
+<div class="modal" id="pinModal"><div class="sheet" style="text-align:center;max-width:340px">
+  <h3 style="margin-bottom:4px">🔒 Enter your PIN</h3>
+  <p style="color:var(--muted,#6d7d77);margin:0 0 14px;font-size:.9rem">Hi <span id="pinName">there</span> — enter your 4-digit clock-in PIN.</p>
+  <input id="pinInput" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="••••"
+    style="width:140px;text-align:center;letter-spacing:.5em;font-size:1.6rem;font-weight:700;padding:12px;border:1px solid var(--line,#e0e4e0);border-radius:10px;background:var(--paper,#eef1ee)">
+  <div id="pinErr" style="display:none;color:#c1512f;font-size:.85rem;margin-top:10px"></div>
+  <div style="display:flex;gap:10px;margin-top:16px">
+    <button id="pinCancel" style="flex:1;padding:12px;border:1px solid var(--line,#e0e4e0);background:none;border-radius:10px;font:inherit;font-weight:600;cursor:pointer;color:var(--muted,#6d7d77)">Cancel</button>
+    <button id="pinOk" style="flex:2;padding:12px;border:0;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#1f5d3d,#2b6b78);color:#fff">Clock in</button>
+  </div>
+  <button id="pinForgot" style="background:none;border:0;color:var(--muted,#6d7d77);font-size:.82rem;margin-top:12px;cursor:pointer;text-decoration:underline">Forgot my PIN</button>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
-<script src="js/wecare-auth.js?v=0830"></script>
+<script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
-<script src="js/wecare-cloud.js?v=0830"></script>
-<script src="js/crew.js?v=0830"></script>
-<script src="js/wecare-onboard.js?v=0830"></script>
+<script src="js/wecare-cloud.js?v=0831"></script>
+<script src="js/crew.js?v=0831"></script>
+<script src="js/wecare-onboard.js?v=0831"></script>
 </body>
 </html>

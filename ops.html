@@ -109,6 +109,17 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
     </div>
   </div>
 
+  <div class="panel" id="teamPanel" style="margin-top:16px">
+    <h2>👥 Team <span class="mini" style="font-weight:400">— your crew, their info, and each person's clock-in PIN</span></h2>
+    <p class="mini" style="margin-top:-2px">Each person taps <b>Set up your account</b> in the crew app (or the link below) to enter their info and pick a 4-digit clock-in PIN. You can view, edit, print, or reset anyone here. 🔒 = PIN set; ⚠️ = needs setup.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px">
+      <button class="btn p" onclick="openEmpEdit('')">＋ Add a team member</button>
+      <a class="btn" href="crew-signup.html" target="_blank">🔗 Open the sign-up form</a>
+      <button class="btn" onclick="printRoster()">🖨️ Print roster</button>
+    </div>
+    <div id="teamList"></div>
+  </div>
+
   <div class="panel" style="margin-top:16px">
     <h2>🔁 Recurring maintenance <span class="mini" style="font-weight:400">— set it once, the work orders create themselves on schedule</span></h2>
     <div id="recurList"></div>
@@ -171,11 +182,51 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   </div>
 </div>
 
-<script src="js/wecare-auth.js?v=0830"></script>
+<!-- Team member editor -->
+<div id="empModal" style="display:none;position:fixed;inset:0;background:rgba(16,32,26,.55);z-index:1000;align-items:flex-start;justify-content:center;padding:30px 16px;overflow:auto">
+  <div style="background:var(--surface,#fff);border-radius:16px;max-width:460px;width:100%;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.35)">
+    <h3 style="font-family:var(--ff-d);color:var(--green-ink);margin:0 0 12px" id="empModalTitle">Team member</h3>
+    <input type="hidden" id="eId">
+    <div class="field"><label>Full name</label><input id="eName" placeholder="First and last"></div>
+    <div class="field"><label>Role / title</label><input id="eRole" placeholder="e.g. Maintenance Technician"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:140px"><label>Cell phone</label><input id="ePhone" placeholder="(501) 555-0123"></div>
+      <div class="field" style="flex:1;min-width:140px"><label>Email</label><input id="eEmail" placeholder="you@email.com"></div>
+    </div>
+    <div class="field"><label>Home address</label><input id="eAddr" placeholder="Street, city, ST ZIP"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:140px"><label>Emergency contact</label><input id="eEcn" placeholder="Name"></div>
+      <div class="field" style="flex:1;min-width:140px"><label>Emergency phone</label><input id="eEcp" placeholder="(501) 555-0100"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:120px"><label>Pay — $ / hour</label><input id="eRate" type="number" min="0" step="0.25" placeholder="e.g. 20"></div>
+      <div class="field" style="flex:1;min-width:120px"><label>or $ / day <span class="mini">(optional)</span></label><input id="eDay" type="number" min="0" step="1" placeholder="e.g. 150"></div>
+      <div class="field" style="flex:1;min-width:120px"><label>Start date</label><input id="eStart" type="date"></div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:6px 0 4px">
+      <label style="font-weight:600;font-size:.9rem"><input type="checkbox" id="eActive" checked> Active</label>
+      <label style="font-weight:600;font-size:.9rem"><input type="checkbox" id="eAdmin"> Admin (office access)</label>
+      <span class="mini" id="ePinState"></span>
+    </div>
+    <div class="field"><label>Notes <span class="mini">(optional)</span></label><textarea id="eNotes" rows="2" placeholder="Anything to remember about setup…"></textarea></div>
+    <div style="background:var(--sand,#f0eee4);border-radius:10px;padding:10px 12px;margin:6px 0 12px;font-size:.82rem;color:var(--muted,#6d7d77)">
+      🔒 <b>Clock-in PIN:</b> normally each person sets their own on the sign-up form. <a href="#" onclick="resetEmpPin();return false;" style="color:var(--teal-deep,#2b6b78);font-weight:600">Set / reset PIN</a> if you need to.
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn p" onclick="saveEmp()">Save</button>
+      <button class="btn" onclick="printEmp(document.getElementById('eId').value)">🖨️ Print profile</button>
+      <button class="btn" onclick="closeEmpEdit()">Cancel</button>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="delEmp()" style="color:#c1512f">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
-<script src="js/wecare-cloud.js?v=0830"></script>
+<script src="js/wecare-cloud.js?v=0831"></script>
 <script>
-var CREW=[
+var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
   {id:"jason",name:"Jason Kennedy",role:"Landscape Production Manager",rate:25},
   {id:"hayden",name:"Hayden Collier",role:"Landscape Installation Tech",rate:15},
@@ -183,16 +234,21 @@ var CREW=[
   {id:"christian",name:"Christian Benton",role:"Maintenance Technician",rate:23},
   {id:"chris",name:"Chris Crain",role:"Maintenance Technician",rate:18.75,dayRate:150},
 ];
-function empRate(id){var c=CREW.find(function(x){return x.id===id;});return (c&&c.rate!=null)?c.rate:(parseFloat(localStorage.getItem("wecare_labor_rate"))||0);}
-var K_PUNCH="wecare_punches",K_JOBS="wecare_workorders",K_FIX="wecare_punch_fixes",K_SOPS="wecare_sops";
+var K_PUNCH="wecare_punches",K_JOBS="wecare_workorders",K_FIX="wecare_punch_fixes",K_SOPS="wecare_sops",K_EMP="wecare_employees";
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+/* employee directory is the source of truth (falls back to defaults until it loads) */
+function allEmps(){var s=load(K_EMP,null);return (s&&s.length)?s:DEFAULT_CREW;}
+var CREW=allEmps();  // refreshed at the top of render()
+function empRate(id){var c=CREW.find(function(x){return x.id===id;});return (c&&c.rate!=null)?c.rate:(parseFloat(localStorage.getItem("wecare_labor_rate"))||0);}
 function nm(id){var c=CREW.find(function(x){return x.id===id});return c?c.name:id}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function fmtDur(ms){var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h+":"+String(m).padStart(2,"0")}
 function weekStart(){var d=new Date();var day=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-day);return d.getTime()}
 
 function render(){
+  CREW=allEmps();  // keep roster/rates current with the cloud employee directory
+  renderCrewChecks();
   var punches=load(K_PUNCH,[]),jobs=load(K_JOBS,[]),fixes=load(K_FIX,[]);
   // on the clock
   var open=punches.filter(function(p){return !p.out});
@@ -539,6 +595,130 @@ function resetSOPForm(){
   document.getElementById("sopFormTitle").textContent="Add an SOP";
   document.getElementById("sopCancel").style.display="none";
 }
+/* ===================== TEAM / EMPLOYEE DIRECTORY ===================== */
+function empList(){var s=load(K_EMP,null); return (s&&s.length)?s:DEFAULT_CREW.map(function(c){return Object.assign({},c);});}
+function saveEmps(list){save(K_EMP,list);}
+function slugId(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,24)||("emp"+Date.now().toString(36));}
+function payLabel(e){ if(e.dayRate) return "$"+e.dayRate+"/day"; if(e.rate!=null&&e.rate!=="") return "$"+e.rate+"/hr"; return "—"; }
+function renderTeam(){
+  var box=document.getElementById("teamList"); if(!box) return;
+  var list=allEmps();
+  box.innerHTML=list.map(function(e){
+    var pin = e.pin ? '<span style="color:var(--ok,#2f8055)">🔒 PIN set</span>' : '<span style="color:#b5751f">⚠️ no PIN yet</span>';
+    var inactive = e.active===false ? ' style="opacity:.55"' : '';
+    return '<div'+inactive+' style="border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;background:#fff">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline">'+
+        '<b style="color:var(--green-ink)">'+esc(e.name||"(no name)")+(e.admin?' <span class="mini">· admin</span>':'')+(e.active===false?' <span class="mini">· inactive</span>':'')+'</b>'+
+        '<span class="mini">'+esc(e.role||"")+'</span></div>'+
+      '<div class="mini" style="margin-top:4px">'+
+        (e.phone?'📱 '+esc(e.phone):'<span style="color:#b5751f">no phone</span>')+
+        ' · 💵 '+payLabel(e)+' · '+pin+'</div>'+
+      (e.address?'<div class="mini">🏠 '+esc(e.address)+'</div>':'')+
+      (e.emergencyName?'<div class="mini">🚑 '+esc(e.emergencyName)+(e.emergencyPhone?' · '+esc(e.emergencyPhone):'')+'</div>':'')+
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn" onclick="openEmpEdit(\''+e.id+'\')">Edit / set up</button>'+
+        '<button class="btn" onclick="printEmp(\''+e.id+'\')">🖨️ Print</button>'+
+      '</div></div>';
+  }).join("") || '<div class="empty">No team members yet.</div>';
+}
+var _pendingPin=null; // set by resetEmpPin, applied on save
+function openEmpEdit(id){
+  _pendingPin=null;
+  var e = id ? (allEmps().find(function(x){return x.id===id;})||{}) : {};
+  document.getElementById("empModalTitle").textContent = id ? ("Edit — "+(e.name||"")) : "Add a team member";
+  document.getElementById("eId").value=id||"";
+  document.getElementById("eName").value=e.name||"";
+  document.getElementById("eRole").value=e.role||"";
+  document.getElementById("ePhone").value=e.phone||"";
+  document.getElementById("eEmail").value=e.email||"";
+  document.getElementById("eAddr").value=e.address||"";
+  document.getElementById("eEcn").value=e.emergencyName||"";
+  document.getElementById("eEcp").value=e.emergencyPhone||"";
+  document.getElementById("eRate").value=(e.rate!=null?e.rate:"");
+  document.getElementById("eDay").value=(e.dayRate!=null?e.dayRate:"");
+  document.getElementById("eStart").value=e.startDate||"";
+  document.getElementById("eActive").checked = e.active!==false;
+  document.getElementById("eAdmin").checked = !!e.admin;
+  document.getElementById("eNotes").value=e.notes||"";
+  document.getElementById("ePinState").textContent = e.pin ? "🔒 PIN is set" : "⚠️ no PIN yet";
+  document.getElementById("empModal").style.display="flex";
+}
+function closeEmpEdit(){ document.getElementById("empModal").style.display="none"; _pendingPin=null; }
+function resetEmpPin(){
+  var v=prompt("Set a 4-digit clock-in PIN for this person (blank to clear):","");
+  if(v===null) return;
+  v=v.trim();
+  if(v===""){ _pendingPin=""; document.getElementById("ePinState").textContent="PIN will be CLEARED on Save"; return; }
+  if(!/^\d{4}$/.test(v)){ alert("PIN must be exactly 4 digits."); return; }
+  _pendingPin=v; document.getElementById("ePinState").textContent="New PIN will be set on Save";
+}
+function saveEmp(){
+  var name=document.getElementById("eName").value.trim();
+  if(!name){ alert("Please enter a name."); return; }
+  var id=document.getElementById("eId").value || slugId(name);
+  var list=empList();
+  var e=list.find(function(x){return x.id===id;});
+  if(!e){ e={id:id}; list.push(e); }
+  e.name=name;
+  e.role=document.getElementById("eRole").value.trim();
+  e.phone=document.getElementById("ePhone").value.trim();
+  e.email=document.getElementById("eEmail").value.trim();
+  e.address=document.getElementById("eAddr").value.trim();
+  e.emergencyName=document.getElementById("eEcn").value.trim();
+  e.emergencyPhone=document.getElementById("eEcp").value.trim();
+  var r=document.getElementById("eRate").value, d=document.getElementById("eDay").value;
+  e.rate = r===""?null:parseFloat(r);
+  e.dayRate = d===""?null:parseFloat(d);
+  e.startDate=document.getElementById("eStart").value;
+  e.active=document.getElementById("eActive").checked;
+  e.admin=document.getElementById("eAdmin").checked;
+  e.notes=document.getElementById("eNotes").value.trim();
+  if(_pendingPin!==null) e.pin=_pendingPin;
+  saveEmps(list); closeEmpEdit(); CREW=allEmps(); renderTeam(); render(); renderCosting();
+}
+function delEmp(){
+  var id=document.getElementById("eId").value; if(!id){ closeEmpEdit(); return; }
+  var e=allEmps().find(function(x){return x.id===id;});
+  if(!confirm("Remove "+((e&&e.name)||"this person")+" from the team? (Their past hours stay in the records.)")) return;
+  var list=empList().filter(function(x){return x.id!==id;});
+  saveEmps(list); closeEmpEdit(); CREW=allEmps(); renderTeam(); render();
+}
+function empProfileHTML(e){
+  function row(l,v){return '<tr><td style="color:#6d7d77;padding:4px 12px 4px 0;white-space:nowrap">'+l+'</td><td style="padding:4px 0"><b>'+(v?esc(v):"—")+'</b></td></tr>';}
+  return '<h2 style="font-family:Georgia,serif;color:#153a2a;margin:0 0 2px">'+esc(e.name||"")+'</h2>'+
+    '<div style="color:#6d7d77;margin-bottom:12px">'+esc(e.role||"")+(e.active===false?" · INACTIVE":"")+'</div>'+
+    '<table style="border-collapse:collapse;font-size:14px">'+
+      row("Cell phone",e.phone)+row("Email",e.email)+row("Home address",e.address)+
+      row("Emergency contact",(e.emergencyName||"")+(e.emergencyPhone?" · "+e.emergencyPhone:""))+
+      row("Pay",payLabel(e))+row("Start date",e.startDate)+row("Clock-in PIN",e.pin?"Set ✓":"Not set")+
+      (e.notes?row("Notes",e.notes):"")+
+    '</table>'+
+    '<div style="margin-top:20px;border-top:1px solid #ccc;padding-top:12px">'+
+      '<b style="font-family:Georgia,serif;color:#153a2a">Paper documents to collect &amp; file</b>'+
+      '<div style="font-size:13px;color:#444;margin-top:6px;line-height:1.9">'+
+        '☐ Signed W-4 (tax withholding)&nbsp;&nbsp; ☐ I-9 + ID (work eligibility)&nbsp;&nbsp; ☐ Direct-deposit form or voided check<br>'+
+        '☐ Driver&#39;s license / driving record (if operating vehicles)&nbsp;&nbsp; ☐ Signed handbook / policies'+
+      '</div>'+
+      '<p style="font-size:12px;color:#888;margin-top:10px">Keep SSN, bank, and tax details on paper only — they are not stored in the app. WeCare Landscapes · printed '+new Date().toLocaleDateString()+'</p>'+
+    '</div>';
+}
+function printWindow(title,inner){
+  var w=window.open("","_blank","width=680,height=800");
+  if(!w){ alert("Allow pop-ups to print."); return; }
+  w.document.write('<!doctype html><html><head><title>'+title+'</title><meta charset="utf-8"><style>body{font-family:Arial,Helvetica,sans-serif;color:#16302a;margin:32px;line-height:1.5}</style></head><body>'+inner+'</body></html>');
+  w.document.close(); setTimeout(function(){w.focus();w.print();},250);
+}
+function printEmp(id){
+  var e=allEmps().find(function(x){return x.id===id;}); if(!e){alert("Save first, then print.");return;}
+  printWindow("WeCare — "+(e.name||"Team member"), empProfileHTML(e));
+}
+function printRoster(){
+  var list=allEmps();
+  var inner='<h1 style="font-family:Georgia,serif;color:#153a2a">WeCare Landscapes — Team Roster</h1>'+
+    '<p style="color:#6d7d77">'+list.length+' people · printed '+new Date().toLocaleDateString()+'</p>'+
+    list.map(function(e){return '<div style="border-top:1px solid #ccc;padding:12px 0">'+empProfileHTML(e)+'</div>';}).join("");
+  printWindow("WeCare — Team Roster", inner);
+}
 function exportCSV(){
   var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={},days={};
   load(K_PUNCH,[]).forEach(function(p){if(!p.out)return;var t0=new Date(p.in).getTime();if(t0<ws)return;tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000;(days[p.empId]||(days[p.empId]={}))[new Date(p.in).toISOString().slice(0,10)]=1;});
@@ -547,15 +727,20 @@ function exportCSV(){
   var b=new Blob([rows.join("\n")],{type:"text/csv"}),u=URL.createObjectURL(b),a=document.createElement("a");
   a.href=u;a.download="wecare-payroll-week.csv";a.click();
 }
-var crewChecks=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+c.name.split(" ")[0]+'</label>'}).join("");
-document.getElementById("woCrew").innerHTML=crewChecks;
-document.getElementById("rcCrew").innerHTML=crewChecks;
+function renderCrewChecks(){
+  var checks=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+c.name.split(" ")[0]+'</label>'}).join("");
+  var wo=document.getElementById("woCrew"), rc=document.getElementById("rcCrew");
+  // don't blow away boxes the user already checked mid-entry
+  if(wo && wo.querySelectorAll("input:checked").length===0) wo.innerHTML=checks;
+  if(rc && rc.querySelectorAll("input:checked").length===0) rc.innerHTML=checks;
+}
+renderCrewChecks();
 document.getElementById("otAfter").addEventListener("input",render);
 var _lr=document.getElementById("laborRate");
 _lr.value=localStorage.getItem("wecare_labor_rate")||"";
 _lr.addEventListener("input",function(){localStorage.setItem("wecare_labor_rate",_lr.value);renderCosting();});
-window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();renderRecur();});
-setInterval(function(){generateRecurring();render();renderCosting();renderCases();renderRecur();},5000);
+window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();renderRecur();renderTeam();});
+setInterval(function(){generateRecurring();render();renderCosting();renderCases();renderRecur();renderTeam();},5000);
 seedSOPs();
 generateRecurring();
 render();
@@ -563,7 +748,8 @@ renderSOPs();
 renderCosting();
 renderCases();
 renderRecur();
+renderTeam();
 </script>
-<script src="js/wecare-onboard.js?v=0830"></script>
+<script src="js/wecare-onboard.js?v=0831"></script>
 </body>
 </html>
