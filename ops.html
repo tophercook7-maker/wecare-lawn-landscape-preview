@@ -224,7 +224,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
-<script src="js/wecare-cloud.js?v=0831"></script>
+<script src="js/wecare-cloud.js?v=0832"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -600,10 +600,35 @@ function empList(){var s=load(K_EMP,null); return (s&&s.length)?s:DEFAULT_CREW.m
 function saveEmps(list){save(K_EMP,list);}
 function slugId(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,24)||("emp"+Date.now().toString(36));}
 function payLabel(e){ if(e.dayRate) return "$"+e.dayRate+"/day"; if(e.rate!=null&&e.rate!=="") return "$"+e.rate+"/hr"; return "—"; }
+/* office code gates the team's personal info; stored only in THIS browser */
+function officeCode(){try{return localStorage.getItem("wecare_office_code")||"";}catch(e){return "";}}
+var _ownerLoaded=false;
+function loadTeam(){
+  var code=officeCode();
+  if(!code || !window.WeCareCloud || !WeCareCloud.team){ renderTeam(); return; }
+  WeCareCloud.team("list",{code:code}).then(function(res){
+    if(res && res.owner && res.employees){ save(K_EMP,res.employees); _ownerLoaded=true; CREW=allEmps(); renderTeam(); render(); renderCosting(); }
+    else { try{localStorage.removeItem("wecare_office_code");}catch(e){} _ownerLoaded=false; alert("That office code wasn't recognized."); renderTeam(); }
+  });
+}
+function promptOfficeCode(){
+  var v=prompt("Enter the office code to view & manage the team (ask Derrick):","");
+  if(v===null) return;
+  try{localStorage.setItem("wecare_office_code",v.trim());}catch(e){}
+  loadTeam();
+}
+function lockTeam(){ try{localStorage.removeItem("wecare_office_code");}catch(e){} _ownerLoaded=false; save(K_EMP,[]); CREW=allEmps(); renderTeam(); }
 function renderTeam(){
   var box=document.getElementById("teamList"); if(!box) return;
+  if(!_ownerLoaded){
+    box.innerHTML='<div style="background:var(--sand);border:1px solid var(--line);border-radius:11px;padding:16px;text-align:center">'+
+      '<div style="font-size:1.6rem">🔒</div>'+
+      '<p style="margin:6px 0 12px;font-size:.92rem">Your team\'s personal info and PINs are protected. Enter the office code to view and manage them.</p>'+
+      '<button class="btn p" onclick="promptOfficeCode()">Enter office code</button></div>';
+    return;
+  }
   var list=allEmps();
-  box.innerHTML=list.map(function(e){
+  box.innerHTML='<div style="text-align:right;margin-bottom:8px"><button class="btn" onclick="lockTeam()">🔒 Lock</button></div>'+list.map(function(e){
     var pin = e.pin ? '<span style="color:var(--ok,#2f8055)">🔒 PIN set</span>' : '<span style="color:#b5751f">⚠️ no PIN yet</span>';
     var inactive = e.active===false ? ' style="opacity:.55"' : '';
     return '<div'+inactive+' style="border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;background:#fff">'+
@@ -656,32 +681,28 @@ function saveEmp(){
   var name=document.getElementById("eName").value.trim();
   if(!name){ alert("Please enter a name."); return; }
   var id=document.getElementById("eId").value || slugId(name);
-  var list=empList();
-  var e=list.find(function(x){return x.id===id;});
-  if(!e){ e={id:id}; list.push(e); }
-  e.name=name;
-  e.role=document.getElementById("eRole").value.trim();
-  e.phone=document.getElementById("ePhone").value.trim();
-  e.email=document.getElementById("eEmail").value.trim();
-  e.address=document.getElementById("eAddr").value.trim();
-  e.emergencyName=document.getElementById("eEcn").value.trim();
-  e.emergencyPhone=document.getElementById("eEcp").value.trim();
   var r=document.getElementById("eRate").value, d=document.getElementById("eDay").value;
-  e.rate = r===""?null:parseFloat(r);
-  e.dayRate = d===""?null:parseFloat(d);
-  e.startDate=document.getElementById("eStart").value;
-  e.active=document.getElementById("eActive").checked;
-  e.admin=document.getElementById("eAdmin").checked;
-  e.notes=document.getElementById("eNotes").value.trim();
-  if(_pendingPin!==null) e.pin=_pendingPin;
-  saveEmps(list); closeEmpEdit(); CREW=allEmps(); renderTeam(); render(); renderCosting();
+  var emp={ id:id, name:name, role:document.getElementById("eRole").value.trim(),
+    phone:document.getElementById("ePhone").value.trim(), email:document.getElementById("eEmail").value.trim(),
+    address:document.getElementById("eAddr").value.trim(), emergencyName:document.getElementById("eEcn").value.trim(),
+    emergencyPhone:document.getElementById("eEcp").value.trim(), startDate:document.getElementById("eStart").value,
+    rate:(r===""?null:parseFloat(r)), dayRate:(d===""?null:parseFloat(d)),
+    active:document.getElementById("eActive").checked, admin:document.getElementById("eAdmin").checked,
+    notes:document.getElementById("eNotes").value.trim() };
+  if(_pendingPin!==null) emp.pin=_pendingPin;   // "" clears · "1234" sets · null = leave as-is
+  WeCareCloud.team("save",{emp:emp, code:officeCode()}).then(function(res){
+    if(!res || !res.ok){ alert("Couldn't save — is the office code entered?"); return; }
+    closeEmpEdit(); loadTeam();
+  });
 }
 function delEmp(){
   var id=document.getElementById("eId").value; if(!id){ closeEmpEdit(); return; }
   var e=allEmps().find(function(x){return x.id===id;});
   if(!confirm("Remove "+((e&&e.name)||"this person")+" from the team? (Their past hours stay in the records.)")) return;
-  var list=empList().filter(function(x){return x.id!==id;});
-  saveEmps(list); closeEmpEdit(); CREW=allEmps(); renderTeam(); render();
+  WeCareCloud.team("remove",{id:id, code:officeCode()}).then(function(res){
+    if(!res || !res.ok){ alert("Couldn't remove — is the office code entered?"); return; }
+    closeEmpEdit(); loadTeam();
+  });
 }
 function empProfileHTML(e){
   function row(l,v){return '<tr><td style="color:#6d7d77;padding:4px 12px 4px 0;white-space:nowrap">'+l+'</td><td style="padding:4px 0"><b>'+(v?esc(v):"—")+'</b></td></tr>';}
@@ -748,7 +769,7 @@ renderSOPs();
 renderCosting();
 renderCases();
 renderRecur();
-renderTeam();
+loadTeam();
 </script>
 <script src="js/wecare-onboard.js?v=0831"></script>
 </body>

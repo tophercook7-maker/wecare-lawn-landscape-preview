@@ -17,9 +17,6 @@ var STORES=[
  {key:"wecare_convos", table:"conversations", shape:"objmap",
   toRow:function(o){return {id:o.id,customer:o.customer||{},service:o.service,msgs:o.msgs||[],control:o.control,status:o.status,unseen:!!o.unseen,created:o.created,updated:o.updated};},
   fromRow:function(r){return {id:r.id,customer:r.customer||{},service:r.service,msgs:r.msgs||[],control:r.control,status:r.status,unseen:r.unseen,created:r.created,updated:r.updated};}},
- {key:"wecare_employees", table:"employees", shape:"array",
-  toRow:function(o){return {id:o.id,name:o.name||"",role:o.role||"",phone:o.phone||"",email:o.email||"",address:o.address||"",emergency_name:o.emergencyName||"",emergency_phone:o.emergencyPhone||"",pay_type:o.payType||"hourly",rate:(o.rate||o.rate===0)?o.rate:null,day_rate:(o.dayRate||o.dayRate===0)?o.dayRate:null,start_date:o.startDate||"",pin:o.pin||"",admin:!!o.admin,active:o.active!==false,status:o.status||"active",notes:o.notes||""};},
-  fromRow:function(r){return {id:r.id,name:r.name,role:r.role,phone:r.phone||"",email:r.email||"",address:r.address||"",emergencyName:r.emergency_name||"",emergencyPhone:r.emergency_phone||"",payType:r.pay_type||"hourly",rate:r.rate,dayRate:r.day_rate,startDate:r.start_date||"",pin:r.pin||"",admin:!!r.admin,active:r.active!==false,status:r.status||"active",notes:r.notes||""};}},
  {key:"wecare_workorders", table:"work_orders", shape:"array",
   toRow:function(o){return {id:o.id,customer:o.customer,phone:o.phone||"",service:o.service,address:o.address,scope:o.scope,sop:o.sop,assigned_to:o.assignedTo||[],date:o.date,status:o.status,est_hours:o.estHours||null,paid:!!o.paid,review_status:o.reviewStatus||"",materials:(o.materials||o.materials===0)?o.materials:null,price:(o.price||o.price===0)?o.price:null,photos:o.photos||[],recur_id:o.recurId||""};},
   fromRow:function(r){return {id:r.id,customer:r.customer,phone:r.phone||"",service:r.service,address:r.address,scope:r.scope,sop:r.sop,assignedTo:r.assigned_to||[],date:r.date,status:r.status,estHours:r.est_hours,paid:r.paid,reviewStatus:r.review_status||"",materials:r.materials,price:r.price,photos:r.photos||[],recurId:r.recur_id||""};}},
@@ -130,7 +127,16 @@ function uploadPhoto(file, jobId){
     body:file
   }).then(function(r){ if(!r.ok) throw new Error("upload failed"); return URL_+"/storage/v1/object/public/job-photos/"+path; });
 }
-window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto};
+// Employee directory goes through the service-role `team` edge function so crew
+// PINs + personal info are never exposed to this public anon key.
+var TEAM_FN=URL_+"/functions/v1/team";
+function team(action, payload){
+  var body=Object.assign({action:action}, payload||{});
+  return fetch(TEAM_FN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+    .then(function(r){return r.json();})
+    .catch(function(e){return {error:String(e)};});
+}
+window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team};
 if(document.readyState!=="loading") initialSync();
 else document.addEventListener("DOMContentLoaded", initialSync);
 })();

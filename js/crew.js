@@ -64,25 +64,33 @@ function openWho(){
 }
 function signInAs(id){
   var emp=allEmps().find(function(x){return x.id===id;});
-  if(emp && emp.pin){ askPin(id, emp.pin, function(){ me=id; save(K_ME,me); setAuthed(id); closeWho(); render(); }); }
+  if(emp && emp.hasPin){ askPin(id, function(){ me=id; save(K_ME,me); setAuthed(id); closeWho(); render(); }); }
   else { me=id; save(K_ME,me); setAuthed(id); closeWho(); render(); }
 }
 function closeWho(){var m=document.getElementById("whoModal"); if(m)m.classList.remove("open");}
-/* ---- PIN entry (the crew "security key") ---- */
-function askPin(id, correct, onOk){
+/* ---- PIN entry (the crew "security key") — verified SERVER-SIDE so the raw PIN
+       is never shipped to the browser ---- */
+function askPin(id, onOk){
   var emp=allEmps().find(function(x){return x.id===id;})||{name:"you"};
   var ov=document.getElementById("pinModal");
   document.getElementById("pinName").textContent=(emp.name||"").split(" ")[0]||"there";
-  var inp=document.getElementById("pinInput"), err=document.getElementById("pinErr");
+  var inp=document.getElementById("pinInput"), err=document.getElementById("pinErr"), okBtn=document.getElementById("pinOk");
   inp.value=""; err.style.display="none";
   ov.classList.add("open"); setTimeout(function(){inp.focus();},50);
-  function cleanup(){ov.classList.remove("open"); inp.onkeyup=null;
-    document.getElementById("pinOk").onclick=null; document.getElementById("pinCancel").onclick=null; document.getElementById("pinForgot").onclick=null;}
+  function cleanup(){ov.classList.remove("open"); inp.onkeyup=null; okBtn.disabled=false;
+    okBtn.onclick=null; document.getElementById("pinCancel").onclick=null; document.getElementById("pinForgot").onclick=null;}
   function tryit(){
-    if(inp.value===String(correct)){ cleanup(); onOk(); }
-    else { err.textContent="That PIN doesn't match. Try again, or ask Derrick to reset it."; err.style.display="block"; inp.value=""; inp.focus(); }
+    var val=inp.value;
+    if(!/^\d{4}$/.test(val)){ err.textContent="Enter your 4-digit PIN."; err.style.display="block"; return; }
+    okBtn.disabled=true; err.style.display="none";
+    WeCareCloud.team("verify",{id:id,pin:val}).then(function(res){
+      okBtn.disabled=false;
+      if(res && res.ok){ cleanup(); onOk(); }
+      else if(res && res.throttled){ err.textContent="Too many tries — wait a minute and try again."; err.style.display="block"; }
+      else { err.textContent="That PIN doesn't match. Try again, or ask Derrick to reset it."; err.style.display="block"; inp.value=""; inp.focus(); }
+    });
   }
-  document.getElementById("pinOk").onclick=tryit;
+  okBtn.onclick=tryit;
   inp.onkeyup=function(e){ if(e.key==="Enter") tryit(); };
   document.getElementById("pinCancel").onclick=function(){ cleanup(); };
   document.getElementById("pinForgot").onclick=function(){ err.textContent="No problem — ask Derrick to reset your PIN in the office (Field Ops → Team)."; err.style.display="block"; };
@@ -90,8 +98,15 @@ function askPin(id, correct, onOk){
 /* gate any clock action behind the PIN once per session */
 function ensureAuthed(cb){
   var emp=meObj();
-  if(emp && emp.pin && !isAuthed(me)){ askPin(me, emp.pin, function(){ setAuthed(me); cb(); }); }
+  if(emp && emp.hasPin && !isAuthed(me)){ askPin(me, function(){ setAuthed(me); cb(); }); }
   else cb();
+}
+/* pull the roster (names + PIN status only — never raw PINs) from the team gate */
+function fetchRoster(){
+  if(!window.WeCareCloud || !WeCareCloud.team) return;
+  WeCareCloud.team("list").then(function(res){
+    if(res && res.employees){ save(K_EMP,res.employees); render(); }
+  });
 }
 
 /* ---------- punches ---------- */
@@ -292,6 +307,8 @@ document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("fixBtn").onclick=function(){ if(!me){openWho();return;} requestFix(); };
   document.getElementById("whoModal").addEventListener("click",function(e){ if(e.target.id==="whoModal") e.target.classList.remove("open"); });
   render();
+  fetchRoster();                 // load real roster + PIN status from the team gate
+  setInterval(fetchRoster,60000);
   window.addEventListener("storage",render);
 });
 })();

@@ -91,7 +91,7 @@ button.go{width:100%;margin-top:20px;font:inherit;font-weight:700;font-size:1rem
   <p class="foot"><a href="crew.html">← Crew app</a></p>
 </div>
 
-<script src="js/wecare-cloud.js?v=0831"></script>
+<script src="js/wecare-cloud.js?v=0832"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true},
@@ -103,54 +103,52 @@ var DEFAULT_CREW=[
 ];
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-function emps(){var s=load("wecare_employees",null);return (s&&s.length)?s:DEFAULT_CREW;}
+var ROSTER=DEFAULT_CREW.slice();
 function slug(s){return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,24)||("emp"+Date.now().toString(36));}
-// populate the "who are you" list from the roster + a "new" option
-(function(){
-  var sel=document.getElementById("who");
-  emps().forEach(function(e){ var o=document.createElement("option"); o.value=e.id; o.textContent=e.name+(e.role?" · "+e.role:""); sel.appendChild(o); });
+function fillWho(){
+  var sel=document.getElementById("who"); sel.innerHTML='<option value="">Choose your name…</option>';
+  ROSTER.forEach(function(e){ if(e.active===false)return; var o=document.createElement("option"); o.value=e.id; o.textContent=e.name+(e.role?" · "+e.role:""); sel.appendChild(o); });
   var n=document.createElement("option"); n.value="__new__"; n.textContent="I'm new — not listed"; sel.appendChild(n);
-  sel.onchange=function(){ document.getElementById("newName").style.display = sel.value==="__new__"?"":"none";
-    // prefill from existing record if present
-    var e=emps().find(function(x){return x.id===sel.value;});
-    if(e){ if(e.phone)document.getElementById("ph").value=e.phone; if(e.email)document.getElementById("em").value=e.email;
-           if(e.address)document.getElementById("ad").value=e.address; if(e.emergencyName)document.getElementById("ecn").value=e.emergencyName;
-           if(e.emergencyPhone)document.getElementById("ecp").value=e.emergencyPhone; if(e.startDate)document.getElementById("sd").value=e.startDate; }
-  };
-})();
+}
+document.getElementById("who").onchange=function(){ document.getElementById("newName").style.display = this.value==="__new__"?"":"none"; };
+fillWho();
+// load the real roster (names/roles only — no PINs or personal info) from the team gate
+if(window.WeCareCloud && WeCareCloud.team){
+  WeCareCloud.team("list").then(function(res){ if(res && res.employees && res.employees.length){ ROSTER=res.employees; fillWho(); } });
+}
 function msg(t){var m=document.getElementById("msg");m.className="msg err";m.textContent=t;}
 function submitEmp(){
   var who=document.getElementById("who").value;
   if(!who){msg("Please choose your name (or 'I'm new').");return;}
-  var name,role,id,admin=false;
+  var name,role,id;
   if(who==="__new__"){
     name=document.getElementById("nm").value.trim(); role=document.getElementById("rl").value.trim();
     if(!name){msg("Please enter your name.");return;}
     id=slug(name);
   } else {
-    var base=DEFAULT_CREW.concat(load("wecare_employees",[])).find(function(x){return x.id===who;});
-    name=base?base.name:who; role=base?base.role:""; id=who; admin=!!(base&&base.admin);
+    var base=ROSTER.find(function(x){return x.id===who;});
+    name=base?base.name:who; role=base?base.role:""; id=who;
   }
   var ph=document.getElementById("ph").value.trim();
   if(ph.replace(/[^\d]/g,"").length<7){msg("Please add a cell phone number.");return;}
   var p1=document.getElementById("p1").value.trim(), p2=document.getElementById("p2").value.trim();
   if(!/^\d{4}$/.test(p1)){msg("Your PIN must be exactly 4 digits.");return;}
   if(p1!==p2){msg("The two PINs don't match — try again.");return;}
-  // merge onto any existing record (keep rate/role/admin the owner set)
-  var all=load("wecare_employees",null); if(!all||!all.length) all=DEFAULT_CREW.slice();
-  var rec=all.find(function(x){return x.id===id;});
-  var fields={id:id,name:name,phone:ph,email:document.getElementById("em").value.trim(),
+  var emp={id:id,name:name,role:role,phone:ph,email:document.getElementById("em").value.trim(),
     address:document.getElementById("ad").value.trim(),emergencyName:document.getElementById("ecn").value.trim(),
     emergencyPhone:document.getElementById("ecp").value.trim(),startDate:document.getElementById("sd").value,
     pin:p1,active:true,status:"active"};
-  if(rec){ for(var k in fields) rec[k]=fields[k]; if(role&&!rec.role) rec.role=role; }
-  else { fields.role=role; fields.admin=admin; all.push(fields); }
-  save("wecare_employees",all);
-  document.getElementById("form").style.display="none";
-  document.getElementById("doneH").textContent="You're all set, "+name.split(" ")[0]+"!";
-  document.getElementById("doneMsg").textContent="Your account is created and your 4-digit PIN is saved. Derrick can see your info in the office now.";
-  document.getElementById("done").style.display="";
-  window.scrollTo(0,0);
+  var btn=document.querySelector("button.go"); if(btn) btn.disabled=true;
+  WeCareCloud.team("save",{emp:emp}).then(function(res){
+    if(btn) btn.disabled=false;
+    if(res && res.error==="locked"){ msg("This name already has a PIN set. Ask Derrick to reset it in the office, then try again."); return; }
+    if(!res || !res.ok){ msg("Couldn't save — check your connection and try again."); return; }
+    document.getElementById("form").style.display="none";
+    document.getElementById("doneH").textContent="You're all set, "+name.split(" ")[0]+"!";
+    document.getElementById("doneMsg").textContent="Your account is created and your 4-digit PIN is saved securely. Derrick can see your info in the office now.";
+    document.getElementById("done").style.display="";
+    window.scrollTo(0,0);
+  });
 }
 </script>
 </body>
