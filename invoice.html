@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>We Care — Invoice</title>
+<title>WeCare Landscapes — Invoice</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="img/mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -64,7 +64,7 @@ function render(){
   box.innerHTML=
     '<div class="inv">'+
       '<div class="head">'+
-        '<div class="co"><img src="img/logo.png" alt="We Care"><b>We Care</b><span>Hot Springs &amp; Central Arkansas<br>(501) 627-4384 · wecarelandscapes.expert</span></div>'+
+        '<div class="co"><img src="img/logo.png" alt="WeCare Landscapes"><b>WeCare Landscapes</b><span>Hot Springs &amp; Central Arkansas<br>(501) 627-4384 · wecarelandscapes.expert</span></div>'+
         '<div class="inv-meta"><div class="t">INVOICE</div><div class="m">No. '+invNo(job.id)+'<br>'+dateStr+'</div></div>'+
       '</div>'+
       '<div class="to"><div class="lbl">Bill to</div><div class="nm">'+esc(job.customer||"Customer")+'</div>'+
@@ -75,7 +75,7 @@ function render(){
       '</table>'+
       '<div class="total">Total <span id="total">'+money(price||0)+'</span></div>'+
       '<div class="pay"><b>Payment:</b> We accept Cash, Check, Venmo, and CashApp. Card payments available online — just ask. <br>Thank you for your business!</div>'+
-      '<div class="foot">We Care · Central Arkansas · (501) 627-4384</div>'+
+      '<div class="foot">WeCare Landscapes · Central Arkansas · (501) 627-4384</div>'+
     '</div>';
 }
 function setTotal(){var v=parseFloat(document.getElementById("amt").value)||0;document.getElementById("total").textContent=money(v);}

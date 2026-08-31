@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>We Care — Owner Dashboard (AI CRM &amp; Bookings)</title>
+<title>WeCare Landscapes — Owner Dashboard (AI CRM &amp; Bookings)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <meta name="robots" content="noindex,nofollow">
@@ -11,7 +11,7 @@
 <link rel="manifest" href="owner-manifest.json">
 <meta name="theme-color" content="#1f5d3d">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="We Care Owner">
+<meta name="apple-mobile-web-app-title" content="WeCare Landscapes Owner">
 <link rel="apple-touch-icon" href="img/mark.png">
 <link rel="stylesheet" href="css/style.css">
 <style>
@@ -60,7 +60,7 @@
 
 <div class="dash-top">
   <div class="wrap">
-    <a class="brand" href="index.html"><img src="img/mark-trans.png" alt="We Care" style="height:38px"> <span style="color:#fff">We Care · Owner Dashboard</span></a>
+    <a class="brand" href="index.html"><img src="img/mark-trans.png" alt="WeCare Landscapes" style="height:38px"> <span style="color:#fff">WeCare Landscapes · Owner Dashboard</span></a>
     <div style="text-align:right">
       <div style="font-weight:600">🌱 Sage is managing your bookings</div>
       <div class="who">Every request from the website lands here automatically</div>
@@ -254,11 +254,11 @@ function overdueText(ms){
 function fuMsg(l,step){
   var fn=(l.name||"there").split(" ")[0];
   var svc=(l.service||"project").toLowerCase();
-  var tail=" — We Care · 501-627-4384";
+  var tail=" — WeCare Landscapes · 501-627-4384";
   var sod=l.sqft?sodEstimate(l.sqft):null;
   if(step===0){
-    if(sod) return "Hi "+fn+", it's Derrick with We Care — thanks for your sod request! For ~"+l.sqft.toLocaleString()+" sq ft that's about "+sod.pallets+" pallet"+(sod.pallets>1?"s":"")+" (~"+money(sod.total)+" delivered). When would you like it?"+tail;
-    return "Hi "+fn+", it's Derrick with We Care following up on your "+svc+" request"+(l.address?" at "+l.address:"")+". I'd love to get you on the schedule — what day works best?"+tail;
+    if(sod) return "Hi "+fn+", it's Derrick with WeCare Landscapes — thanks for your sod request! For ~"+l.sqft.toLocaleString()+" sq ft that's about "+sod.pallets+" pallet"+(sod.pallets>1?"s":"")+" (~"+money(sod.total)+" delivered). When would you like it?"+tail;
+    return "Hi "+fn+", it's Derrick with WeCare Landscapes following up on your "+svc+" request"+(l.address?" at "+l.address:"")+". I'd love to get you on the schedule — what day works best?"+tail;
   }
   if(step===1) return "Hi "+fn+", just circling back on your "+svc+" — happy to answer any questions or set up a quick look. Still interested?"+tail;
   if(step===2) return "Hi "+fn+", I don't want to be a pest — just making sure you got my notes on your "+svc+". If the timing's better down the road, no problem at all — just say the word."+tail;
@@ -281,7 +281,7 @@ function renderFollowups(all){
       '<div class="msg" id="fu-'+l.id+'">'+esc(msg)+'</div>'+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
         (l.phone?'<a class="btn btn-primary btn-sm" href="'+smsLink(l.phone,msg)+'">📱 Text</a>':'')+
-        (l.email?'<a class="btn btn-outline btn-sm" href="'+mailLink(l.email,"Following up — We Care",msg)+'">✉️ Email</a>':'')+
+        (l.email?'<a class="btn btn-outline btn-sm" href="'+mailLink(l.email,"Following up — WeCare Landscapes",msg)+'">✉️ Email</a>':'')+
         '<button class="btn btn-outline btn-sm" onclick="copyFu(\''+l.id+'\')">📋 Copy</button>'+
         '<button class="btn btn-outline btn-sm" onclick="logFollowup(\''+l.id+'\')">✓ Logged it</button>'+
         '<button class="btn btn-outline btn-sm" onclick="setStage(\''+l.id+'\',\'Won\')">🏆 Won</button>'+
@@ -306,7 +306,7 @@ var CON_KEY="wecare_consults";
 function conLoad(){try{return JSON.parse(localStorage.getItem(CON_KEY))||[]}catch(e){return []}}
 function conSave(a){try{localStorage.setItem(CON_KEY,JSON.stringify(a))}catch(e){}}
 function fmtConDate(d){ if(!d)return "No date"; try{return new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});}catch(e){return d;} }
-function fmtConTime(t){ if(!t)return ""; var p=t.split(":"),h=+p[0],m=p[1]; var ap=h>=12?"PM":"AM"; h=h%12||12; return h+":"+m+" "+ap; }
+function fmtConTime(t){ if(!t)return ""; if(t==="AM")return "Morning (9–12)"; if(t==="PM")return "Afternoon (12–3)"; var p=t.split(":"),h=+p[0],m=p[1]||"00"; var ap=h>=12?"PM":"AM"; h=h%12||12; return h+":"+m+" "+ap; }
 var CON_PILL={requested:["#b5751f","New — confirm"],confirmed:["#2f8055","Confirmed"],completed:["#6d7d77","Completed"],canceled:["#c1512f","Canceled"]};
 function renderConsults(){
   var box=document.getElementById("consults"), badge=document.getElementById("conCount");
@@ -329,6 +329,7 @@ function renderConsults(){
       (c.notes?'<div class="mini" style="margin-top:3px">📝 '+esc(c.notes)+'</div>':'')+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
         (c.phone?'<a class="btn btn-primary btn-sm" href="'+smsLink(c.phone,conConfirmMsg(c))+'">📱 Text to confirm</a>':'')+
+        (c.phone?'<a class="btn btn-outline btn-sm" href="'+smsLink(c.phone,conOnMyWayMsg(c))+'">🚗 On my way</a>':'')+
         (c.status==="requested"?'<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'confirmed\')">✓ Confirm</button>':'')+
         '<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'completed\')">✓ Done</button>'+
         '<button class="btn btn-outline btn-sm" onclick="conStatus(\''+c.id+'\',\'canceled\')">Cancel</button>'+
@@ -339,7 +340,12 @@ function statusUrl(c){return location.origin+"/status.html?c="+c.id;}
 function conConfirmMsg(c){
   var fn=(c.name||"there").split(" ")[0];
   var when=c.date?new Date(c.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"}):"your consultation";
-  return "Hi "+fn+", it's Derrick with We Care — confirming your consultation for "+when+(c.time?" at "+fmtConTime(c.time):"")+". Looking forward to it! Track it here: "+statusUrl(c)+" — or call 501-627-4384 if anything changes.";
+  var win=c.time==="AM"?" in the morning (9–12)":c.time==="PM"?" in the afternoon (12–3)":c.time?" at "+fmtConTime(c.time):"";
+  return "Hi "+fn+", it's Derrick with WeCare Landscapes — I've got your consultation for "+when+win+". I group nearby visits, so I'll text you a closer arrival time and let you know when I'm on the way. Track it here: "+statusUrl(c)+" — or call 501-627-4384 if anything changes.";
+}
+function conOnMyWayMsg(c){
+  var fn=(c.name||"there").split(" ")[0];
+  return "Hi "+fn+", it's Derrick with WeCare Landscapes — I'm on my way to you now for your consultation. See you shortly! (501-627-4384)";
 }
 function conStatus(id,st){ var a=conLoad(),c=a.find(function(x){return x.id===id}); if(c)c.status=st; conSave(a); renderConsults(); }
 function addConsult(){

@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>We Care — Owner Home</title>
+<title>WeCare Landscapes — Owner Home</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="img/mark.png">
 <link rel="manifest" href="owner-manifest.json">
 <meta name="theme-color" content="#1f5d3d">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="We Care Owner">
+<meta name="apple-mobile-web-app-title" content="WeCare Landscapes Owner">
 <link rel="apple-touch-icon" href="img/mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -51,12 +51,12 @@ h1{font-family:var(--ff-d);color:var(--green-ink);font-size:1.5rem;margin:24px 0
 </head>
 <body>
 <div class="top"><div class="wrap">
-  <div class="b"><img src="img/mark-trans.png" alt="We Care"> <span style="color:#fff">We Care · Owner Home</span></div>
+  <div class="b"><img src="img/mark-trans.png" alt="WeCare Landscapes"> <span style="color:#fff">WeCare Landscapes · Owner Home</span></div>
   <div class="nav"><a href="dashboard.html">Leads / CRM</a><a href="ops.html">Field Ops</a><a href="crew.html">Crew app</a><a href="index.html">Website</a></div>
 </div></div>
 
 <div class="wrap" style="padding-bottom:50px">
-  <h1 id="hello">This week at We Care</h1>
+  <h1 id="hello">This week at WeCare Landscapes</h1>
   <div class="sub" id="range"></div>
   <div class="tiles" id="tiles"></div>
 
@@ -94,7 +94,7 @@ function fuDue(l){
   var base=t.length?new Date(t[t.length-1]).getTime():new Date(l.created).getTime();
   return Date.now() >= base+FU_INTERVALS[t.length]*86400000;
 }
-function fmtTime(t){if(!t)return"";var p=t.split(":"),h=+p[0],m=p[1],ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+m+" "+ap;}
+function fmtTime(t){if(!t)return"";if(t==="AM")return "AM (9–12)";if(t==="PM")return "PM (12–3)";var p=t.split(":"),h=+p[0],m=p[1]||"00",ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+m+" "+ap;}
 
 function render(){
   var today=new Date().toISOString().slice(0,10), ws=weekStart();

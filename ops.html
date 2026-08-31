@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>We Care — Field Ops</title>
+<title>WeCare Landscapes — Field Ops</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="img/mark.png">
 <link rel="manifest" href="owner-manifest.json">
 <meta name="theme-color" content="#1f5d3d">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="We Care Owner">
+<meta name="apple-mobile-web-app-title" content="WeCare Landscapes Owner">
 <link rel="apple-touch-icon" href="img/mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -67,7 +67,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 </head>
 <body>
 <div class="top"><div class="wrap">
-  <div class="b"><img src="img/mark-trans.png" alt="We Care"> <span style="color:#fff">We Care · Field Ops</span></div>
+  <div class="b"><img src="img/mark-trans.png" alt="WeCare Landscapes"> <span style="color:#fff">WeCare Landscapes · Field Ops</span></div>
   <div class="nav"><a href="pulse.html">🏠 Home</a><a href="estimate.html">Estimator</a><a href="crew.html">Crew app</a><a href="dashboard.html">Leads / CRM</a><a href="index.html">Website</a></div>
 </div></div>
 
@@ -137,7 +137,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 
   <div class="panel" style="margin-top:16px">
     <h2>📦 Your data <span class="mini" style="font-weight:400">— you own all of it, export anytime, no lock-in</span></h2>
-    <p class="mini" style="margin-top:-2px">Every lead, job, hour, booking, and estimate belongs to We Care. Download a full backup or any single list whenever you want.</p>
+    <p class="mini" style="margin-top:-2px">Every lead, job, hour, booking, and estimate belongs to WeCare Landscapes. Download a full backup or any single list whenever you want.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
       <button class="btn p" onclick="exportAllJSON()">⬇ Full backup (JSON)</button>
       <button class="btn" onclick="exportOne('wecare_leads','leads')">Leads</button>
@@ -279,9 +279,9 @@ function reviewMsg(j){
   var name=(j.customer||"there").split(" ")[0];
   var svc=(j.service||"project").toLowerCase();
   var link=reviewLink()||"[paste your Google review link — tap “Set review link”]";
-  return "Hi "+name+", it's Derrick with We Care — it was a real pleasure getting your "+svc+" done. "+
+  return "Hi "+name+", it's Derrick with WeCare Landscapes — it was a real pleasure getting your "+svc+" done. "+
     "If you were happy with how it turned out, a quick review would mean the world to us and helps other neighbors find us:\n"+
-    link+"\n\nThank you! — We Care · 501-627-4384";
+    link+"\n\nThank you! — WeCare Landscapes · 501-627-4384";
 }
 function reviewDraft(id){ _draftFor=(_draftFor===id?null:id); render(); }
 function copyDraft(id){
@@ -300,7 +300,7 @@ function textReview(id){
 }
 function setReviewLink(){
   var cur=reviewLink();
-  var v=prompt("Paste We Care's Google review link (customers tap it to leave a review):", cur);
+  var v=prompt("Paste Your Google review link (customers tap it to leave a review):", cur);
   if(v!==null){ localStorage.setItem("wecare_review_link", v.trim()); render(); }
 }
 function markPaid(id){var j=load(K_JOBS,[]);var x=j.find(function(y){return y.id===id});if(x){x.paid=true;x.reviewStatus="requested";}save(K_JOBS,j);render();}
@@ -362,7 +362,7 @@ var EXPORT_KEYS=["wecare_leads","wecare_workorders","wecare_punches","wecare_pun
 function _dl(name,content,mime){var b=new Blob([content],{type:mime||"text/plain"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(u);},120);}
 function _today(){return new Date().toISOString().slice(0,10);}
 function exportAllJSON(){
-  var out={business:"We Care",exported:new Date().toISOString()};
+  var out={business:"WeCare Landscapes",exported:new Date().toISOString()};
   EXPORT_KEYS.forEach(function(k){ try{out[k]=JSON.parse(localStorage.getItem(k))||null;}catch(e){out[k]=null;} });
   _dl("wecare-backup-"+_today()+".json", JSON.stringify(out,null,2), "application/json");
 }

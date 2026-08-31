@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Book a Consultation — We Care</title>
-<meta name="description" content="Book a landscape, concrete, or lawn consultation with We Care — Hot Springs & Central Arkansas.">
+<title>Request a Consultation — WeCare Landscapes</title>
+<meta name="description" content="Request a landscape, concrete, or lawn consultation with WeCare Landscapes — Hot Springs & Central Arkansas. Free phone consultation; on-site visits from $125, credited to your project.">
 <link rel="icon" href="img/mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,9 +25,8 @@ h1{font-family:var(--ff-d);color:var(--green-ink);font-size:1.7rem;margin:0 0 4p
 .lead{color:var(--muted);margin:0 0 20px}
 label{display:block;font-size:.82rem;font-weight:700;color:var(--ink);margin:14px 0 6px}
 input,select,textarea{width:100%;font:inherit;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink)}
-.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
-@media(max-width:480px){.slots{grid-template-columns:repeat(3,1fr)}}
-.slot{padding:10px 4px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:600 .85rem var(--ff);cursor:pointer;text-align:center}
+.slots{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:6px}
+.slot{padding:16px 8px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink);font:600 1rem var(--ff);cursor:pointer;text-align:center;line-height:1.3}
 .slot.sel{background:var(--green-deep);color:#fff;border-color:var(--green-deep)}
 .slot:disabled{opacity:.4;cursor:not-allowed;text-decoration:line-through}
 button.go{width:100%;margin-top:20px;font:inherit;font-weight:700;font-size:1rem;padding:14px;border:0;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,var(--green-deep),var(--teal-deep));color:#fff}
@@ -43,12 +42,17 @@ button.go:disabled{opacity:.6}
 </style>
 </head>
 <body>
-<div class="top"><div class="wrap"><img src="img/logo-white.png" alt=""><b>We Care</b></div></div>
+<div class="top"><div class="wrap"><img src="img/logo-white.png" alt=""><b>WeCare Landscapes</b></div></div>
 
 <div class="wrap">
   <div class="card" id="form">
-    <h1>Book a consultation</h1>
-    <p class="lead">Tell us a little about your project and pick a time that works. Derrick will confirm and reach out — usually the same or next business day.</p>
+    <h1>Request a consultation</h1>
+    <p class="lead">Tell us about your project and pick a preferred window. We group appointments geographically to keep projects moving — so we'll confirm your approximate arrival time before the visit, and text you when Derrick is on the way.</p>
+
+    <div style="background:var(--sand);border:1px solid var(--line);border-radius:11px;padding:13px 15px;margin-bottom:6px;font-size:.9rem">
+      <b style="color:var(--green-ink)">How consultations work</b><br>
+      Your first phone or Sage conversation is <b>free</b>. On-site consultations in Hot Springs &amp; Hot Springs Village begin at <b>$125</b> — and that fee is <b>fully credited</b> toward your project when you move forward. Additional travel fees may apply outside Hot Springs &amp; Hot Springs Village.
+    </div>
 
     <label for="svc">What can we help with?</label>
     <select id="svc">
@@ -69,9 +73,9 @@ button.go:disabled{opacity:.6}
     <label for="date">Preferred day <span class="hint" style="font-weight:400">(Mon–Fri)</span></label>
     <input id="date" type="date">
 
-    <label>Preferred time</label>
+    <label>Preferred window</label>
     <div class="slots" id="slots"></div>
-    <div class="hint">Times fill up — we'll confirm your exact slot.</div>
+    <div class="hint">This is a requested window, not a locked appointment — we'll confirm a narrower arrival time once we group nearby visits. Need an evening or weekend? Note it below — limited after-hours consultations are available by request.</div>
 
     <label for="nm">Your name</label>
     <input id="nm" placeholder="First and last">
@@ -85,7 +89,7 @@ button.go:disabled{opacity:.6}
     <textarea id="nt" rows="3" placeholder="Tell us about your project…"></textarea>
 
     <button class="go" id="go" onclick="submitBooking()">Request my consultation</button>
-    <p class="hint" style="margin-top:10px;text-align:center">By requesting, you agree to be contacted by We Care by phone, text, or email about your request. Message &amp; data rates may apply; reply STOP to opt out. See our <a href="privacy.html" style="color:var(--teal-deep)">Privacy Policy</a>.</p>
+    <p class="hint" style="margin-top:10px;text-align:center">By requesting, you agree to be contacted by WeCare Landscapes by phone, text, or email about your request. Message &amp; data rates may apply; reply STOP to opt out. See our <a href="privacy.html" style="color:var(--teal-deep)">Privacy Policy</a>.</p>
     <div id="msg" class="msg"></div>
   </div>
 
@@ -98,12 +102,12 @@ button.go:disabled{opacity:.6}
     </div>
   </div>
 
-  <p class="foot"><a href="index.html">← Back to We Care</a></p>
+  <p class="foot"><a href="index.html">← Back to WeCare Landscapes</a></p>
 </div>
 
 <script src="js/wecare-cloud.js"></script>
 <script>
-var SLOTS=[["08:00","8:00 AM"],["09:00","9:00 AM"],["10:00","10:00 AM"],["11:00","11:00 AM"],["13:00","1:00 PM"],["14:00","2:00 PM"],["15:00","3:00 PM"],["16:00","4:00 PM"],["17:00","5:00 PM"],["18:00","6:00 PM"]];
+var SLOTS=[["AM","🌅 Morning\n9:00 – 12:00"],["PM","🌤️ Afternoon\n12:00 – 3:00"]];
 var picked="";
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function fmtTime(v){var s=SLOTS.find(function(x){return x[0]===v});return s?s[1]:v;}
@@ -114,13 +118,12 @@ function taken(date){
   return load("wecare_consults",[]).filter(function(c){return c.date===date && c.status!=="canceled";}).map(function(c){return c.time;});
 }
 function renderSlots(){
-  var box=document.getElementById("slots"), date=dateEl.value, tk=taken(date);
-  // weekday guard
+  var box=document.getElementById("slots"), date=dateEl.value;
+  // weekday guard (standard windows are Mon–Fri; weekends by request via notes)
   var dow=date?new Date(date+"T12:00:00").getDay():0;
   var weekend=(dow===0||dow===6);
   box.innerHTML=SLOTS.map(function(s){
-    var dis=tk.indexOf(s[0])>=0||weekend;
-    return '<button type="button" class="slot'+(picked===s[0]&&!dis?' sel':'')+'" data-v="'+s[0]+'" '+(dis?'disabled':'')+'>'+s[1]+'</button>';
+    return '<button type="button" class="slot'+(picked===s[0]&&!weekend?' sel':'')+'" data-v="'+s[0]+'" '+(weekend?'disabled':'')+'>'+s[1].replace(/\n/g,'<br>')+'</button>';
   }).join("");
   if(weekend){ picked=""; }
   box.querySelectorAll(".slot").forEach(function(b){ b.onclick=function(){ picked=b.dataset.v; renderSlots(); }; });
@@ -143,7 +146,8 @@ function submitBooking(){
   var all=load("wecare_consults",[]); all.push(rec); localStorage.setItem("wecare_consults",JSON.stringify(all));
   document.getElementById("form").style.display="none";
   var d=new Date(rec.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
-  document.getElementById("doneMsg").textContent="We got your request for "+d+" around "+fmtTime(picked)+". Derrick will text or call "+ph+" to confirm.";
+  var win=picked==="AM"?"the morning (9:00–12:00)":"the afternoon (12:00–3:00)";
+  document.getElementById("doneMsg").textContent="We got your request for "+win+" on "+d+". Derrick will text or call "+ph+" to confirm your approximate arrival time — and you'll get a heads-up when he's on the way.";
   document.getElementById("done").style.display="";
   window.scrollTo(0,0);
 }

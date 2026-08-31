@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Your We Care Booking</title>
+<title>Your WeCare Landscapes Booking</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="img/mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -37,30 +37,30 @@ function q(k){return new URLSearchParams(location.search).get(k);}
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]});}
 function fmtDate(d){if(!d)return"";try{return new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}catch(e){return d;}}
-function fmtTime(t){if(!t)return"";var p=t.split(":"),h=+p[0],m=p[1],ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+m+" "+ap;}
+function fmtTime(t){if(!t)return"";if(t==="AM")return "Morning (9–12)";if(t==="PM")return "Afternoon (12–3)";var p=t.split(":"),h=+p[0],m=p[1]||"00",ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+m+" "+ap;}
 var id=q("c"), done=false;
 var STEP={requested:["s-requested","Request received"],confirmed:["s-confirmed","Confirmed ✓"],completed:["s-completed","Completed — thank you!"],canceled:["s-canceled","Canceled"]};
-var LINE={requested:"We've got your request and Derrick will reach out shortly to lock in the time.",confirmed:"You're all set — see you then! We'll be in touch if anything changes.",completed:"Thanks for choosing We Care. We'd love a review if you have a minute!",canceled:"This booking was canceled. Give us a call anytime to reschedule."};
+var LINE={requested:"We've got your requested window. We group nearby visits together, so Derrick will reach out to confirm a narrower arrival time — and you'll get a text when he's on the way.",confirmed:"You're all set for your window. We'll text you when Derrick is on the way with a closer arrival time.",completed:"Thanks for choosing WeCare Landscapes. We'd love a review if you have a minute!",canceled:"This booking was canceled. Give us a call anytime to reschedule."};
 function render(){
   var box=document.getElementById("card");
   var c=load("wecare_consults",[]).find(function(x){return x.id===id;});
-  if(!c){ if(!done) box.innerHTML='<img class="logo" src="img/logo.png" alt="We Care"><h1>Booking not found</h1><div class="msg">We couldn\'t find this booking. Give us a call and we\'ll sort it out.</div><a class="call" href="tel:5016274384">📞 Call (501) 627-4384</a>'; return; }
+  if(!c){ if(!done) box.innerHTML='<img class="logo" src="img/logo.png" alt="WeCare Landscapes"><h1>Booking not found</h1><div class="msg">We couldn\'t find this booking. Give us a call and we\'ll sort it out.</div><a class="call" href="tel:5016274384">📞 Call (501) 627-4384</a>'; return; }
   done=true;
   var st=STEP[c.status]||STEP.requested;
   var fn=(c.name||"there").split(" ")[0];
-  box.innerHTML='<img class="logo" src="img/logo.png" alt="We Care">'+
+  box.innerHTML='<img class="logo" src="img/logo.png" alt="WeCare Landscapes">'+
     '<h1>Hi '+esc(fn)+'! 👋</h1>'+
-    '<div class="msg">Here\'s your consultation with We Care.</div>'+
+    '<div class="msg">Here\'s your consultation with WeCare Landscapes.</div>'+
     '<div class="step '+st[0]+'">'+st[1]+'</div>'+
     '<div class="det">'+
       (c.service?'<div class="r"><span>Service</span><b>'+esc(c.service)+'</b></div>':'')+
       (c.date?'<div class="r"><span>Day</span><b>'+esc(fmtDate(c.date))+'</b></div>':'')+
-      (c.time?'<div class="r"><span>Time</span><b>'+esc(fmtTime(c.time))+'</b></div>':'')+
+      (c.time?'<div class="r"><span>Window</span><b>'+esc(fmtTime(c.time))+'</b></div>':'')+
       (c.address?'<div class="r"><span>Address</span><b>'+esc(c.address)+'</b></div>':'')+
     '</div>'+
     '<div class="msg">'+(LINE[c.status]||LINE.requested)+'</div>'+
     '<a class="call" href="tel:5016274384">📞 Call (501) 627-4384</a>'+
-    '<div class="foot">We Care · in Central Arkansas</div>';
+    '<div class="foot">WeCare Landscapes · in Central Arkansas</div>';
 }
 window.addEventListener("storage",render);
 setInterval(function(){if(!done)render();},2000);
