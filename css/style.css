@@ -63,7 +63,7 @@ header.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);bac
 
 /* Hero */
 .hero{position:relative;color:#fff;overflow:hidden}
-.hero-bg{position:absolute;inset:0;background:linear-gradient(120deg,rgba(23,59,44,.86),rgba(28,74,58,.66)),url("../img/masonry-hero.jpg") center/cover;z-index:-1}
+.hero-bg{position:absolute;inset:0;background:linear-gradient(120deg,rgba(23,59,44,.86),rgba(28,74,58,.66)),url("../img/proj-transform-after-1.jpg") center/cover;z-index:-1}
 .hero-in{padding:110px 0 120px;max-width:720px}
 .hero h1{color:#fff}
 .hero .sub{font-size:1.25rem;color:#e6f2ea;margin:1rem 0 2rem;max-width:52ch}

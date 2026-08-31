@@ -18,17 +18,27 @@
   .cs .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px;background:var(--line)}
   .cs .gal a{display:block;aspect-ratio:4/3;overflow:hidden}
   .cs .gal img{width:100%;height:100%;object-fit:cover;display:block}
+  .feat{border:2px solid var(--leaf)}
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:3px;background:var(--line)}
+  @media(max-width:560px){.ba{grid-template-columns:1fr}}
+  .ba figure{margin:0;position:relative;aspect-ratio:4/3;overflow:hidden}
+  .ba figure img{width:100%;height:100%;object-fit:cover;display:block}
+  .ba .lbl{position:absolute;top:10px;left:10px;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 11px;border-radius:6px;color:#fff}
+  .ba .lbl.before{background:rgba(70,70,70,.9)}
+  .ba .lbl.after{background:rgba(47,128,85,.94)}
 </style>
 </head>
 <body>
 <div class="ribbon">🌿 Questions? Call <a href="tel:5016274384" style="color:var(--leaf-bright)">501-627-4384</a> · <a href="book.html" style="color:var(--leaf-bright)">Request a consultation →</a></div>
 <header class="nav">
   <div class="wrap nav-in">
-    <a class="brand" href="index.html"><img src="img/logo.png" alt="We Care Lawn and Landscape"> WeCare Landscapes</a>
+    <a class="brand" href="index.html"><img src="img/logo.png" alt="WeCare Landscapes"> WeCare Landscapes</a>
     <nav class="nav-links">
+      <a href="luxury-landscapes.html">Landscapes</a>
       <a href="sod.html">Sod Farm</a>
-      <a href="luxury-landscapes.html">Design &amp; Build</a>
+      <a href="maintenance.html">Maintenance</a>
       <a href="case-studies.html">Our Work</a>
+      <a href="guides.html">Guides</a>
       <a href="about.html">About</a>
     </nav>
     <div class="nav-cta">
@@ -48,6 +58,24 @@
 
 <section class="section bg-sand" style="padding-top:10px">
   <div class="wrap" style="max-width:900px">
+
+    <!-- Featured before/after (Derrick's real project) -->
+    <div class="cs feat">
+      <div class="body">
+        <span class="tag">Landscape Design-Build · Hot Springs area</span>
+        <h3>From a bare, rocky slope to a showpiece backyard</h3>
+        <p style="color:var(--body)">This is the kind of complete transformation WeCare Landscapes is built for. What started as a bare gravel-and-weed yard became a manicured lawn framed by rose beds, river rock, natural-stone edging, and flagstone paths — a finished outdoor living space wrapped around the home's deck. Same house, same footprint, entirely new yard.</p>
+      </div>
+      <div class="ba">
+        <figure><span class="lbl before">Before</span><img src="img/proj-transform-before-1.jpg" loading="lazy" alt="Backyard before — bare, rocky, unlandscaped"></figure>
+        <figure><span class="lbl after">After</span><img src="img/proj-transform-after-1.jpg" loading="lazy" alt="Backyard after — manicured lawn, rose beds, river rock and stonework"></figure>
+      </div>
+      <div class="ba">
+        <figure><span class="lbl before">Before</span><img src="img/proj-transform-before-2.jpg" loading="lazy" alt="Second angle before — gravel and overgrowth"></figure>
+        <figure><span class="lbl after">After</span><img src="img/proj-transform-after-2.jpg" loading="lazy" alt="Second angle after — finished landscape with lawn and plantings"></figure>
+      </div>
+    </div>
+
     <div id="cases"></div>
     <div class="center" style="margin-top:20px">
       <a class="btn btn-leaf" href="book.html">📅 Start your project</a>
@@ -58,7 +86,7 @@
 <footer>
   <div class="wrap">
     <div class="foot-bot" style="border:0;justify-content:center">
-      <span>© 2026 We Care Lawn and Landscape · <a href="index.html">Home</a> · <a href="about.html">About</a> · <a href="tel:5016274384">501-627-4384</a></span>
+      <span>© 2026 WeCare Landscapes · We Care Lawn Care LLC · <a href="index.html">Home</a> · <a href="about.html">About</a> · <a href="tel:5016274384">501-627-4384</a></span>
     </div>
   </div>
 </footer>
@@ -67,18 +95,15 @@
 <script src="js/app.js?v=0836"></script>
 <script>
 function csLoad(){try{return JSON.parse(localStorage.getItem("wecare_casestudies"))||[]}catch(e){return[]}}
-function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]});}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]});}
+function safeUrl(u){u=String(u==null?"":u);return /^https?:\/\//i.test(u)?esc(u):"";}
 function renderCases(){
   var box=document.getElementById("cases");
   var list=csLoad().filter(function(c){return c.published;})
     .sort(function(a,b){return (b.created||"").localeCompare(a.created||"");});
-  if(!list.length){
-    box.innerHTML='<div class="cs"><div class="body"><h3>Project gallery coming soon</h3>'+
-      '<p style="color:var(--body)">We\'re adding photos of recent work — carved concrete, patios, water features, drainage, and full landscape builds. In the meantime, give us a call at <a href="tel:5016274384">501-627-4384</a> or <a href="book.html">book a consultation</a> and we\'ll walk you through projects like yours.</p></div></div>';
-    return;
-  }
+  if(!list.length){ box.innerHTML=""; return; }   // the featured showcase above stands on its own
   box.innerHTML=list.map(function(c){
-    var gal=(c.photos||[]).map(function(u){return '<a href="'+u+'" target="_blank"><img src="'+u+'" loading="lazy" alt="'+esc(c.title)+'"></a>';}).join("");
+    var gal=(c.photos||[]).map(function(u){var s=safeUrl(u);return s?'<a href="'+s+'" target="_blank" rel="noopener"><img src="'+s+'" loading="lazy" alt="'+esc(c.title)+'"></a>':'';}).join("");
     return '<div class="cs">'+(gal?'<div class="gal">'+gal+'</div>':'')+
       '<div class="body">'+(c.service?'<span class="tag">'+esc(c.service)+(c.location?' · '+esc(c.location):'')+'</span>':'')+
       '<h3>'+esc(c.title||"WeCare Landscapes project")+'</h3>'+
