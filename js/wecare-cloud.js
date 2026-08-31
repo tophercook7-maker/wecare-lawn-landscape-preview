@@ -131,7 +131,7 @@ function initialSync(){
     if(raw){ try{ pushChanges(store, raw); }catch(e){} }
   });
   pullAll();
-  setInterval(pullAll, 6000);   // live-ish sync across devices
+  setInterval(function(){ if(document.visibilityState!=="hidden") pullAll(); }, 6000);   // live-ish sync; paused when tab hidden
 }
 // upload a job photo to Supabase Storage → returns the public URL
 function uploadPhoto(file, jobId){
@@ -162,6 +162,15 @@ function saveConfirmed(key, obj){
     body:JSON.stringify(store.toRow(obj))}).then(function(r){return r.ok;}).catch(function(){return false;});
 }
 window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed};
-if(document.readyState!=="loading") initialSync();
-else document.addEventListener("DOMContentLoaded", initialSync);
+// Only the owner/crew tools (which set window.WECARE_SYNC) poll + pull. Public
+// customer pages skip all polling entirely (writes still work via the interceptor
+// and WeCareCloud.save) — no battery/data/egress drain for visitors.
+// Also pause polling while the tab is hidden.
+function maybeSync(){ if(window.WECARE_SYNC) initialSync(); }
+document.addEventListener("visibilitychange",function(){
+  if(!window.WECARE_SYNC) return;
+  if(document.visibilityState==="visible") pullAll();
+});
+if(document.readyState!=="loading") maybeSync();
+else document.addEventListener("DOMContentLoaded", maybeSync);
 })();
