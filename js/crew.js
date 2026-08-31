@@ -44,7 +44,7 @@ function seedJobs(){
   save(K_JOBS,j); return j;
 }
 
-var me=null, tickHandle=null;
+var me=null, tickHandle=null, _pin="";   // _pin: this session's verified PIN (memory only, never stored)
 function meObj(){return allEmps().find(function(c){return c.id===me}) || {id:me,name:me,role:""};}
 
 /* ---------- who am I ---------- */
@@ -64,8 +64,8 @@ function openWho(){
 }
 function signInAs(id){
   var emp=allEmps().find(function(x){return x.id===id;});
-  if(emp && emp.hasPin){ askPin(id, function(){ me=id; save(K_ME,me); setAuthed(id); closeWho(); render(); }); }
-  else { me=id; save(K_ME,me); setAuthed(id); closeWho(); render(); }
+  if(emp && emp.hasPin){ askPin(id, function(){ me=id; save(K_ME,me); setAuthed(id); closeWho(); fetchCrewData(); render(); }); }
+  else { me=id; save(K_ME,me); setAuthed(id); closeWho(); render(); toast("Ask Derrick to finish setting up your account"); }
 }
 function closeWho(){var m=document.getElementById("whoModal"); if(m)m.classList.remove("open");}
 /* ---- PIN entry (the crew "security key") — verified SERVER-SIDE so the raw PIN
@@ -85,7 +85,7 @@ function askPin(id, onOk){
     okBtn.disabled=true; err.style.display="none";
     WeCareCloud.team("verify",{id:id,pin:val}).then(function(res){
       okBtn.disabled=false;
-      if(res && res.ok){ cleanup(); onOk(); }
+      if(res && res.ok){ _pin=val; cleanup(); onOk(); }
       else if(res && res.throttled){ err.textContent="Too many tries — wait a minute and try again."; err.style.display="block"; }
       else { err.textContent="That PIN doesn't match. Try again, or ask Derrick to reset it."; err.style.display="block"; inp.value=""; inp.focus(); }
     });
@@ -106,6 +106,14 @@ function fetchRoster(){
   if(!window.WeCareCloud || !WeCareCloud.team) return;
   WeCareCloud.team("list").then(function(res){
     if(res && res.employees){ save(K_EMP,res.employees); render(); }
+  });
+}
+/* pull THIS crew member's data (their jobs + their punches + SOPs) via the PIN-verified
+   crew gate — work_orders/punches/sops are no longer read with the public key */
+function fetchCrewData(){
+  if(!me || !_pin || !window.WeCareCloud || !WeCareCloud.team) return;
+  WeCareCloud.team("crew_data",{id:me,pin:_pin}).then(function(res){
+    if(res && res.ok){ save(K_JOBS,res.jobs||[]); save(K_PUNCH,res.punches||[]); save(K_SOPS,res.sops||[]); render(); }
   });
 }
 
@@ -133,19 +141,18 @@ function clockIn(){
   if(!jobId){ toast("Pick the job you're working first"); return; }
   ensureAuthed(function(){
     geo(function(g){
-      var all=load(K_PUNCH,[]);
-      all.push({id:"P"+Date.now().toString(36),empId:me,empName:meObj().name,jobId:jobId,
-        in:new Date().toISOString(),out:null,inGeo:g,outGeo:null,edits:[]});
-      save(K_PUNCH,all); toast("Clocked in ✓"); render();
+      WeCareCloud.team("crew_punch",{id:me,pin:_pin,op:"in",jobId:jobId,geo:g}).then(function(res){
+        if(res&&res.ok){ toast("Clocked in ✓"); fetchCrewData(); } else toast("Couldn't clock in — try again");
+      });
     });
   });
 }
 function clockOut(){
   ensureAuthed(function(){
     geo(function(g){
-      var all=load(K_PUNCH,[]), p=all.find(function(x){return x.empId===me && !x.out});
-      if(p){ p.out=new Date().toISOString(); p.outGeo=g; save(K_PUNCH,all); }
-      toast("Clocked out ✓"); render();
+      WeCareCloud.team("crew_punch",{id:me,pin:_pin,op:"out",geo:g}).then(function(res){
+        if(res&&res.ok){ toast("Clocked out ✓"); fetchCrewData(); } else toast("Couldn't clock out — try again");
+      });
     });
   });
 }
@@ -172,7 +179,7 @@ function render(){
   if(!me){ openWho(); }
 
   // job picker + today's jobs (mine)
-  var jobs=seedJobs();
+  var jobs=load(K_JOBS,[]);   // populated by fetchCrewData (this crew member's assigned jobs)
   var mine = me ? jobs.filter(function(j){return (j.assignedTo||[]).indexOf(me)>=0}) : [];
   var pick=document.getElementById("jobPick");
   pick.innerHTML='<option value="">— Pick the job you\'re working —</option>'+
@@ -262,7 +269,8 @@ function wireJobs(){
     el.querySelectorAll(".steps button").forEach(function(b){
       b.onclick=function(){
         var jobs=load(K_JOBS,[]); var j=jobs.find(function(x){return x.id===id});
-        if(j){ j.status=b.dataset.st; save(K_JOBS,jobs); toast(j.customer+": "+b.textContent); render(); }
+        if(j){ j.status=b.dataset.st; save(K_JOBS,jobs); toast(j.customer+": "+b.textContent); render();
+          WeCareCloud.team("crew_job_status",{id:me,pin:_pin,jobId:id,status:b.dataset.st}); }
       };
     });
     el.querySelectorAll(".soplist input[type=checkbox]").forEach(function(cb){
@@ -298,18 +306,28 @@ function safeUrl(u){u=String(u==null?"":u);return /^https?:\/\//i.test(u)?esc(u)
 function requestFix(){
   var note=prompt("What punch needs fixing? (Derrick & Brandi will review.)");
   if(!note)return;
-  var reqs=load("wecare_punch_fixes",[]);
-  reqs.push({id:"F"+Date.now().toString(36),empId:me,empName:meObj?meObj().name:me,note:note,when:new Date().toISOString(),resolved:false});
-  save("wecare_punch_fixes",reqs); toast("Sent to Derrick & Brandi ✓");
+  ensureAuthed(function(){
+    WeCareCloud.team("crew_fix",{id:me,pin:_pin,note:note}).then(function(res){
+      toast(res&&res.ok ? "Sent to Derrick & Brandi ✓" : "Couldn't send — try again");
+    });
+  });
 }
 
 document.addEventListener("DOMContentLoaded",function(){
   document.getElementById("whoBtn").onclick=openWho;
   document.getElementById("fixBtn").onclick=function(){ if(!me){openWho();return;} requestFix(); };
   document.getElementById("whoModal").addEventListener("click",function(e){ if(e.target.id==="whoModal") e.target.classList.remove("open"); });
+  me=load(K_ME,null);
   render();
-  fetchRoster();                 // load real roster + PIN status from the team gate
+  // load the roster; then if a saved user is returning, unlock (PIN) and pull their data
+  if(window.WeCareCloud && WeCareCloud.team){
+    WeCareCloud.team("list").then(function(res){
+      if(res && res.employees){ save(K_EMP,res.employees); render(); }
+      if(me){ var e=((res&&res.employees)||[]).find(function(x){return x.id===me;}); if(e && e.hasPin && !_pin){ ensureAuthed(fetchCrewData); } }
+    });
+  }
   setInterval(fetchRoster,60000);
+  setInterval(function(){ if(me&&_pin) fetchCrewData(); },30000);   // refresh assigned jobs while signed in
   window.addEventListener("storage",render);
 });
 })();
