@@ -1,4 +1,4 @@
-/* We Care Lawn & Landscape — site logic
+/* WeCare Landscapes — site logic
    - Sage: self-contained AI booking/CRM assistant (works offline, no API key)
    - Sod calculator
    - Lead capture -> localStorage (shared with dashboard.html)
@@ -11,7 +11,7 @@
    All of SOD below is meant to live in an EDITABLE settings screen (Derrick's rule).
    Numbers are his real rules from intake 2026-08-28. */
 var BIZ = {
-  name:"We Care",
+  name:"WeCare Landscapes",
   phone:"501-627-4384", phoneRaw:"5016274384",   // ⚠️ confirm Sage's texting #
   since:1998, area:"Hot Springs & Central Arkansas",
   farm:"27 Crain Lane, Plainview, AR",   // sod delivery origin (Derrick 08-29)
@@ -170,7 +170,7 @@ var Sage=(function(){
   function me(text){msgs.appendChild(el("ai-msg user",escapeHtml(text)));scroll();logTurn("customer",text);}
   function ownerBubble(text){       // a message Derrick sent from the dashboard
     var d=el("ai-msg bot","");d.style.background="var(--green-deep)";d.style.color="#fff";
-    d.innerHTML='<b style="font-size:.72rem;opacity:.85;display:block;margin-bottom:2px">Derrick · We Care</b>'+escapeHtml(text);
+    d.innerHTML='<b style="font-size:.72rem;opacity:.85;display:block;margin-bottom:2px">Derrick · WeCare Landscapes</b>'+escapeHtml(text);
     msgs.appendChild(d);scroll();
   }
   function stripTags(h){var d=document.createElement("div");d.innerHTML=h;return d.textContent||d.innerText||"";}
@@ -251,7 +251,7 @@ var Sage=(function(){
     } else if(data._svcKey && data._svcKey!=="sod"){
       extra="<br><br>It seems like this involves enough design and site-specific work that an in-person consultation would be the most helpful next step. Would it be a bad idea for Derrick to reach out with a couple of times that could work?";
     }
-    say("You're all set, "+firstName(data.name)+"! ✅<br><br>I've logged your <b>"+data.service+"</b> request and the team at We Care will reach out to <b>"+escapeHtml(data.phone||"")+"</b> to confirm."+extra+
+    say("You're all set, "+firstName(data.name)+"! ✅<br><br>I've logged your <b>"+data.service+"</b> request and the team at WeCare Landscapes will reach out to <b>"+escapeHtml(data.phone||"")+"</b> to confirm."+extra+
         "<br><br>Need it faster? Call us directly at <a href='tel:"+BIZ.phoneRaw+"'>"+BIZ.phone+"</a>.",
       function(){
         say("Anything else I can help with?");
@@ -344,7 +344,7 @@ var Sage=(function(){
       })
       .catch(function(){
         stopTyping();
-        var b=el("ai-msg bot","I'm having a little trouble connecting right now — you can reach We Care directly at "+BIZ.phone+" and we'll take great care of you. 🌿");
+        var b=el("ai-msg bot","I'm having a little trouble connecting right now — you can reach WeCare Landscapes directly at "+BIZ.phone+" and we'll take great care of you. 🌿");
         msgs.appendChild(b); scroll();
       });
   }
@@ -382,7 +382,7 @@ var Sage=(function(){
     panel=document.createElement("div");
     panel.id="ai-panel";
     panel.innerHTML=
-      '<div class="ai-hd"><div class="av">🌱</div><div class="t"><b>Sage · We Care Assistant</b><span>Online — replies instantly</span></div><button class="x" aria-label="close">×</button></div>'+
+      '<div class="ai-hd"><div class="av">🌱</div><div class="t"><b>Sage · WeCare Landscapes</b><span>Online — replies instantly</span></div><button class="x" aria-label="close">×</button></div>'+
       '<div class="ai-msgs" id="aiMsgs"></div>'+
       '<div class="ai-chips" id="aiChips"></div>'+
       '<form class="ai-input" id="aiForm"><input id="aiInput" placeholder="Type your question…" autocomplete="off"><button type="submit" aria-label="send">➤</button></form>';
@@ -398,7 +398,7 @@ var Sage=(function(){
     build();panel.classList.add("open");document.getElementById("ai-launch").style.display="none";
     if(!convoId){ convoId=window.WeCareConvos.neu(); watchOwner(); }   // start a live conversation Derrick can watch/join
     if(!greeted){greeted=true;
-      say("Hi, I'm <b>Sage</b> 🌱 — I help folks with their outdoor projects here at We Care. I'd love to hear what you're thinking about. What's got you looking into your property right now?",function(){menu("Or pick a starting point:")});
+      say("Hi, I'm <b>Sage</b> 🌱 — I help folks with their outdoor projects here at WeCare Landscapes. I'd love to hear what you're thinking about. What's got you looking into your property right now?",function(){menu("Or pick a starting point:")});
     }
     setTimeout(function(){inputEl&&inputEl.focus()},300);
   }

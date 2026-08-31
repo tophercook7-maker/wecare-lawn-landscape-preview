@@ -1,9 +1,9 @@
 /* We Care Lawn & Landscape — brand palette sampled from real logo */
 :root{
   --teal:#408f9e; --teal-dark:#2c6d7b; --teal-ink:#1e4d57;
-  --leaf:#94cc4f; --leaf-dark:#6faa3a;
+  --leaf:#94cc4f; --leaf-dark:#6faa3a; --leaf-bright:#c3ec72;
   --green:#3f9161; --green-deep:#256b45; --green-ink:#173b2c;
-  --ink:#16302a; --body:#33443f; --muted:#6d7d77;
+  --ink:#16302a; --body:#33443f; --muted:#586b64;
   --sand:#f5f2ea; --sand-2:#ece7db; --paper:#ffffff;
   --line:#e2ddd0; --shadow:0 10px 30px rgba(20,48,42,.10);
   --shadow-lg:0 24px 60px rgba(20,48,42,.18);
@@ -219,3 +219,8 @@ footer a{color:#cfe4d6}
 .modal .close{position:absolute;top:14px;right:16px;background:none;border:0;font-size:1.6rem;cursor:pointer;color:var(--muted)}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
 .reveal.in{opacity:1;transform:none}
+/* Accessibility: for users who prefer reduced motion, show content immediately and disable animation */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;scroll-behavior:auto !important}
+  .reveal{opacity:1 !important;transform:none !important}
+}

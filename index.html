@@ -188,10 +188,10 @@
           </div>
         </div>
         <div class="row" id="modeArea">
-          <div class="field"><label>Length (ft)</label><input name="len" type="number" min="0" placeholder="e.g. 40"></div>
-          <div class="field"><label>Width (ft)</label><input name="wid" type="number" min="0" placeholder="e.g. 30"></div>
+          <div class="field"><label for="f-len">Length (ft)</label><input id="f-len" name="len" type="number" min="0" placeholder="e.g. 40"></div>
+          <div class="field"><label for="f-wid">Width (ft)</label><input id="f-wid" name="wid" type="number" min="0" placeholder="e.g. 30"></div>
         </div>
-        <div class="field" id="modeSqft" style="display:none"><label>Total square feet</label><input name="sqft" type="number" min="0" placeholder="e.g. 1200"></div>
+        <div class="field" id="modeSqft" style="display:none"><label for="f-sqft">Total square feet</label><input id="f-sqft" name="sqft" type="number" min="0" placeholder="e.g. 1200"></div>
         <div class="calc-out" id="sodOut"></div>
       </form>
     </div>
@@ -334,15 +334,15 @@
     <div class="reveal">
       <form class="calc" data-lead="Website contact form">
         <h3 style="margin-top:0">Send us a message</h3>
-        <div class="field"><label>Name</label><input name="name" required placeholder="Your name"></div>
+        <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" required placeholder="Your name"></div>
         <div class="row">
-          <div class="field"><label>Phone</label><input name="phone" required placeholder="501-000-0000"></div>
-          <div class="field"><label>Town</label><input name="address" placeholder="Hot Springs"></div>
+          <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" required placeholder="501-000-0000"></div>
+          <div class="field"><label for="f-town">Town</label><input id="f-town" name="address" placeholder="Hot Springs"></div>
         </div>
-        <div class="field"><label>What do you need?</label>
-          <select name="service"><option>Sod farm — order/estimate</option><option>Lawn maintenance</option><option>Landscape design &amp; build</option><option>Water feature / masonry</option><option>Not sure yet</option></select>
+        <div class="field"><label for="f-service">What do you need?</label>
+          <select id="f-service" name="service"><option>Sod farm — order/estimate</option><option>Lawn maintenance</option><option>Landscape design &amp; build</option><option>Water feature / masonry</option><option>Not sure yet</option></select>
         </div>
-        <div class="field"><label>Details</label><textarea name="detail" rows="3" placeholder="Tell us about your project or lawn…"></textarea></div>
+        <div class="field"><label for="f-detail">Details</label><textarea id="f-detail" name="detail" rows="3" placeholder="Tell us about your project or lawn…"></textarea></div>
         <button class="btn btn-primary" type="submit" style="width:100%">Request my estimate</button>
         <p data-ok style="display:none;background:rgba(148,204,79,.18);border:1px solid var(--leaf);border-radius:10px;padding:14px;margin-top:14px;color:var(--green-deep);font-weight:600">✅ Got it! Your request is in — WeCare Landscapes will reach out shortly. (In the live version this also lands in the owner dashboard.)</p>
       </form>
@@ -378,6 +378,6 @@
 </footer>
 
 <script src="js/wecare-cloud.js?v=0836"></script>
-<script src="js/app.js"></script>
+<script src="js/app.js?v=0836"></script>
 </body>
 </html>
