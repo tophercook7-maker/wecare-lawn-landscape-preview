@@ -65,6 +65,23 @@ button.go{width:100%;margin-top:20px;font:inherit;font-weight:700;font-size:1rem
     <label for="sd">Start date <span class="hint" style="font-weight:400">(optional)</span></label>
     <input id="sd" type="date">
 
+    <div class="sec" style="margin-top:18px">
+      <b>🧾 Payroll / W-2 info</b><br>
+      This sets you up for payroll. We only keep the <b>last 4 of your SSN</b> here — your full SSN and signed W-4 are done with Derrick on paper.
+    </div>
+    <label for="et">Employment type</label>
+    <select id="et"><option value="w2">W-2 Employee</option><option value="1099">1099 Contractor</option></select>
+    <label for="ln">Legal name <span class="hint" style="font-weight:400">(as it appears on your Social Security card)</span></label>
+    <input id="ln" placeholder="Full legal name">
+    <div class="row">
+      <div><label for="dob">Date of birth</label><input id="dob" type="date"></div>
+      <div><label for="s4">Last 4 of SSN</label><input id="s4" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="1234"></div>
+    </div>
+    <label for="fs">Tax filing status</label>
+    <select id="fs"><option value="">Choose…</option><option>Single</option><option>Married filing jointly</option><option>Married filing separately</option><option>Head of household</option></select>
+    <label style="font-weight:500;font-size:.85rem;display:flex;gap:8px;align-items:flex-start;margin-top:12px">
+      <input type="checkbox" id="ack" style="width:auto;margin-top:3px"> <span>I confirm this info is correct and understand I'll complete a paper W-4 with Derrick.</span></label>
+
     <div class="sec">
       <b>🔒 Create your clock-in PIN</b><br>
       Pick a 4-digit code you'll remember. You'll enter it to clock in and out so no one can clock in as you.
@@ -82,7 +99,7 @@ button.go{width:100%;margin-top:20px;font:inherit;font-weight:700;font-size:1rem
   <div class="card" id="done" style="display:none">
     <div class="ok-card"><div class="big">✅</div><h2 id="doneH">You're all set!</h2>
       <p id="doneMsg"></p>
-      <p class="lead">Open the crew app, tap your name, and enter your PIN to clock in.</p>
+      <p class="lead">Once Derrick or Brandi approves you, open the crew app, tap your name, and enter your PIN to clock in.</p>
       <p><a href="crew.html">Go to the Crew app →</a></p>
       <p style="margin-top:18px"><a href="crew-signup.html" onclick="location.reload();return false;">＋ Set up the next person</a></p>
     </div>
@@ -131,21 +148,27 @@ function submitEmp(){
   }
   var ph=document.getElementById("ph").value.trim();
   if(ph.replace(/[^\d]/g,"").length<7){msg("Please add a cell phone number.");return;}
+  var ln=document.getElementById("ln").value.trim();
+  if(!ln){msg("Please add your legal name for payroll.");return;}
+  var s4=document.getElementById("s4").value.trim();
+  if(s4 && !/^\d{4}$/.test(s4)){msg("SSN should be the last 4 digits only.");return;}
+  if(!document.getElementById("ack").checked){msg("Please check the confirmation box.");return;}
   var p1=document.getElementById("p1").value.trim(), p2=document.getElementById("p2").value.trim();
   if(!/^\d{4}$/.test(p1)){msg("Your PIN must be exactly 4 digits.");return;}
   if(p1!==p2){msg("The two PINs don't match — try again.");return;}
   var emp={id:id,name:name,role:role,phone:ph,email:document.getElementById("em").value.trim(),
     address:document.getElementById("ad").value.trim(),emergencyName:document.getElementById("ecn").value.trim(),
     emergencyPhone:document.getElementById("ecp").value.trim(),startDate:document.getElementById("sd").value,
-    pin:p1,active:true,status:"active"};
+    empType:document.getElementById("et").value,legalName:ln,ssnLast4:s4,dob:document.getElementById("dob").value,
+    filingStatus:document.getElementById("fs").value,taxAck:true,pin:p1};
   var btn=document.querySelector("button.go"); if(btn) btn.disabled=true;
   WeCareCloud.team("save",{emp:emp}).then(function(res){
     if(btn) btn.disabled=false;
     if(res && res.error==="locked"){ msg("This name already has a PIN set. Ask Derrick to reset it in the office, then try again."); return; }
     if(!res || !res.ok){ msg("Couldn't save — check your connection and try again."); return; }
     document.getElementById("form").style.display="none";
-    document.getElementById("doneH").textContent="You're all set, "+name.split(" ")[0]+"!";
-    document.getElementById("doneMsg").textContent="Your account is created and your 4-digit PIN is saved securely. Derrick can see your info in the office now.";
+    document.getElementById("doneH").textContent="Thanks, "+name.split(" ")[0]+"!";
+    document.getElementById("doneMsg").textContent="Your account and 4-digit PIN are saved securely. Derrick or Brandi will approve your account — after that you can clock in from the crew app.";
     document.getElementById("done").style.display="";
     window.scrollTo(0,0);
   });

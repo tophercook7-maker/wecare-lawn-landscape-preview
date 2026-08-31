@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>(function(){try{if(!localStorage.getItem("wecare_office_code")){location.replace("login.html?next="+encodeURIComponent((location.pathname.split("/").pop())||"pulse.html"));}}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WeCare Landscapes — Field Ops</title>
 <meta name="robots" content="noindex,nofollow">
@@ -628,23 +629,37 @@ function renderTeam(){
     return;
   }
   var list=allEmps();
-  box.innerHTML='<div style="text-align:right;margin-bottom:8px"><button class="btn" onclick="lockTeam()">🔒 Lock</button></div>'+list.map(function(e){
-    var pin = e.pin ? '<span style="color:var(--ok,#2f8055)">🔒 PIN set</span>' : '<span style="color:#b5751f">⚠️ no PIN yet</span>';
-    var inactive = e.active===false ? ' style="opacity:.55"' : '';
-    return '<div'+inactive+' style="border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-bottom:10px;background:#fff">'+
+  // pending accounts (awaiting approval) float to the top
+  list=list.slice().sort(function(a,b){ return (a.status==="pending"?0:1)-(b.status==="pending"?0:1); });
+  var pendingCount=list.filter(function(e){return e.status==="pending";}).length;
+  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+      '<span class="mini">'+(pendingCount?('<b style="color:#b5751f">'+pendingCount+' awaiting approval</b>'):'')+'</span>'+
+      '<button class="btn" onclick="lockTeam()">🔒 Lock</button></div>'+
+    list.map(function(e){
+    var pin = e.hasPin ? '<span style="color:var(--ok,#2f8055)">🔒 PIN set</span>' : '<span style="color:#b5751f">⚠️ no PIN yet</span>';
+    var pending = e.status==="pending";
+    var edge = pending ? 'border:1.5px solid #e6cd97;background:#fdf9f0' : 'border:1px solid var(--line);background:#fff';
+    var dim = (e.active===false && !pending) ? 'opacity:.55' : '';
+    var s4 = e.ssnLast4 ? ' · SSN •••‑'+esc(e.ssnLast4) : '';
+    return '<div style="'+edge+';'+dim+';border-radius:11px;padding:12px 14px;margin-bottom:10px">'+
       '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline">'+
-        '<b style="color:var(--green-ink)">'+esc(e.name||"(no name)")+(e.admin?' <span class="mini">· admin</span>':'')+(e.active===false?' <span class="mini">· inactive</span>':'')+'</b>'+
-        '<span class="mini">'+esc(e.role||"")+'</span></div>'+
+        '<b style="color:var(--green-ink)">'+esc(e.name||"(no name)")+
+          (pending?' <span class="mini" style="color:#b5751f;font-weight:700">· PENDING</span>':'')+
+          (e.admin?' <span class="mini">· admin</span>':'')+
+          (e.active===false&&!pending?' <span class="mini">· inactive</span>':'')+'</b>'+
+        '<span class="mini">'+esc(e.role||"")+(e.empType==="1099"?" · 1099":"")+'</span></div>'+
       '<div class="mini" style="margin-top:4px">'+
         (e.phone?'📱 '+esc(e.phone):'<span style="color:#b5751f">no phone</span>')+
-        ' · 💵 '+payLabel(e)+' · '+pin+'</div>'+
+        ' · 💵 '+payLabel(e)+' · '+pin+s4+'</div>'+
       (e.address?'<div class="mini">🏠 '+esc(e.address)+'</div>':'')+
       (e.emergencyName?'<div class="mini">🚑 '+esc(e.emergencyName)+(e.emergencyPhone?' · '+esc(e.emergencyPhone):'')+'</div>':'')+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+        (pending?'<button class="btn p" onclick="approveEmp(\''+e.id+'\')">✅ Approve</button>':'')+
         '<button class="btn" onclick="openEmpEdit(\''+e.id+'\')">Edit / set up</button>'+
         '<button class="btn" onclick="printEmp(\''+e.id+'\')">🖨️ Print</button>'+
       '</div></div>';
-  }).join("") || '<div class="empty">No team members yet.</div>';
+  }).join("");
+  if(!list.length) box.innerHTML+='<div class="empty">No team members yet.</div>';
 }
 var _pendingPin=null; // set by resetEmpPin, applied on save
 function openEmpEdit(id){
@@ -695,6 +710,12 @@ function saveEmp(){
     closeEmpEdit(); loadTeam();
   });
 }
+function approveEmp(id){
+  WeCareCloud.team("approve",{id:id, code:officeCode()}).then(function(res){
+    if(!res || !res.ok){ alert("Couldn't approve — is the office code entered?"); return; }
+    loadTeam();
+  });
+}
 function delEmp(){
   var id=document.getElementById("eId").value; if(!id){ closeEmpEdit(); return; }
   var e=allEmps().find(function(x){return x.id===id;});
@@ -711,7 +732,12 @@ function empProfileHTML(e){
     '<table style="border-collapse:collapse;font-size:14px">'+
       row("Cell phone",e.phone)+row("Email",e.email)+row("Home address",e.address)+
       row("Emergency contact",(e.emergencyName||"")+(e.emergencyPhone?" · "+e.emergencyPhone:""))+
-      row("Pay",payLabel(e))+row("Start date",e.startDate)+row("Clock-in PIN",e.pin?"Set ✓":"Not set")+
+      row("Pay",payLabel(e))+row("Start date",e.startDate)+row("Clock-in PIN",e.hasPin?"Set ✓":"Not set")+
+      row("Status",(e.status==="pending"?"PENDING APPROVAL":(e.active===false?"Inactive":"Active")))+
+      '<tr><td colspan="2" style="padding-top:10px"><b style="font-family:Georgia,serif;color:#153a2a">Payroll / W-2</b></td></tr>'+
+      row("Employment type",(e.empType==="1099"?"1099 Contractor":"W-2 Employee"))+
+      row("Legal name",e.legalName)+row("SSN (last 4)",e.ssnLast4?("•••-••-"+e.ssnLast4):"")+
+      row("Date of birth",e.dob)+row("Filing status",e.filingStatus)+
       (e.notes?row("Notes",e.notes):"")+
     '</table>'+
     '<div style="margin-top:20px;border-top:1px solid #ccc;padding-top:12px">'+
