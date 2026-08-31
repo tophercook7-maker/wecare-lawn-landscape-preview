@@ -258,9 +258,12 @@ function render(){
   var open=punches.filter(function(p){return !p.out});
   document.getElementById("onclock").innerHTML = open.length ? open.map(function(p){
     var job=jobs.find(function(j){return j.id===p.jobId});
-    return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)">'+
-      '<span class="on"><span class="dot"></span>'+esc(p.empName)+'</span>'+
-      '<span class="mini">'+(job?esc(job.customer):'—')+' · '+fmtDur(Date.now()-new Date(p.in).getTime())+(p.inGeo?' · 📍':'')+'</span></div>';
+    var elapsed=Date.now()-new Date(p.in).getTime();
+    var stale=elapsed>12*3600000;   // open >12h = probably a forgotten clock-out
+    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)'+(stale?';background:rgba(181,117,31,.08)':'')+'">'+
+      '<span class="on"><span class="dot"></span>'+esc(p.empName)+(stale?' <span class="mini" style="color:#b5751f;font-weight:700">⚠️ forgot to clock out?</span>':'')+'</span>'+
+      '<span class="mini" style="display:flex;align-items:center;gap:8px">'+(job?esc(job.customer):'—')+' · '+fmtDur(elapsed)+(p.inGeo?' · 📍':'')+
+      ' <button class="btn" style="padding:3px 9px" onclick="closePunch(\''+p.id+'\')">✎ Set clock-out</button></span></div>';
   }).join("") : '<div class="empty">Nobody clocked in right now.</div>';
 
   // weekly hours + pay (per-person rates; Chris Crain = $150/workday)
@@ -379,6 +382,22 @@ function createWO(){
   render();
 }
 function resolveFix(id){var f=load(K_FIX,[]);var x=f.find(function(y){return y.id===id});if(x)x.resolved=true;save(K_FIX,f);render();}
+// owner fixes a forgotten clock-out so the shift's pay isn't lost (keeps an audit note)
+function closePunch(id){
+  var all=load(K_PUNCH,[]); var p=all.find(function(x){return x.id===id;}); if(!p||p.out){ render(); return; }
+  var inD=new Date(p.in);
+  var suggest=new Date(inD.getTime()+8*3600000);
+  var sh=String(suggest.getHours()).padStart(2,"0")+":"+String(suggest.getMinutes()).padStart(2,"0");
+  var v=prompt("Set "+p.empName+"'s clock-out time (24-hour, e.g. 15:30) for "+inD.toLocaleDateString()+":", sh);
+  if(v===null) return;
+  var m=v.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if(!m || +m[1]>23 || +m[2]>59){ alert("Please enter a time like 15:30."); return; }
+  var out=new Date(inD); out.setHours(+m[1],+m[2],0,0);
+  if(out.getTime()<=inD.getTime()) out.setDate(out.getDate()+1);   // worked past midnight
+  p.out=out.toISOString();
+  (p.edits||(p.edits=[])).push({by:"owner",at:new Date().toISOString(),action:"set clock-out "+v.trim()});
+  save(K_PUNCH,all); render(); renderCosting();
+}
 
 /* ---- Job costing: actual labor hours per job from the clock-ins ---- */
 function renderCosting(){
