@@ -11,10 +11,10 @@ var H={ "apikey":ANON, "Authorization":"Bearer "+ANON, "Content-Type":"applicati
 
 /* store config: localStorage key, table, shape (array|objmap), field maps js<->sql */
 var STORES=[
- {key:"wecare_leads", table:"leads", shape:"array",
+ {key:"wecare_leads", table:"leads", shape:"array", protected:true,
   toRow:function(o){return {id:o.id,name:o.name,phone:o.phone,email:o.email,address:o.address,service:o.service,detail:o.detail,sqft:o.sqft||null,when_text:o.when,source:o.source,stage:o.stage,created:o.created,touches:o.touches||[],fu_stop:!!o.fuStop};},
   fromRow:function(r){return {id:r.id,name:r.name,phone:r.phone,email:r.email,address:r.address,service:r.service,detail:r.detail,sqft:r.sqft,when:r.when_text,source:r.source,stage:r.stage,created:r.created,touches:r.touches||[],fuStop:r.fu_stop};}},
- {key:"wecare_convos", table:"conversations", shape:"objmap",
+ {key:"wecare_convos", table:"conversations", shape:"objmap", protected:true,
   toRow:function(o){return {id:o.id,customer:o.customer||{},service:o.service,msgs:o.msgs||[],control:o.control,status:o.status,unseen:!!o.unseen,created:o.created,updated:o.updated};},
   fromRow:function(r){return {id:r.id,customer:r.customer||{},service:r.service,msgs:r.msgs||[],control:r.control,status:r.status,unseen:r.unseen,created:r.created,updated:r.updated};}},
  {key:"wecare_workorders", table:"work_orders", shape:"array",
@@ -96,15 +96,31 @@ function applyRemote(store, rows){
   return true;
 }
 
+function officeCode(){ try{ return localStorage.getItem("wecare_office_code")||""; }catch(e){ return ""; } }
+// protected stores (customer PII / chat logs): the anon key can't SELECT them —
+// pulled only through the office-password `team` gate.
+function pullProtected(){
+  var code=officeCode(); if(!code) return;
+  var prot=STORES.filter(function(s){return s.protected;});
+  if(!prot.length) return;
+  team("crm_read",{code:code}).then(function(res){
+    if(!res || res.error) return;
+    var changed=false;
+    prot.forEach(function(store){ if(res[store.table] && applyRemote(store,res[store.table])) changed=true; });
+    if(changed){ try{window.dispatchEvent(new Event("storage"));}catch(e){} }
+  }).catch(function(){});
+}
 function pullAll(){
-  var changed=false, pending=STORES.length;
-  STORES.forEach(function(store){
+  var open=STORES.filter(function(s){return !s.protected;});
+  var changed=false, pending=open.length;
+  open.forEach(function(store){
     fetch(REST+store.table+"?select=*", {headers:H})
       .then(function(r){return r.ok?r.json():[];})
       .then(function(rows){ if(applyRemote(store,rows)) changed=true; })
       .catch(function(){})
       .then(function(){ if(--pending===0 && changed){ try{window.dispatchEvent(new Event("storage"));}catch(e){} } });
   });
+  pullProtected();
 }
 
 // on load: push any local-only data up first, then pull, then poll
