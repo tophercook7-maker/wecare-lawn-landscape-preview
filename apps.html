@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>We Care — App Links</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#2b6b78;--green:#2f8055;--green-deep:#1f5d3d;--green-ink:#153a2a;--ink:#16302a;--body:#33443f;--muted:#6d7d77;--leaf:#7bb03e;
+  --paper:#eef1ee;--surface:#fff;--sand:#f0eee4;--line:#e0e4e0;--ff-d:"Fraunces",Georgia,serif;--ff:"Figtree",-apple-system,sans-serif;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#10201a;--surface:#16281f;--sand:#1a2f25;--line:#274235;--ink:#eef4f0;--body:#c3d1c9;--muted:#8fa298;--green-ink:#eaf5ee;--green-deep:#8fe0b0;}}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--body);font-family:var(--ff);line-height:1.5}
+.top{background:linear-gradient(135deg,#173b2c,#2c6d7b);color:#fff;padding:20px 0;text-align:center}
+.top img{height:40px;vertical-align:middle;margin-right:8px}
+.top b{font-family:var(--ff-d);font-size:1.3rem;vertical-align:middle}
+.top .s{display:block;opacity:.85;font-size:.85rem;margin-top:4px}
+.wrap{max-width:560px;margin:0 auto;padding:0 20px 50px}
+h2{font-family:var(--ff-d);color:var(--green-ink);font-size:1.15rem;margin:26px 0 4px}
+.who{font-size:.85rem;color:var(--muted);margin-bottom:12px}
+a.app{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:10px;text-decoration:none;color:var(--ink);box-shadow:0 2px 10px rgba(20,48,42,.05)}
+a.app:active{transform:scale(.99)}
+a.app .ic{font-size:1.6rem;width:42px;height:42px;flex:none;display:grid;place-items:center;background:var(--sand);border-radius:11px}
+a.app .t b{display:block;font-family:var(--ff-d);color:var(--green-ink);font-size:1.05rem}
+a.app .t span{font-size:.85rem;color:var(--muted)}
+a.app .go{margin-left:auto;color:var(--teal);font-weight:700}
+.install{background:var(--sand);border-radius:12px;padding:14px 16px;font-size:.88rem;margin-top:14px}
+.install b{color:var(--green-ink)}
+.install .os{margin-top:8px}
+.tip{font-size:.82rem;color:var(--muted);text-align:center;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="top"><img src="img/logo-white.png" alt=""><b>We Care — Your Apps</b><span class="s">Bookmark this page. Tap any app below.</span></div>
+<div class="wrap">
+
+  <h2>👷 For the crew</h2>
+  <p class="who">Clock in, see your jobs, follow the steps, snap photos.</p>
+  <a class="app" href="crew.html">
+    <span class="ic">📱</span>
+    <span class="t"><b>Crew App</b><span>Clock in · today's jobs · SOPs · photos · your hours</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <div class="install">
+    <b>Put it on your phone (30 seconds):</b>
+    <div class="os">📱 <b>iPhone:</b> open it in Safari → tap <b>Share</b> → <b>Add to Home Screen</b>.</div>
+    <div class="os">🤖 <b>Android:</b> open it in Chrome → tap <b>⋮</b> → <b>Add to Home screen</b> / <b>Install app</b>.</div>
+    <div class="os" style="margin-top:6px">It'll get its own We Care icon and open like a real app.</div>
+  </div>
+
+  <h2 style="margin-top:32px">🧑‍💼 For the office (Derrick &amp; Brandi)</h2>
+  <p class="who">Run the business — leads, schedule, payroll, and your week at a glance.</p>
+  <a class="app" href="pulse.html">
+    <span class="ic">🏠</span>
+    <span class="t"><b>Owner Home</b><span>Your week at a glance · start here · guided tour</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <a class="app" href="dashboard.html">
+    <span class="ic">📇</span>
+    <span class="t"><b>Leads / CRM</b><span>Pipeline · follow-ups · consultations · conversations</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <a class="app" href="ops.html">
+    <span class="ic">🧰</span>
+    <span class="t"><b>Field Ops</b><span>Work orders · payroll · job costing · SOPs · recurring</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <a class="app" href="estimate.html">
+    <span class="ic">🧮</span>
+    <span class="t"><b>Estimator</b><span>Build quotes from recipes, link them to a lead</span></span>
+    <span class="go">Open →</span>
+  </a>
+  <div class="install">
+    <b>Install the owner app:</b>
+    <div class="os">Open <b>Owner Home</b> above → <b>Share / ⋮</b> → <b>Add to Home Screen</b>. It installs as <b>"We Care Owner"</b> and opens to your dashboard.</div>
+    <div class="os" style="margin-top:6px">New here? Owner Home greets you with a 🎓 guided tour of everything.</div>
+  </div>
+
+  <h2 style="margin-top:32px">🌐 Your website</h2>
+  <a class="app" href="index.html">
+    <span class="ic">🌿</span>
+    <span class="t"><b>We Care website</b><span>What your customers see · wecarelandscapes.expert</span></span>
+    <span class="go">Open →</span>
+  </a>
+
+  <p class="tip">🔒 This page is private (hidden from Google). Bookmark it or add it to your home screen for one-tap access to everything.</p>
+</div>
+</body>
+</html>
