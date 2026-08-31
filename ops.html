@@ -460,7 +460,9 @@ function generateRecurring(){
   recur.forEach(function(s){
     var d=recurNextDue(s);
     if(!jobs.some(function(j){return j.recurId===s.id&&j.date===d;})){
-      jobs.push({id:"W"+Date.now().toString(36)+Math.floor(Math.random()*1000),customer:s.customer,phone:s.phone||"",service:s.service,address:s.address||"",scope:"Recurring "+(s.service||"maintenance").toLowerCase(),sop:(s.service||"")+" SOP",assignedTo:s.crew||[],date:d,status:"assigned",estHours:s.estHours||null,recurId:s.id});
+      // deterministic id: two devices generating the same recurring job/date produce the
+      // SAME id, so the cloud on-conflict merge converges them instead of duplicating
+      jobs.push({id:"WR-"+s.id+"-"+d,customer:s.customer,phone:s.phone||"",service:s.service,address:s.address||"",scope:"Recurring "+(s.service||"maintenance").toLowerCase(),sop:(s.service||"")+" SOP",assignedTo:s.crew||[],date:d,status:"assigned",estHours:s.estHours||null,recurId:s.id});
       changed=true;
     }
   });

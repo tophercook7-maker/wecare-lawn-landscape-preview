@@ -70,11 +70,12 @@ button.go:disabled{opacity:.6}
       <option>Something else</option>
     </select>
 
-    <label for="date">Preferred day <span class="hint" style="font-weight:400">(Mon–Fri)</span></label>
+    <label for="date">Preferred day <span class="hint" style="font-weight:400">(weekdays standard · weekends by request)</span></label>
     <input id="date" type="date">
 
     <label>Preferred window</label>
     <div class="slots" id="slots"></div>
+    <div id="weekendNote" style="display:none;background:rgba(181,117,31,.12);border:1px solid #e6cd97;border-radius:9px;padding:9px 12px;font-size:.85rem;color:#7a5a1f;margin-top:8px">📅 That's a weekend — we schedule those <b>by request</b>. Go ahead and pick a window and submit; we'll confirm if we can make it work.</div>
     <div class="hint">This is a requested window, not a locked appointment — we'll confirm a narrower arrival time once we group nearby visits. Need an evening or weekend? Note it below — limited after-hours consultations are available by request.</div>
 
     <label for="nm">Your name</label>
@@ -120,13 +121,14 @@ function taken(date){
 }
 function renderSlots(){
   var box=document.getElementById("slots"), date=dateEl.value;
-  // weekday guard (standard windows are Mon–Fri; weekends by request via notes)
   var dow=date?new Date(date+"T12:00:00").getDay():0;
   var weekend=(dow===0||dow===6);
+  // windows are selectable any day; weekends are simply flagged as "by request"
   box.innerHTML=SLOTS.map(function(s){
-    return '<button type="button" class="slot'+(picked===s[0]&&!weekend?' sel':'')+'" data-v="'+s[0]+'" '+(weekend?'disabled':'')+'>'+s[1].replace(/\n/g,'<br>')+'</button>';
+    return '<button type="button" class="slot'+(picked===s[0]?' sel':'')+'" data-v="'+s[0]+'">'+s[1].replace(/\n/g,'<br>')+'</button>';
   }).join("");
-  if(weekend){ picked=""; }
+  var note=document.getElementById("weekendNote");
+  if(note) note.style.display = weekend ? "block" : "none";
   box.querySelectorAll(".slot").forEach(function(b){ b.onclick=function(){ picked=b.dataset.v; renderSlots(); }; });
 }
 renderSlots();
