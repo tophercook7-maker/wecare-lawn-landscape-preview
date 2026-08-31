@@ -31,23 +31,21 @@ h1{font-family:var(--ff-d);color:var(--green-ink);font-size:1.4rem;margin:6px 0 
 </head>
 <body>
 <div class="card" id="card"><div class="msg">Loading your booking…</div></div>
-<script src="js/wecare-cloud.js?v=0833"></script>
+<script src="js/wecare-cloud.js?v=0834"></script>
 <script>
 function q(k){return new URLSearchParams(location.search).get(k);}
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]});}
 function fmtDate(d){if(!d)return"";try{return new Date(d+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}catch(e){return d;}}
 function fmtTime(t){if(!t)return"";if(t==="AM")return "Morning (9–12)";if(t==="PM")return "Afternoon (12–3)";var p=t.split(":"),h=+p[0],m=p[1]||"00",ap=h>=12?"PM":"AM";h=h%12||12;return h+":"+m+" "+ap;}
-var id=q("c"), done=false;
+var id=q("c");
 var STEP={requested:["s-requested","Request received"],confirmed:["s-confirmed","Confirmed ✓"],completed:["s-completed","Completed — thank you!"],canceled:["s-canceled","Canceled"]};
 var LINE={requested:"We've got your requested window. We group nearby visits together, so Derrick will reach out to confirm a narrower arrival time — and you'll get a text when he's on the way.",confirmed:"You're all set for your window. We'll text you when Derrick is on the way with a closer arrival time.",completed:"Thanks for choosing WeCare Landscapes. We'd love a review if you have a minute!",canceled:"This booking was canceled. Give us a call anytime to reschedule."};
-function render(){
+function render(c){
   var box=document.getElementById("card");
-  var c=load("wecare_consults",[]).find(function(x){return x.id===id;});
-  if(!c){ if(!done) box.innerHTML='<img class="logo" src="img/logo.png" alt="WeCare Landscapes"><h1>Booking not found</h1><div class="msg">We couldn\'t find this booking. Give us a call and we\'ll sort it out.</div><a class="call" href="tel:5016274384">📞 Call (501) 627-4384</a>'; return; }
-  done=true;
+  if(!c || !c.found){ box.innerHTML='<img class="logo" src="img/logo.png" alt="WeCare Landscapes"><h1>Booking not found</h1><div class="msg">We couldn\'t find this booking. Give us a call and we\'ll sort it out.</div><a class="call" href="tel:5016274384">📞 Call (501) 627-4384</a>'; return; }
   var st=STEP[c.status]||STEP.requested;
-  var fn=(c.name||"there").split(" ")[0];
+  var fn=c.firstName||"there";
   box.innerHTML='<img class="logo" src="img/logo.png" alt="WeCare Landscapes">'+
     '<h1>Hi '+esc(fn)+'! 👋</h1>'+
     '<div class="msg">Here\'s your consultation with WeCare Landscapes.</div>'+
@@ -62,9 +60,16 @@ function render(){
     '<a class="call" href="tel:5016274384">📞 Call (501) 627-4384</a>'+
     '<div class="foot">WeCare Landscapes · in Central Arkansas</div>';
 }
-window.addEventListener("storage",render);
-setInterval(function(){if(!done)render();},2000);
-render();
+var everFound=false;
+function fetchStatus(){
+  if(!id){ render(null); return; }
+  WeCareCloud.team("consult_status",{id:id}).then(function(c){
+    if(c && c.found){ everFound=true; render(c); }
+    else if(!everFound){ render(null); }
+  }).catch(function(){ if(!everFound) render(null); });
+}
+fetchStatus();
+setInterval(fetchStatus, 8000);
 </script>
 </body>
 </html>

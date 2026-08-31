@@ -29,7 +29,7 @@ var STORES=[
  {key:"wecare_punch_fixes", table:"punch_fixes", shape:"array",
   toRow:function(o){return {id:o.id,emp_id:o.empId,emp_name:o.empName,note:o.note,resolved:!!o.resolved,created:o.when||o.created};},
   fromRow:function(r){return {id:r.id,empId:r.emp_id,empName:r.emp_name,note:r.note,resolved:r.resolved,when:r.created};}},
- {key:"wecare_consults", table:"consultations", shape:"array",
+ {key:"wecare_consults", table:"consultations", shape:"array", protected:true,
   toRow:function(o){return {id:o.id,name:o.name||"",phone:o.phone||"",email:o.email||"",service:o.service||"",address:o.address||"",date:o.date||"",time:o.time||"",notes:o.notes||"",status:o.status||"requested",source:o.source||"",lead_id:o.leadId||"",created:o.created};},
   fromRow:function(r){return {id:r.id,name:r.name,phone:r.phone,email:r.email,service:r.service,address:r.address,date:r.date,time:r.time,notes:r.notes,status:r.status,source:r.source,leadId:r.lead_id,created:r.created};}},
  {key:"wecare_sops", table:"sops", shape:"array",
