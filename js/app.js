@@ -272,7 +272,7 @@ var Sage=(function(){
   // ---- Sage's real brain: the server-side LLM function (Gemini + full spec) ----
   var SAGE_FN="https://fqqbzsxvxpcfwovbunth.supabase.co/functions/v1/sage";
   var llmHist=[];
-  var _leadSaved=false;
+  var _leadSaved=false, _leadId="";
   function maybeCaptureLead(){
     if(_leadSaved) return;
     var text=llmHist.filter(function(m){return m.role==="user";}).map(function(m){return m.content;}).join("  ");
@@ -291,8 +291,9 @@ var Sage=(function(){
     else if(/mow|maintenance|lawn care|cleanup/.test(low))svc="Lawn & Property Care";
     else if(/design|landscap|install|renovat/.test(low))svc="Landscape design/build";
     var detail=llmHist.filter(function(m){return m.role==="user";}).slice(-3).map(function(m){return m.content;}).join(" · ");
-    window.WeCareLeads.save({name:name||"Website visitor", phone:phone, email:email, service:svc,
+    var saved=window.WeCareLeads.save({name:name||"Website visitor", phone:phone, email:email, service:svc,
       detail:detail.slice(0,300), source:"Sage chat", stage:"New"});
+    _leadId=(saved&&saved.id)||"";
     if(convoId) window.WeCareConvos.patch(convoId,{customer:{name:name||"",phone:phone,email:email}, service:svc});
     _leadSaved=true;
   }
@@ -315,9 +316,9 @@ var Sage=(function(){
     try{
       var o=JSON.parse(m[1]);
       if(o && (o.name||o.phone)){
-        var rec={id:"C"+Date.now().toString(36),name:o.name||"",phone:o.phone||"",email:o.email||"",
+        var rec={id:"C"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8),name:o.name||"",phone:o.phone||"",email:o.email||"",
           service:o.service||"",address:o.address||"",date:o.date||"",time:o.time||"",
-          notes:o.notes||"",status:"requested",source:"Sage (AI chat)",leadId:"",created:new Date().toISOString()};
+          notes:o.notes||"",status:"requested",source:"Sage (AI chat)",leadId:_leadId||"",created:new Date().toISOString()};
         var key="wecare_consults", all; try{all=JSON.parse(localStorage.getItem(key))||[]}catch(e){all=[]}
         all.push(rec); localStorage.setItem(key,JSON.stringify(all));
         _booked=true;
@@ -336,11 +337,11 @@ var Sage=(function(){
         stopTyping();
         var reply=(d&&d.reply)?d.reply:"";
         if(!reply) reply="I want to make sure I get this right for you — the best next step is a quick word with Derrick. What's a good name and number, and I'll have him reach out? Or call us at "+BIZ.phone+".";
-        reply=maybeBook(reply);                    // handle any consultation booking, strip marker
+        maybeCaptureLead();                        // capture the lead first so a booking can link to it
+        reply=maybeBook(reply);                    // then handle any consultation booking (linked via leadId), strip marker
         llmHist.push({role:"assistant",content:reply});
         var b=el("ai-msg bot", escapeHtml(reply).replace(/\n/g,"<br>"));
         msgs.appendChild(b); scroll(); logTurn("sage",reply);
-        maybeCaptureLead();
       })
       .catch(function(){
         stopTyping();
