@@ -154,6 +154,42 @@ function pullAll(){
   if(!authed) pullProtected();
 }
 
+// ---- Supabase Realtime: instant push over a WebSocket (owner pages only) ----
+// On any DB change we debounce-trigger pullAll(), so the existing merge logic
+// (applyRemote — which never wipes local on error) handles the diff. The poll
+// below stays on as a slow fallback for when the socket is dropped/blocked.
+var _rt=null, _rtHb=null, _rtToken="", _rtDebounce=null, _rtRef=0, _rtRetry=null;
+function rtSend(msg){ try{ if(_rt && _rt.readyState===1) _rt.send(JSON.stringify(msg)); }catch(e){} }
+function rtTrigger(){ if(_rtDebounce) return; _rtDebounce=setTimeout(function(){ _rtDebounce=null; pullAll(); }, 300); }
+function startRealtime(){
+  if(!sessionValid()) return;                       // only authenticated owner sessions subscribe
+  if(_rt && (_rt.readyState===0||_rt.readyState===1)) return;   // already connecting/open
+  _rtToken=getSession().access_token;
+  var ws;
+  try{ ws=new WebSocket(URL_.replace(/^http/,"ws")+"/realtime/v1/websocket?apikey="+ANON+"&vsn=1.0.0"); }
+  catch(e){ return; }
+  _rt=ws;
+  ws.onopen=function(){
+    rtSend({topic:"realtime:wecare", event:"phx_join", ref:String(++_rtRef),
+      payload:{config:{postgres_changes:[{event:"*",schema:"public"}]}, access_token:_rtToken}});
+    if(_rtHb) clearInterval(_rtHb);
+    _rtHb=setInterval(function(){
+      rtSend({topic:"phoenix", event:"heartbeat", ref:String(++_rtRef), payload:{}});
+      var t=sessionValid()?getSession().access_token:"";     // token rotated after a refresh → tell the server
+      if(t && t!==_rtToken){ _rtToken=t; rtSend({topic:"realtime:wecare", event:"access_token", ref:String(++_rtRef), payload:{access_token:t}}); }
+    }, 25000);
+  };
+  ws.onmessage=function(ev){
+    var m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
+    if(m && m.event==="postgres_changes") rtTrigger();
+  };
+  ws.onclose=function(){ if(_rtHb){ clearInterval(_rtHb); _rtHb=null; } _rt=null; scheduleReconnect(); };
+  ws.onerror=function(){ try{ ws.close(); }catch(e){} };
+}
+function scheduleReconnect(){
+  if(_rtRetry) return;
+  _rtRetry=setTimeout(function(){ _rtRetry=null; if(window.WECARE_SYNC && document.visibilityState!=="hidden") startRealtime(); }, 5000);
+}
 // on load: push any local-only data up first, then pull, then poll
 function initialSync(){
   // seed shadow + push existing local rows (so demo/local data lands in cloud once)
@@ -162,7 +198,8 @@ function initialSync(){
     if(raw){ try{ pushChanges(store, raw); }catch(e){} }
   });
   pullAll();
-  setInterval(function(){ if(document.visibilityState!=="hidden") pullAll(); }, 6000);   // live-ish sync; paused when tab hidden
+  startRealtime();
+  setInterval(function(){ if(document.visibilityState!=="hidden") pullAll(); }, 20000);  // slow fallback; realtime carries the fast path
 }
 // upload a job photo to Supabase Storage → returns the public URL
 function uploadPhoto(file, jobId){
@@ -205,7 +242,7 @@ window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, 
 function maybeSync(){ if(window.WECARE_SYNC) initialSync(); }
 document.addEventListener("visibilitychange",function(){
   if(!window.WECARE_SYNC) return;
-  if(document.visibilityState==="visible") pullAll();
+  if(document.visibilityState==="visible"){ pullAll(); startRealtime(); }   // catch up + resubscribe if the socket dropped while hidden
 });
 if(document.readyState!=="loading") maybeSync();
 else document.addEventListener("DOMContentLoaded", maybeSync);
