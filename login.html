@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--teal-deep:#2b6b78;--green-deep:#1f5d3d;--green-ink:#153a2a;--ink:#16302a;--body:#33443f;--muted:#6d7d77;--paper:#eef1ee;--surface:#fff;--sand:#f0eee4;--line:#e0e4e0;--red:#c1512f;--ff-d:"Fraunces",Georgia,serif;--ff:"Figtree",-apple-system,sans-serif;}
+:root{--teal-deep:#2b6b78;--green-deep:#1f5d3d;--green-ink:#153a2a;--ink:#16302a;--body:#33443f;--muted:#586b64;--paper:#eef1ee;--surface:#fff;--sand:#f0eee4;--line:#e0e4e0;--red:#c1512f;--ff-d:"Fraunces",Georgia,serif;--ff:"Figtree",-apple-system,sans-serif;}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#10201a;--surface:#16281f;--sand:#1a2f25;--line:#274235;--ink:#eef4f0;--body:#c3d1c9;--muted:#8fa298;--green-ink:#eaf5ee;}}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(135deg,#173b2c,#2c6d7b);color:var(--body);font-family:var(--ff);display:grid;place-items:center;padding:24px}
 .card{background:var(--surface);border-radius:18px;max-width:400px;width:100%;padding:30px 28px;box-shadow:0 24px 60px rgba(20,48,42,.3);text-align:center}
@@ -17,10 +17,13 @@
 h1{font-family:var(--ff-d);color:var(--green-ink);font-size:1.4rem;margin:4px 0 2px}
 .sub{color:var(--muted);font-size:.9rem;margin:0 0 18px}
 label{display:block;text-align:left;font-size:.8rem;font-weight:700;color:var(--ink);margin:12px 0 5px}
-input{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);text-align:center;letter-spacing:.15em;font-size:1.1rem}
+input{width:100%;font:inherit;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
 button.go{width:100%;margin-top:18px;font:inherit;font-weight:700;font-size:1rem;padding:13px;border:0;border-radius:11px;cursor:pointer;background:linear-gradient(135deg,var(--green-deep),var(--teal-deep));color:#fff}
+button.go:disabled{opacity:.6}
 .err{display:none;color:var(--red);font-size:.88rem;margin-top:12px}
 .err.show{display:block}
+.ok{display:none;color:var(--green-deep);font-size:.88rem;margin-top:12px;font-weight:600}
+.ok.show{display:block}
 .alt{background:none;border:0;color:var(--teal-deep);font:600 .84rem var(--ff);cursor:pointer;margin-top:14px;text-decoration:underline}
 .note{font-size:.78rem;color:var(--muted);margin-top:16px}
 </style>
@@ -29,91 +32,70 @@ button.go{width:100%;margin-top:18px;font:inherit;font-weight:700;font-size:1rem
 <div class="card">
   <img class="logo" src="img/logo.png" alt="WeCare Landscapes">
   <h1 id="ttl">Office Login</h1>
-  <p class="sub" id="sub">Loading…</p>
+  <p class="sub" id="sub">Sign in to your WeCare dashboards.</p>
   <div id="fields"></div>
   <div class="err" id="err"></div>
-  <button class="go" id="go" style="display:none" onclick="submit()"></button>
-  <button class="alt" id="alt" style="display:none" onclick="toggleChange()"></button>
+  <div class="ok" id="ok"></div>
+  <button class="go" id="go" onclick="submit()">Log in</button>
+  <button class="alt" id="alt" onclick="toggleChange()">Change my password</button>
   <p class="note">For Derrick &amp; Brandi. The crew uses the crew app with their own PIN.</p>
 </div>
 
-<script src="js/wecare-cloud.js?v=0836"></script>
+<script src="js/wecare-cloud.js?v=0838"></script>
 <script>
 function q(k){return new URLSearchParams(location.search).get(k);}
 var NEXT=q("next")||"pulse.html";
-if(!/^[a-z0-9\-]+\.html$/i.test(NEXT)) NEXT="pulse.html";   // only allow same-site page names
-var mode="enter", isSet=false, changing=false;
-function el(id){return document.getElementById(id);}
-function showErr(t){var e=el("err");e.textContent=t;e.className="err show";}
-function clearErr(){el("err").className="err";}
-
+if(!/^[a-z0-9\-]+\.html$/i.test(NEXT)) NEXT="pulse.html";
+var el=function(id){return document.getElementById(id);};
+var changing=false;
+function showErr(t){el("err").textContent=t;el("err").className="err show";el("ok").className="ok";}
+function showOk(t){el("ok").textContent=t;el("ok").className="ok show";el("err").className="err";}
+function clearMsg(){el("err").className="err";el("ok").className="ok";}
 function paint(){
-  clearErr();
-  var f=el("fields");
-  if(mode==="create"){
-    el("ttl").textContent="Create your office password";
-    el("sub").textContent="Derrick or Brandi: set the password you'll both use to open the office tools.";
-    f.innerHTML='<label>New office password (min 6)</label><input id="p1" type="password" autocomplete="new-password">'+
-                '<label>Confirm password</label><input id="p2" type="password" autocomplete="new-password">';
-    el("go").textContent="Create password"; el("go").style.display="";
-    el("alt").style.display="none";
-  } else if(changing){
-    el("ttl").textContent="Change office password";
-    el("sub").textContent="Enter the current password, then your new one.";
-    f.innerHTML='<label>Current password</label><input id="pc" type="password">'+
-                '<label>New password (min 6)</label><input id="p1" type="password" autocomplete="new-password">'+
-                '<label>Confirm new password</label><input id="p2" type="password" autocomplete="new-password">';
-    el("go").textContent="Update password"; el("go").style.display="";
-    el("alt").textContent="← Back"; el("alt").style.display="";
+  clearMsg();
+  if(changing){
+    el("ttl").textContent="Change password";
+    el("sub").textContent="Enter your email and current password, then a new one.";
+    el("fields").innerHTML='<label>Email</label><input id="email" type="email" autocomplete="username">'+
+      '<label>Current password</label><input id="pw" type="password" autocomplete="current-password">'+
+      '<label>New password (min 8)</label><input id="np" type="password" autocomplete="new-password">';
+    el("go").textContent="Update password"; el("alt").textContent="← Back to login";
   } else {
     el("ttl").textContent="Office Login";
-    el("sub").textContent="Enter the office password to open your dashboards.";
-    f.innerHTML='<label>Office password</label><input id="p1" type="password" autocomplete="current-password">';
-    el("go").textContent="Log in"; el("go").style.display="";
-    el("alt").textContent="Change office password"; el("alt").style.display="";
-    setTimeout(function(){var p=el("p1"); if(p){p.focus(); p.onkeyup=function(e){if(e.key==="Enter")submit();};}},60);
+    el("sub").textContent="Sign in to your WeCare dashboards.";
+    el("fields").innerHTML='<label>Email</label><input id="email" type="email" autocomplete="username">'+
+      '<label>Password</label><input id="pw" type="password" autocomplete="current-password">';
+    el("go").textContent="Log in"; el("alt").textContent="Change my password";
+    setTimeout(function(){var p=el("email");if(p)p.focus();var pw=el("pw");if(pw)pw.onkeyup=function(e){if(e.key==="Enter")submit();};},50);
   }
 }
 function toggleChange(){ changing=!changing; paint(); }
-
-WeCareCloud.team("office_status").then(function(r){
-  isSet = !!(r && r.set);
-  mode = isSet ? "enter" : "create";
-  paint();
-});
-
 function submit(){
-  clearErr();
-  if(mode==="create"){
-    var a=el("p1").value, b=el("p2").value;
-    if(a.length<6){showErr("Use at least 6 characters.");return;}
-    if(a!==b){showErr("The passwords don't match.");return;}
-    el("go").disabled=true;
-    WeCareCloud.team("office_set",{password:a}).then(function(res){
-      el("go").disabled=false;
-      if(res&&res.ok){ store(a); } else showErr("Couldn't set the password — try again.");
-    });
-  } else if(changing){
-    var cur=el("pc").value, n1=el("p1").value, n2=el("p2").value;
-    if(n1.length<6){showErr("New password must be at least 6 characters.");return;}
-    if(n1!==n2){showErr("The new passwords don't match.");return;}
-    el("go").disabled=true;
-    WeCareCloud.team("office_set",{password:n1,current:cur}).then(function(res){
-      el("go").disabled=false;
-      if(res&&res.ok){ store(n1); }
-      else if(res&&res.error==="wrong_current") showErr("The current password isn't right.");
-      else showErr("Couldn't update — try again.");
+  clearMsg();
+  var email=(el("email").value||"").trim().toLowerCase(), pw=el("pw").value||"";
+  if(!email||!pw){ showErr("Enter your email and password."); return; }
+  el("go").disabled=true;
+  if(changing){
+    var np=el("np").value||"";
+    if(np.length<8){ el("go").disabled=false; showErr("New password must be at least 8 characters."); return; }
+    WeCareCloud.login(email,pw).then(function(r){
+      if(!r.ok){ el("go").disabled=false; showErr("That email or current password isn't right."); return; }
+      WeCareCloud.changePassword(np).then(function(c){
+        el("go").disabled=false;
+        if(c.ok){ showOk("Password updated — taking you in…"); setTimeout(function(){location.replace(NEXT);},900); }
+        else showErr("Couldn't update the password — try again.");
+      });
     });
   } else {
-    var pw=el("p1").value;
-    el("go").disabled=true;
-    WeCareCloud.team("office_login",{password:pw}).then(function(res){
+    WeCareCloud.login(email,pw).then(function(r){
       el("go").disabled=false;
-      if(res&&res.ok){ store(pw); } else showErr("That password isn't right.");
+      if(r.ok){ location.replace(NEXT); }
+      else showErr("That email or password isn't right.");
     });
   }
 }
-function store(pw){ try{localStorage.setItem("wecare_office_code",pw);}catch(e){} location.replace(NEXT); }
+if(WeCareCloud.sessionValid && WeCareCloud.sessionValid()) location.replace(NEXT);
+else paint();
 </script>
 </body>
 </html>

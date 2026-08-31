@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script>(function(){try{if(!localStorage.getItem("wecare_office_code")){location.replace("login.html?next="+encodeURIComponent((location.pathname.split("/").pop())||"pulse.html"));}}catch(e){}})();</script>
+<script>(function(){try{var s=JSON.parse(localStorage.getItem("wecare_session")||"null");if(!(s&&s.access_token&&s.expires_at&&s.expires_at*1000>Date.now())){location.replace("login.html?next="+encodeURIComponent((location.pathname.split("/").pop())||"pulse.html"));}}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WeCare Landscapes — Owner Home</title>
 <meta name="robots" content="noindex,nofollow">
@@ -82,7 +82,7 @@ h1{font-family:var(--ff-d);color:var(--green-ink);font-size:1.5rem;margin:24px 0
 <script src="js/wecare-auth.js?v=0830"></script>
 <script>WeCareAuth.guard();</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0836"></script>
+<script src="js/wecare-cloud.js?v=0838"></script>
 <script>
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function arr(k){var r=load(k,[]);return Array.isArray(r)?r:(r?Object.keys(r).map(function(i){return r[i]}):[]);}

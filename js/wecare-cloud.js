@@ -9,6 +9,26 @@ var ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6I
 var REST=URL_+"/rest/v1/";
 var H={ "apikey":ANON, "Authorization":"Bearer "+ANON, "Content-Type":"application/json" };
 
+/* ---- owner auth session (Supabase Auth; the owner tools log in as a real user) ---- */
+var SESS_KEY="wecare_session";
+function getSession(){ try{return JSON.parse(localStorage.getItem(SESS_KEY))||null;}catch(e){return null;} }
+function setSession(s){ try{ if(s) localStorage.setItem(SESS_KEY,JSON.stringify(s)); else localStorage.removeItem(SESS_KEY); }catch(e){} }
+function sessionValid(){ var s=getSession(); return !!(s && s.access_token && s.expires_at && s.expires_at*1000 > Date.now()+3000); }
+function authHeaders(){ return sessionValid() ? {apikey:ANON, Authorization:"Bearer "+getSession().access_token, "Content-Type":"application/json"} : H; }
+function _storeSess(d, email){ if(d && d.access_token){ setSession({access_token:d.access_token,refresh_token:d.refresh_token,expires_at:d.expires_at||(Math.floor(Date.now()/1000)+(d.expires_in||3600)),email:(d.user&&d.user.email)||email}); return true; } return false; }
+function login(email,password){
+  return fetch(URL_+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:ANON,"Content-Type":"application/json"},body:JSON.stringify({email:email,password:password})})
+    .then(function(r){return r.json();}).then(function(d){ return _storeSess(d,email)?{ok:true}:{ok:false,error:(d&&(d.error_description||d.msg))||"login failed"}; })
+    .catch(function(e){return {ok:false,error:String(e)};});
+}
+function refreshSession(){
+  var s=getSession(); if(!s||!s.refresh_token) return Promise.resolve(false);
+  return fetch(URL_+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:ANON,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})})
+    .then(function(r){return r.json();}).then(function(d){ if(_storeSess(d,s.email)) return true; setSession(null); return false; }).catch(function(){return false;});
+}
+function changePassword(newPw){ if(!sessionValid()) return Promise.resolve({ok:false}); return fetch(URL_+"/auth/v1/user",{method:"PUT",headers:authHeaders(),body:JSON.stringify({password:newPw})}).then(function(r){return {ok:r.ok};}).catch(function(){return {ok:false};}); }
+function logout(){ setSession(null); }
+
 /* store config: localStorage key, table, shape (array|objmap), field maps js<->sql */
 var STORES=[
  {key:"wecare_leads", table:"leads", shape:"array", protected:true,
@@ -74,7 +94,7 @@ function pushChanges(store, rawValue){
 function upsert(store, row){
   fetch(REST+store.table+"?on_conflict=id", {
     method:"POST",
-    headers:Object.assign({}, H, {"Prefer":"resolution=merge-duplicates,return=minimal"}),
+    headers:Object.assign({}, authHeaders(), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
     body:JSON.stringify(row)
   }).catch(function(){});
 }
@@ -110,17 +130,24 @@ function pullProtected(){
     if(changed){ try{window.dispatchEvent(new Event("storage"));}catch(e){} }
   }).catch(function(){});
 }
+function maybeRefresh(){ var s=getSession(); if(s && s.refresh_token && s.expires_at && s.expires_at*1000 < Date.now()+120000) refreshSession(); }
 function pullAll(){
-  var open=STORES.filter(function(s){return !s.protected;});
-  var changed=false, pending=open.length;
-  open.forEach(function(store){
-    fetch(REST+store.table+"?select=*", {headers:H})
-      .then(function(r){return r.ok?r.json():[];})
-      .then(function(rows){ if(applyRemote(store,rows)) changed=true; })
-      .catch(function(){})
-      .then(function(){ if(--pending===0 && changed){ try{window.dispatchEvent(new Event("storage"));}catch(e){} } });
-  });
-  pullProtected();
+  maybeRefresh();
+  var authed=sessionValid();
+  // logged in → read every table via the session JWT (RLS grants the owner access);
+  // logged out → only the public/non-protected tables via anon, plus the office-code gate.
+  var stores = authed ? STORES : STORES.filter(function(s){return !s.protected;});
+  var changed=false, pending=stores.length;
+  if(pending){
+    stores.forEach(function(store){
+      fetch(REST+store.table+"?select=*", {headers:authHeaders()})
+        .then(function(r){ return r.ok ? r.json() : null; })   // null on failure → SKIP applyRemote (never wipe local on a 401/expiry)
+        .then(function(rows){ if(rows!==null && applyRemote(store,rows)) changed=true; })
+        .catch(function(){})
+        .then(function(){ if(--pending===0 && changed){ try{window.dispatchEvent(new Event("storage"));}catch(e){} } });
+    });
+  }
+  if(!authed) pullProtected();
 }
 
 // on load: push any local-only data up first, then pull, then poll
@@ -148,7 +175,8 @@ function uploadPhoto(file, jobId){
 var TEAM_FN=URL_+"/functions/v1/team";
 function team(action, payload){
   var body=Object.assign({action:action}, payload||{});
-  return fetch(TEAM_FN,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
+  // send the owner session JWT when present so the function can authorize by real login
+  return fetch(TEAM_FN,{method:"POST",headers:authHeaders(),body:JSON.stringify(body)})
     .then(function(r){return r.json();})
     .catch(function(e){return {error:String(e)};});
 }
@@ -161,7 +189,9 @@ function saveConfirmed(key, obj){
     headers:Object.assign({},H,{"Prefer":"resolution=merge-duplicates,return=minimal"}),
     body:JSON.stringify(store.toRow(obj))}).then(function(r){return r.ok;}).catch(function(){return false;});
 }
-window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed};
+window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed,
+  login:login, logout:logout, refreshSession:refreshSession, changePassword:changePassword,
+  session:getSession, sessionValid:sessionValid, authHeaders:authHeaders};
 // Only the owner/crew tools (which set window.WECARE_SYNC) poll + pull. Public
 // customer pages skip all polling entirely (writes still work via the interceptor
 // and WeCareCloud.save) — no battery/data/egress drain for visitors.

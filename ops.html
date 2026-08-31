@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script>(function(){try{if(!localStorage.getItem("wecare_office_code")){location.replace("login.html?next="+encodeURIComponent((location.pathname.split("/").pop())||"pulse.html"));}}catch(e){}})();</script>
+<script>(function(){try{var s=JSON.parse(localStorage.getItem("wecare_session")||"null");if(!(s&&s.access_token&&s.expires_at&&s.expires_at*1000>Date.now())){location.replace("login.html?next="+encodeURIComponent((location.pathname.split("/").pop())||"pulse.html"));}}catch(e){}})();</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WeCare Landscapes — Field Ops</title>
 <meta name="robots" content="noindex,nofollow">
@@ -226,7 +226,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0836"></script>
+<script src="js/wecare-cloud.js?v=0838"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -629,27 +629,21 @@ function payLabel(e){ if(e.dayRate) return "$"+e.dayRate+"/day"; if(e.rate!=null
 function officeCode(){try{return localStorage.getItem("wecare_office_code")||"";}catch(e){return "";}}
 var _ownerLoaded=false;
 function loadTeam(){
-  var code=officeCode();
-  if(!code || !window.WeCareCloud || !WeCareCloud.team){ renderTeam(); return; }
-  WeCareCloud.team("list",{code:code}).then(function(res){
+  if(!window.WeCareCloud || !WeCareCloud.team){ renderTeam(); return; }
+  // logged-in owner: the session JWT authorizes the team read (no office code needed)
+  WeCareCloud.team("list",{code:officeCode()}).then(function(res){
     if(res && res.owner && res.employees){ save(K_EMP,res.employees); _ownerLoaded=true; CREW=allEmps(); renderTeam(); render(); renderCosting(); }
-    else { try{localStorage.removeItem("wecare_office_code");}catch(e){} _ownerLoaded=false; alert("That office code wasn't recognized."); renderTeam(); }
+    else { _ownerLoaded=false; renderTeam(); }
   });
 }
-function promptOfficeCode(){
-  var v=prompt("Enter the office code to view & manage the team (ask Derrick):","");
-  if(v===null) return;
-  try{localStorage.setItem("wecare_office_code",v.trim());}catch(e){}
-  loadTeam();
-}
-function lockTeam(){ try{localStorage.removeItem("wecare_office_code");}catch(e){} _ownerLoaded=false; save(K_EMP,[]); CREW=allEmps(); renderTeam(); }
+function signOut(){ try{if(window.WeCareCloud&&WeCareCloud.logout)WeCareCloud.logout();}catch(e){} save(K_EMP,[]); location.replace("login.html"); }
 function renderTeam(){
   var box=document.getElementById("teamList"); if(!box) return;
   if(!_ownerLoaded){
     box.innerHTML='<div style="background:var(--sand);border:1px solid var(--line);border-radius:11px;padding:16px;text-align:center">'+
       '<div style="font-size:1.6rem">🔒</div>'+
-      '<p style="margin:6px 0 12px;font-size:.92rem">Your team\'s personal info and PINs are protected. Enter the office code to view and manage them.</p>'+
-      '<button class="btn p" onclick="promptOfficeCode()">Enter office code</button></div>';
+      '<p style="margin:6px 0 12px;font-size:.92rem">Loading your team… if this stays, tap to retry or sign in again.</p>'+
+      '<button class="btn p" onclick="loadTeam()">Load team</button></div>';
     return;
   }
   var list=allEmps();
@@ -658,7 +652,7 @@ function renderTeam(){
   var pendingCount=list.filter(function(e){return e.status==="pending";}).length;
   box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
       '<span class="mini">'+(pendingCount?('<b style="color:#b5751f">'+pendingCount+' awaiting approval</b>'):'')+'</span>'+
-      '<button class="btn" onclick="lockTeam()">🔒 Lock</button></div>'+
+      '<button class="btn" onclick="signOut()">Sign out</button></div>'+
     list.map(function(e){
     var pin = e.hasPin ? '<span style="color:var(--ok,#2f8055)">🔒 PIN set</span>' : '<span style="color:#b5751f">⚠️ no PIN yet</span>';
     var pending = e.status==="pending";

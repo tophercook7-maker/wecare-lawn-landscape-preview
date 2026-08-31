@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">
-<script>(function(){try{if(!localStorage.getItem("wecare_office_code")){location.replace("login.html?next="+encodeURIComponent((location.pathname.split("/").pop())||"pulse.html"));}}catch(e){}})();</script><meta name="viewport" content="width=device-width,initial-scale=1">
+<script>(function(){try{var s=JSON.parse(localStorage.getItem("wecare_session")||"null");if(!(s&&s.access_token&&s.expires_at&&s.expires_at*1000>Date.now())){location.replace("login.html?next="+encodeURIComponent((location.pathname.split("/").pop())||"pulse.html"));}}catch(e){}})();</script><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WeCare Landscapes — Estimator</title>
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="img/mark.png">
@@ -82,7 +82,7 @@ td input.q{width:64px;text-align:right}td input.c{width:84px;text-align:right}
 </div>
 
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0836"></script>
+<script src="js/wecare-cloud.js?v=0838"></script>
 <script>
 var K="wecare_estimates";
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
