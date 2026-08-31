@@ -37,6 +37,8 @@ var TOUR=[
   b:"Add the customer, pick a service, assign your crew, and it shows up in their phones instantly."},
  {p:"ops.html",sel:"#costing",t:"Know your profit on every job",
   b:"Once the crew clocks in and you enter what you charged, this shows labor + materials vs. price — your real <b>profit per job</b>."},
+ {p:"ops.html",sel:"#teamPanel",t:"Your team & approvals",
+  b:"Your crew set up their own accounts (they get a sign-up link). New sign-ups show here as <b>Pending</b> — tap <b>✅ Approve</b> and they can clock in. You can print each profile, reset a PIN, or add someone yourself. (Enter your office password once to unlock everyone's info.)"},
  {p:"ops.html",sel:"#sopList",t:"Your playbook (SOPs)",
   b:"Write your step-by-steps once here; the crew opens them as a checklist right on the job. Last stop — what your crew sees.",
   next:"crew.html",nextLabel:"Open the Crew app →"},
