@@ -47,7 +47,12 @@ button.go:disabled{opacity:.6}
 <div class="wrap">
   <div class="card" id="form">
     <h1>Request a consultation</h1>
-    <p class="lead">Tell us about your project and pick a preferred window. We group appointments geographically to keep projects moving — so we'll confirm your approximate arrival time before the visit, and text you when Derrick is on the way.</p>
+    <p class="lead">Tell us about your project and pick a preferred window. We'll confirm your arrival time and text you when Derrick is on the way.</p>
+
+    <div style="background:var(--sand);border:1px solid var(--line);border-radius:11px;padding:13px 15px;margin-bottom:10px;font-size:.9rem">
+      <b style="color:var(--green-ink)">What happens at your visit</b><br>
+      Derrick walks your property with you, talks through your goals, looks at the grade, drainage, and access, and leaves you with a clear recommendation on next steps — including whether a formal design and estimate is the right follow-up.
+    </div>
 
     <div style="background:var(--sand);border:1px solid var(--line);border-radius:11px;padding:13px 15px;margin-bottom:6px;font-size:.9rem">
       <b style="color:var(--green-ink)">How consultations work</b><br>
@@ -55,7 +60,7 @@ button.go:disabled{opacity:.6}
     </div>
 
     <label for="svc">What can we help with?</label>
-    <select id="svc">
+    <select id="svc" onchange="var s=this.value.indexOf('Sod')===0;document.getElementById('sodHint').style.display=s?'block':'none';">
       <option value="">Choose a service…</option>
       <option>Landscape design &amp; build</option>
       <option>Carved concrete artistry</option>
@@ -69,6 +74,7 @@ button.go:disabled{opacity:.6}
       <option>Lawn &amp; property maintenance</option>
       <option>Something else</option>
     </select>
+    <div id="sodHint" style="display:none;background:rgba(148,204,79,.14);border:1px solid var(--leaf,#7bb03e);border-radius:9px;padding:10px 13px;font-size:.88rem;margin-bottom:6px">🌱 Just need sod? The fastest path is our <a href="sod.html" style="color:var(--teal-deep);font-weight:600">sod calculator &amp; order form →</a> — get an instant pallet count and price. Or keep going here if you'd like us to look at the whole lawn.</div>
 
     <label for="date">Preferred day <span class="hint" style="font-weight:400">(weekdays standard · weekends by request)</span></label>
     <input id="date" type="date">
@@ -76,16 +82,16 @@ button.go:disabled{opacity:.6}
     <label>Preferred window</label>
     <div class="slots" id="slots"></div>
     <div id="weekendNote" style="display:none;background:rgba(181,117,31,.12);border:1px solid #e6cd97;border-radius:9px;padding:9px 12px;font-size:.85rem;color:#7a5a1f;margin-top:8px">📅 That's a weekend — we schedule those <b>by request</b>. Go ahead and pick a window and submit; we'll confirm if we can make it work.</div>
-    <div class="hint">This is a requested window, not a locked appointment — we'll confirm a narrower arrival time once we group nearby visits. Need an evening or weekend? Note it below — limited after-hours consultations are available by request.</div>
+    <div class="hint">This is a requested window, not a locked appointment — we'll confirm a narrower arrival time with you before the visit. Need an evening or weekend? Note it below — limited after-hours consultations are available by request.</div>
 
     <label for="nm">Your name</label>
-    <input id="nm" placeholder="First and last">
+    <input id="nm" name="name" autocomplete="name" required placeholder="First and last">
     <label for="ph">Phone</label>
-    <input id="ph" type="tel" inputmode="tel" placeholder="(501) 555-0123">
+    <input id="ph" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="(501) 555-0123">
     <label for="em">Email <span class="hint" style="font-weight:400">(optional)</span></label>
-    <input id="em" type="email" placeholder="you@email.com">
+    <input id="em" name="email" type="email" autocomplete="email" placeholder="you@email.com">
     <label for="ad">Project address <span class="hint" style="font-weight:400">(optional)</span></label>
-    <input id="ad" placeholder="Street, town">
+    <input id="ad" name="address" autocomplete="street-address" placeholder="Street, town">
     <label for="nt">Anything else? <span class="hint" style="font-weight:400">(optional)</span></label>
     <textarea id="nt" rows="3" placeholder="Tell us about your project…"></textarea>
 
