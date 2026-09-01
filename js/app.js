@@ -103,6 +103,7 @@ function initPageCalc(){
     else { sqft=parseFloat(form.sqft.value)||0; }
     var e=sodEstimate(sqft), out=document.getElementById("sodOut");
     if(!sqft){ out.innerHTML='<p style="margin:0;color:var(--muted)">Enter your lawn size to see pallets and a price estimate.</p>'; return; }
+    if(window.track) window.track("sod_calc_used",{sqft:sqft,pallets:e.pallets});
     if(e.escalate){
       out.innerHTML=
         '<div class="big">'+e.pallets+' pallets</div>'+
@@ -408,6 +409,7 @@ var Sage=(function(){
   var _seenOwner=0, _wasHuman=false;
   function open(){
     build();panel.classList.add("open");document.getElementById("ai-launch").style.display="none";
+    if(window.track && !convoId) window.track("sage_opened",{page:window.SAGE_PAGE||""});
     if(!convoId){ convoId=window.WeCareConvos.neu(); watchOwner(); }   // start a live conversation Derrick can watch/join
     if(!greeted){greeted=true;
       say("Hi, I'm <b>Sage</b> 🌱 — I help folks with their outdoor projects here at WeCare Landscapes. I'd love to hear what you're thinking about. What's got you looking into your property right now?",function(){menu("Or pick a starting point:")});
