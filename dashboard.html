@@ -213,15 +213,17 @@ function render(){
   var qEl=document.getElementById("leadSearch"), qq=(qEl&&qEl.value||"").trim().toLowerCase();
   var shown=qq?all.filter(function(l){return [l.name,l.phone,l.service,l.address,l.detail,l.when,l.source].join(" ").toLowerCase().indexOf(qq)>=0;}):all;
   var by={New:[],Contacted:[],Quoted:[],Won:[]};
-  shown.forEach(function(l){(by[l.stage]||by.New).push(l)});
+  shown.forEach(function(l){ if(l.stage==="spam"){return;} (by[l.stage]||by.New).push(l); });   // spam stays out of the pipeline
   ["New","Contacted","Quoted","Won"].forEach(function(s){
     var col=document.getElementById("col"+s);
     col.innerHTML=by[s].length?by[s].map(leadCard).join(""):'<div class="empty">'+(qq?'No matches':'No '+s.toLowerCase()+' leads')+'</div>';
     document.getElementById("c"+s).textContent=by[s].length;
   });
-  // stats (always on all leads, not the filtered view)
-  var newCount=all.filter(function(l){return l.stage==="New";}).length, won=all.filter(function(l){return l.stage==="Won";}).length, total=all.length;
-  var pipeline=all.filter(function(l){return l.stage!=="Won"}).reduce(function(a,l){return a+(l.sqft?sodEstimate(l.sqft).total:0)},0);
+  renderSpam(all.filter(function(l){return l.stage==="spam";}));   // filtered-junk review area
+  // stats exclude spam so filtered junk never inflates the numbers
+  var real=all.filter(function(l){return l.stage!=="spam";});
+  var newCount=real.filter(function(l){return l.stage==="New";}).length, won=real.filter(function(l){return l.stage==="Won";}).length, total=real.length;
+  var pipeline=real.filter(function(l){return l.stage!=="Won"}).reduce(function(a,l){return a+(l.sqft?sodEstimate(l.sqft).total:0)},0);
   document.getElementById("stats").innerHTML=
     stat(total,"Total bookings","🌱 all-time")+
     stat(newCount,"Awaiting reply", newCount?"⚠️ follow up now":"✓ all caught up")+
@@ -232,6 +234,18 @@ function render(){
   renderConsults();
 }
 function stat(n,l,sub){return '<div class="stat"><div class="n">'+n+'</div><div class="l">'+l+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'}
+// Filtered-spam review area — auto-caught junk, kept out of the pipeline but reviewable/restorable.
+function renderSpam(spamLeads){
+  var e=function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});};
+  var sz=document.getElementById("spamZone");
+  if(!sz){ sz=document.createElement("div"); sz.id="spamZone"; sz.style.cssText="max-width:1180px;margin:14px auto 0;padding:0 16px";
+    var a=document.getElementById("stats"); if(a&&a.parentNode){a.parentNode.insertBefore(sz,a.nextSibling);} else {document.body.appendChild(sz);} }
+  if(!spamLeads||!spamLeads.length){ sz.innerHTML=""; return; }
+  sz.innerHTML='<details style="background:#fff;border:1px solid #e0e4e0;border-radius:12px;padding:12px 16px"><summary style="cursor:pointer;font-weight:700;color:#8a6d3b">🚫 Filtered — possible spam ('+spamLeads.length+')</summary>'+
+    '<p style="font-size:.85rem;color:#777;margin:8px 0 4px">Auto-caught SEO / marketing junk, kept out of your pipeline. If one is actually a real customer, restore it.</p>'+
+    spamLeads.map(function(l){return '<div style="border-top:1px solid #eee;padding:9px 0;font-size:.9rem"><b>'+e(l.name||"(no name)")+'</b>'+(l.email?' · '+e(l.email):'')+(l.phone?' · '+e(l.phone):'')+'<br><span style="color:#777">'+e((l.detail||"").slice(0,140))+'</span><br><button onclick="setStage(\''+l.id+'\',\'New\')" style="margin-top:6px;font-size:.8rem;padding:4px 9px;cursor:pointer;border:1px solid #ccc;border-radius:6px;background:#fff">✓ Not spam → move to New</button></div>';}).join("")+
+    '</details>';
+}
 
 /* ---- one-tap send: opens the owner's own Messages / email, pre-filled ---- */
 function smsLink(phone,body){var p=String(phone||"").replace(/[^\d+]/g,"");return "sms:"+p+"?&body="+encodeURIComponent(body);}
