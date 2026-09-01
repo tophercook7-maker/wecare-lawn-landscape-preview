@@ -949,7 +949,7 @@ function exportCSV(){
   a.href=u;a.download="wecare-payroll-week.csv";a.click();
 }
 function renderCrewChecks(){
-  var checks=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+c.name.split(" ")[0]+'</label>'}).join("");
+  var checks=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+esc(String(c.name||c.id||"?").split(" ")[0])+'</label>'}).join("");
   var wo=document.getElementById("woCrew"), rc=document.getElementById("rcCrew"), rt=document.getElementById("rtCrew");
   // don't blow away boxes the user already checked mid-entry
   if(wo && wo.querySelectorAll("input:checked").length===0) wo.innerHTML=checks;
