@@ -144,6 +144,22 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   </div>
 
   <div class="panel" style="margin-top:16px">
+    <h2>🗺️ Maintenance routes <span class="mini" style="font-weight:400">— a day's properties in service order, auto-created each cycle</span></h2>
+    <div id="routeList"></div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700;color:var(--green-deep);font-size:.9rem">➕ New route</summary>
+      <div style="margin-top:10px;display:grid;gap:8px">
+        <input id="rtName" placeholder="Route name (e.g. Monday Route)">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="rtDow" style="flex:1"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select>
+          <select id="rtFreq" style="flex:1"><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option></select>
+        </div>
+        <div class="field" style="margin:0"><label>Assign crew</label><div class="chips" id="rtCrew"></div></div>
+        <button class="btn p" onclick="addRoute()">Create route</button>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel" style="margin-top:16px">
     <h2>💵 Job costing <span class="mini" style="font-weight:400">— real labor hours per job, straight from the clock-ins</span></h2>
     <p class="mini" style="margin-top:-2px">Labor cost uses each person's real rate (set in the roster). Fallback rate for anyone without one: $<input id="laborRate" type="number" min="0" step="1" placeholder="—" style="width:56px;padding:2px 6px;border:1px solid var(--line);border-radius:6px">/hr.</p>
     <div id="costing"></div>
@@ -228,7 +244,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0842"></script>
+<script src="js/wecare-cloud.js?v=0843"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -546,6 +562,122 @@ function addRecurring(){
 function toggleRecur(id){var r=load(K_RECUR,[]),x=r.find(function(y){return y.id===id;});if(x)x.active=x.active===false;save(K_RECUR,r);renderRecur();}
 function delRecur(id){if(!confirm("Delete this recurring schedule? (Existing work orders stay.)"))return;save(K_RECUR,load(K_RECUR,[]).filter(function(s){return s.id!==id;}));renderRecur();}
 
+/* ---- Maintenance routes: an ordered list of stops that auto-creates a day's work orders ---- */
+var K_ROUTES="wecare_routes";
+function routeNextDue(rt){
+  var anchor=rt.anchor?new Date(rt.anchor+"T12:00:00"):nextDOW(rt.dow||1);
+  var step=rt.freq==="biweekly"?14:7,today=new Date();today.setHours(0,0,0,0);
+  var d=new Date(anchor); while(d.getTime()<today.getTime()) d.setDate(d.getDate()+step);
+  return ymd(d);
+}
+function generateRoutes(){
+  var routes=load(K_ROUTES,[]).filter(function(r){return r.active!==false && (r.stops||[]).length;});
+  if(!routes.length) return;
+  var jobs=load(K_JOBS,[]),changed=false;
+  routes.forEach(function(rt){
+    var d=routeNextDue(rt);
+    (rt.stops||[]).forEach(function(st,i){
+      // id tied to the STOP (stable sid), NOT its position — so reordering never duplicates jobs
+      var wid="WR-"+rt.id+"-"+st.sid+"-"+d;
+      var existing=jobs.find(function(j){return j.id===wid && j.date===d;});
+      if(existing){
+        if(existing.seq!==i || existing.routeName!==rt.name){ existing.seq=i; existing.routeName=rt.name; changed=true; }  // keep display order fresh when owner reorders
+      }else{
+        jobs.push({id:wid,customer:st.customer,phone:st.phone||"",service:st.service||"Lawn maintenance",address:st.address||"",
+          scope:"Route stop · "+rt.name,sop:(st.service||"Lawn maintenance")+" SOP",assignedTo:rt.crew||[],date:d,status:"assigned",
+          estHours:st.estHours||null,routeId:rt.id,routeName:rt.name,seq:i});
+        changed=true;
+      }
+    });
+  });
+  if(changed) save(K_JOBS,jobs);
+}
+function renderRoutes(){
+  var el=document.getElementById("routeList"); if(!el) return;
+  var routes=load(K_ROUTES,[]);
+  if(!routes.length){ el.innerHTML='<div class="empty">No routes yet. Create one below — e.g. a Monday route with your maintenance stops in order.</div>'; return; }
+  el.innerHTML=routes.map(function(rt){
+    var due=routeNextDue(rt), stops=rt.stops||[];
+    var rows=stops.map(function(st,i){
+      return '<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="font-family:var(--ff-d);font-weight:700;color:var(--green-deep);min-width:20px">'+(i+1)+'</span>'+
+        '<div style="flex:1;min-width:0"><b style="color:var(--green-ink)">'+esc(st.customer||"(unnamed)")+'</b>'+
+          '<div class="mini">'+esc(st.service||"Lawn maintenance")+(st.address?' · '+esc(st.address):'')+(st.estHours?' · ~'+st.estHours+'h':'')+'</div></div>'+
+        '<button class="btn" style="padding:2px 7px" title="Move up" onclick="moveStop(\''+rt.id+'\','+i+',-1)"'+(i===0?' disabled':'')+'>▲</button>'+
+        '<button class="btn" style="padding:2px 7px" title="Move down" onclick="moveStop(\''+rt.id+'\','+i+',1)"'+(i===stops.length-1?' disabled':'')+'>▼</button>'+
+        '<button class="btn" style="padding:2px 7px" title="Move to another route" onclick="moveStopToRoute(\''+rt.id+'\','+i+')">⟳</button>'+
+        '<button class="btn" style="padding:2px 7px" title="Remove" onclick="removeStop(\''+rt.id+'\','+i+')">✕</button>'+
+      '</div>';
+    }).join("");
+    return '<div style="border:1px solid var(--line);border-radius:9px;padding:12px 13px;margin-bottom:10px'+(rt.active===false?';opacity:.55':'')+'">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline">'+
+        '<b style="color:var(--green-ink);font-family:var(--ff-d);font-size:1.02rem">🗺️ '+esc(rt.name||"Route")+'</b>'+
+        '<span class="mini">'+(rt.freq==="biweekly"?"Every 2 weeks":"Every week")+' · '+DOWN[rt.dow||1]+' · 👷 '+(rt.crew||[]).map(nm).join(", ")+'</span></div>'+
+      '<div class="mini" style="margin:2px 0 8px">Next: '+(rt.active===false?'(paused)':new Date(due+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}))+' · '+stops.length+' stop'+(stops.length===1?'':'s')+'</div>'+
+      (rows||'<div class="mini" style="padding:4px 0">No stops yet — add properties below.</div>')+
+      '<div style="margin-top:9px;display:grid;gap:6px">'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<input id="st-c-'+rt.id+'" placeholder="Property / customer" style="flex:2;min-width:120px">'+
+          '<input id="st-a-'+rt.id+'" placeholder="Address" style="flex:2;min-width:120px">'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<input id="st-s-'+rt.id+'" placeholder="Service (e.g. Mow + edge)" style="flex:2;min-width:120px">'+
+          '<input id="st-h-'+rt.id+'" type="number" step="0.5" placeholder="Hrs" style="flex:1;min-width:60px">'+
+          '<button class="btn p" style="padding:5px 12px" onclick="addStop(\''+rt.id+'\')">＋ Add stop</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn" style="padding:4px 10px" onclick="toggleRoute(\''+rt.id+'\')">'+(rt.active===false?'▶ Resume':'⏸ Pause')+'</button>'+
+        '<button class="btn" style="padding:4px 10px" onclick="delRoute(\''+rt.id+'\')">Delete route</button>'+
+      '</div></div>';
+  }).join("");
+}
+function addRoute(){
+  var name=document.getElementById("rtName").value.trim(); if(!name){alert("Give the route a name.");return;}
+  var dow=parseInt(document.getElementById("rtDow").value,10)||1;
+  var crew=[].slice.call(document.querySelectorAll("#rtCrew input:checked")).map(function(i){return i.value;});
+  var routes=load(K_ROUTES,[]);
+  routes.push({id:"RT"+Date.now().toString(36),name:name,dow:dow,freq:document.getElementById("rtFreq").value,
+    crew:crew,stops:[],anchor:ymd(nextDOW(dow)),active:true,created:new Date().toISOString()});
+  save(K_ROUTES,routes);
+  document.getElementById("rtName").value="";
+  document.querySelectorAll("#rtCrew input:checked").forEach(function(i){i.checked=false;});
+  renderRoutes();
+}
+function _route(id){return load(K_ROUTES,[]).find(function(r){return r.id===id;});}
+function addStop(rtId){
+  var routes=load(K_ROUTES,[]),rt=routes.find(function(r){return r.id===rtId;}); if(!rt)return;
+  var c=document.getElementById("st-c-"+rtId).value.trim(); if(!c){alert("Property / customer name?");return;}
+  rt.stops=rt.stops||[];
+  rt.stops.push({sid:"S"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),customer:c,
+    address:document.getElementById("st-a-"+rtId).value.trim(),service:document.getElementById("st-s-"+rtId).value.trim()||"Lawn maintenance",
+    estHours:parseFloat(document.getElementById("st-h-"+rtId).value)||null});
+  save(K_ROUTES,routes); generateRoutes(); renderRoutes(); render();
+}
+function removeStop(rtId,idx){
+  var routes=load(K_ROUTES,[]),rt=routes.find(function(r){return r.id===rtId;}); if(!rt||!rt.stops[idx])return;
+  if(!confirm("Remove "+(rt.stops[idx].customer||"this stop")+" from "+rt.name+"?"))return;
+  rt.stops.splice(idx,1); save(K_ROUTES,routes); renderRoutes(); render();
+}
+function moveStop(rtId,idx,dir){
+  var routes=load(K_ROUTES,[]),rt=routes.find(function(r){return r.id===rtId;}); if(!rt)return;
+  var j=idx+dir; if(j<0||j>=rt.stops.length)return;
+  var t=rt.stops[idx]; rt.stops[idx]=rt.stops[j]; rt.stops[j]=t;
+  save(K_ROUTES,routes); generateRoutes(); renderRoutes(); render();
+}
+function moveStopToRoute(rtId,idx){
+  var routes=load(K_ROUTES,[]),rt=routes.find(function(r){return r.id===rtId;}); if(!rt||!rt.stops[idx])return;
+  var others=routes.filter(function(r){return r.id!==rtId;});
+  if(!others.length){alert("Make another route first, then you can move a stop to it.");return;}
+  var msg="Move \""+(rt.stops[idx].customer||"this stop")+"\" to which route?\n"+others.map(function(r,i){return (i+1)+") "+r.name;}).join("\n");
+  var pick=prompt(msg); if(!pick)return;
+  var n=parseInt(pick,10); if(!(n>=1&&n<=others.length)){alert("Enter a number from the list.");return;}
+  var dest=others[n-1]; dest.stops=dest.stops||[]; dest.stops.push(rt.stops[idx]); rt.stops.splice(idx,1);
+  save(K_ROUTES,routes); generateRoutes(); renderRoutes(); render();
+}
+function toggleRoute(id){var r=load(K_ROUTES,[]),x=r.find(function(y){return y.id===id;});if(x)x.active=x.active===false;save(K_ROUTES,r);renderRoutes();}
+function delRoute(id){if(!confirm("Delete this route? (Work orders already created stay on the board.)"))return;save(K_ROUTES,load(K_ROUTES,[]).filter(function(r){return r.id!==id;}));renderRoutes();}
+
 /* ---- Case studies: finished job → portfolio piece ---- */
 var K_CASES="wecare_casestudies";
 function cityFromAddr(a){ if(!a)return ""; var p=a.split(","); return (p.length>1?p[p.length-1]:p[0]).trim(); }
@@ -818,25 +950,28 @@ function exportCSV(){
 }
 function renderCrewChecks(){
   var checks=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+c.name.split(" ")[0]+'</label>'}).join("");
-  var wo=document.getElementById("woCrew"), rc=document.getElementById("rcCrew");
+  var wo=document.getElementById("woCrew"), rc=document.getElementById("rcCrew"), rt=document.getElementById("rtCrew");
   // don't blow away boxes the user already checked mid-entry
   if(wo && wo.querySelectorAll("input:checked").length===0) wo.innerHTML=checks;
   if(rc && rc.querySelectorAll("input:checked").length===0) rc.innerHTML=checks;
+  if(rt && rt.querySelectorAll("input:checked").length===0) rt.innerHTML=checks;
 }
 renderCrewChecks();
 document.getElementById("otAfter").addEventListener("input",render);
 var _lr=document.getElementById("laborRate");
 _lr.value=localStorage.getItem("wecare_labor_rate")||"";
 _lr.addEventListener("input",function(){localStorage.setItem("wecare_labor_rate",_lr.value);renderCosting();});
-window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();renderRecur();renderTeam();});
-setInterval(function(){generateRecurring();render();renderCosting();renderCases();renderRecur();renderTeam();},5000);
+window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();renderRecur();renderRoutes();renderTeam();});
+setInterval(function(){generateRecurring();generateRoutes();render();renderCosting();renderCases();renderRecur();renderRoutes();renderTeam();},5000);
 seedSOPs();
 generateRecurring();
+generateRoutes();
 render();
 renderSOPs();
 renderCosting();
 renderCases();
 renderRecur();
+renderRoutes();
 loadTeam();
 </script>
 <script src="js/wecare-onboard.js?v=0834"></script>

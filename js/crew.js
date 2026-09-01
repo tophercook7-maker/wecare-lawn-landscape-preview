@@ -110,10 +110,21 @@ function fetchRoster(){
 }
 /* pull THIS crew member's data (their jobs + their punches + SOPs) via the PIN-verified
    crew gate — work_orders/punches/sops are no longer read with the public key */
+// crew_data returns raw DB rows (snake_case); the crew app works in camelCase — map them.
+function normJob(r){return {id:r.id,customer:r.customer,phone:r.phone||"",service:r.service,address:r.address,scope:r.scope,sop:r.sop,
+  assignedTo:r.assigned_to||[],date:r.date,status:r.status,estHours:r.est_hours,paid:r.paid,reviewStatus:r.review_status||"",
+  photos:r.photos||[],howTo:r.how_to||"",recurId:r.recur_id||"",routeId:r.route_id||"",routeName:r.route_name||"",seq:r.seq||0};}
+function normPunch(r){return {id:r.id,empId:r.emp_id,empName:r.emp_name,jobId:r.job_id,in:r.clock_in,out:r.clock_out,
+  inGeo:r.in_geo,outGeo:r.out_geo,edits:r.edits||[],needsReview:!!r.needs_review};}
 function fetchCrewData(){
   if(!me || !_pin || !window.WeCareCloud || !WeCareCloud.team) return;
   WeCareCloud.team("crew_data",{id:me,pin:_pin}).then(function(res){
-    if(res && res.ok){ save(K_JOBS,res.jobs||[]); save(K_PUNCH,res.punches||[]); save(K_SOPS,res.sops||[]); render(); }
+    if(res && res.ok){
+      save(K_JOBS,(res.jobs||[]).map(normJob));
+      save(K_PUNCH,(res.punches||[]).map(normPunch));
+      save(K_SOPS,res.sops||[]);
+      render();
+    }
   });
 }
 
@@ -181,6 +192,14 @@ function render(){
   // job picker + today's jobs (mine)
   var jobs=load(K_JOBS,[]);   // populated by fetchCrewData (this crew member's assigned jobs)
   var mine = me ? jobs.filter(function(j){return (j.assignedTo||[]).indexOf(me)>=0}) : [];
+  // route stops show in service order, grouped by route; loose jobs after
+  mine.sort(function(a,b){
+    var ar=a.routeName||"", br=b.routeName||"";
+    if(!ar!==!br) return ar?1:-1;                     // loose jobs first, then routes
+    if(ar!==br) return ar<br?-1:1;                    // group by route name
+    if(ar) return (a.seq||0)-(b.seq||0);              // within a route: service order
+    return (a.customer||"").localeCompare(b.customer||"");
+  });
   var pick=document.getElementById("jobPick");
   pick.innerHTML='<option value="">— Pick the job you\'re working —</option>'+
     mine.map(function(j){return '<option value="'+j.id+'">'+jobLabel(j)+'</option>'}).join("");
@@ -244,7 +263,9 @@ function sopBlock(j){
 function jobCard(j){
   var maps="https://maps.apple.com/?daddr="+encodeURIComponent(j.address);
   var gmaps="https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(j.address);
+  var routeTag=j.routeName?'<div class="routetag">🗺️ '+esc(j.routeName)+' · Stop '+((j.seq||0)+1)+'</div>':'';
   return '<div class="job" data-id="'+j.id+'">'+
+    routeTag+
     '<div class="h"><span class="cust">'+esc(j.customer)+'</span><span class="svc">'+esc(j.service)+'</span></div>'+
     '<div class="addr">📍 '+esc(j.address)+'</div>'+
     '<div class="muted" style="font-size:.88rem">'+esc(j.scope)+'</div>'+
