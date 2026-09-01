@@ -251,16 +251,28 @@ function jobCard(j){
     sopBlock(j)+
     '<div class="linkrow"><button onclick="window.open(\''+maps+'\')">🍎 Apple Maps</button><button onclick="window.open(\''+gmaps+'\')">📍 Google Maps</button></div>'+
     '<div class="steps">'+STATUSES.map(function(s){return '<button data-st="'+s[0]+'" class="'+(j.status===s[0]?'active':'')+'">'+s[1]+'</button>'}).join("")+'</div>'+
+    howToBlock(j)+
     photosBlock(j)+
   '</div>';
 }
+function isVideo(u){return /\.(mp4|mov|webm|m4v|ogg|ogv)(\?|$)/i.test(String(u==null?"":u));}
+// owner-attached "how to do this job" clip/photo, shown up top for the crew
+function howToBlock(j){
+  var s=safeUrl(j.howTo); if(!s) return "";
+  var media=isVideo(j.howTo)
+    ? '<video src="'+s+'" class="howtomedia" controls preload="metadata" playsinline></video>'
+    : '<a href="'+s+'" target="_blank" rel="noopener"><img src="'+s+'" class="howtomedia" loading="lazy" alt="how-to"></a>';
+  return '<div class="howto"><div class="ptitle">📹 How to do this job — from Derrick</div>'+media+'</div>';
+}
 function photosBlock(j){
   var ph=(j.photos||[]);
-  var thumbs=ph.map(function(u){var s=safeUrl(u);return s?'<a href="'+s+'" target="_blank" rel="noopener" class="jphoto"><img src="'+s+'" loading="lazy" alt="job photo"></a>':'';}).join("");
+  var thumbs=ph.map(function(u){var s=safeUrl(u);if(!s)return "";return isVideo(u)
+    ? '<span class="jphoto"><video src="'+s+'" preload="metadata" muted playsinline onclick="window.open(\''+s+'\')"></video></span>'
+    : '<a href="'+s+'" target="_blank" rel="noopener" class="jphoto"><img src="'+s+'" loading="lazy" alt="job photo"></a>';}).join("");
   return '<div class="photos">'+
-    '<div class="ptitle">📷 Job photos'+(ph.length?' · '+ph.length:'')+'</div>'+
+    '<div class="ptitle">📷 Job photos &amp; videos'+(ph.length?' · '+ph.length:'')+'</div>'+
     '<div class="pgrid">'+thumbs+
-      '<label class="paddbtn">＋ Add<input type="file" accept="image/*" capture="environment" class="photo-input" data-job="'+j.id+'" multiple hidden></label>'+
+      '<label class="paddbtn">＋ Add<input type="file" accept="image/*,video/*" capture="environment" class="photo-input" data-job="'+j.id+'" multiple hidden></label>'+
     '</div><div class="pstatus" id="pstatus-'+j.id+'"></div></div>';
 }
 function wireJobs(){
@@ -284,14 +296,21 @@ function wireJobs(){
     el.querySelectorAll(".photo-input").forEach(function(inp){
       inp.onchange=function(){
         var id=inp.dataset.job, files=[].slice.call(inp.files); if(!files.length)return;
-        var st=document.getElementById("pstatus-"+id); if(st)st.textContent="Uploading "+files.length+" photo"+(files.length>1?"s":"")+"…";
-        if(!(window.WeCareCloud&&WeCareCloud.uploadPhoto)){ if(st)st.textContent="Photos need a connection — try again in a moment."; return; }
+        var st=document.getElementById("pstatus-"+id);
+        var big=files.filter(function(f){return f.size>100*1024*1024;});   // 100MB cap (keep field uploads sane)
+        if(big.length){ if(st)st.textContent="That video's too big to upload here (keep clips under ~100MB / ~2 min)."; inp.value=""; return; }
+        var hasVid=files.some(function(f){return /^video\//.test(f.type||"");});
+        if(st)st.textContent="Uploading "+files.length+" "+(hasVid?"file":"photo")+(files.length>1?"s":"")+"… "+(hasVid?"(video can take a minute on a weak signal)":"");
+        if(!(window.WeCareCloud&&WeCareCloud.uploadPhoto)){ if(st)st.textContent="Need a connection — try again in a moment."; return; }
         Promise.all(files.map(function(f){return WeCareCloud.uploadPhoto(f,id);}))
           .then(function(urls){
+            urls=(urls||[]).filter(Boolean);
             var jobs=load(K_JOBS,[]),j=jobs.find(function(x){return x.id===id});
             if(j){ j.photos=(j.photos||[]).concat(urls); save(K_JOBS,jobs); }
-            render();
+            // crew has a PIN not a session → persist the URLs to the job via the gated fn
+            return WeCareCloud.team("crew_add_media",{id:me,pin:_pin,jobId:id,urls:urls});
           })
+          .then(function(res){ if(st)st.textContent=(res&&res.ok)?"":"Saved on your device — will sync when the job reloads."; render(); })
           .catch(function(){ if(st)st.textContent="Upload failed — check signal and try again."; });
       };
     });

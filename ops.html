@@ -63,7 +63,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .empty{color:var(--muted);font-style:italic;font-size:.86rem;padding:8px 0}
 .wophotos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .wophotos a{display:block;width:60px;height:60px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
-.wophotos img{width:100%;height:100%;object-fit:cover;display:block}
+.wophotos img,.wophotos video{width:100%;height:100%;object-fit:cover;display:block}
 </style>
 </head>
 <body>
@@ -105,7 +105,9 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
         <div class="field"><label>Scope of work</label><textarea id="woScope" rows="2" placeholder="What's being done…"></textarea></div>
         <div class="field"><label>Assign crew</label><div class="chips" id="woCrew"></div></div>
         <div class="field"><label>Est. labor hours</label><input id="woHrs" type="number" step="0.5" placeholder="e.g. 4"></div>
-        <button class="btn p" onclick="createWO()" style="width:100%">Create &amp; assign</button>
+        <div class="field"><label>📹 How-to video / photo <span class="mini">(optional — the crew sees this on the job)</span></label><input id="woHowTo" type="file" accept="image/*,video/*"></div>
+        <div class="mini" id="woHowToStatus" style="margin:-4px 0 8px;color:var(--muted)"></div>
+        <button class="btn p" id="woCreateBtn" onclick="createWO()" style="width:100%">Create &amp; assign</button>
       </div>
     </div>
   </div>
@@ -226,7 +228,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0841"></script>
+<script src="js/wecare-cloud.js?v=0842"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -247,6 +249,8 @@ function nm(id){var c=CREW.find(function(x){return x.id===id});return c?c.name:i
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 // only allow http(s) image URLs (blocks javascript:/data: and attribute-breakout XSS from anon-writable photo fields)
 function safeUrl(u){u=String(u==null?"":u);return /^https?:\/\//i.test(u)?esc(u):"";}
+function isVideo(u){return /\.(mp4|mov|webm|m4v|ogg|ogv)(\?|$)/i.test(String(u==null?"":u));}
+function woThumb(u){var s=safeUrl(u);if(!s)return "";return isVideo(u)?'<a href="'+s+'" target="_blank" rel="noopener" title="video"><video src="'+s+'" preload="metadata" muted></video></a>':'<a href="'+s+'" target="_blank" rel="noopener"><img src="'+s+'" loading="lazy" alt="job photo"></a>';}
 function fmtDur(ms){var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h+":"+String(m).padStart(2,"0")}
 function weekStart(){var d=new Date();var day=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-day);return d.getTime()}
 // day-rate is paid per CENTRAL calendar day worked (the business runs on Central). Using
@@ -295,7 +299,8 @@ function render(){
     return '<div class="wo"><div class="h"><span class="cust">'+esc(j.customer)+'</span><span class="pill st-'+(j.status||'assigned')+'">'+(j.status||'assigned')+'</span></div>'+
       '<div class="mini">'+esc(j.service)+' · '+esc(j.address)+'</div>'+
       '<div class="crew">👷 '+(j.assignedTo||[]).map(nm).join(", ")+(j.estHours?' · est '+j.estHours+'h':'')+'</div>'+
-      ((j.photos&&j.photos.length)?'<div class="wophotos">'+j.photos.map(function(u){var s=safeUrl(u);return s?'<a href="'+s+'" target="_blank" rel="noopener"><img src="'+s+'" loading="lazy" alt="job photo"></a>':'';}).join("")+'</div>':'')+
+      (j.howTo&&safeUrl(j.howTo)?'<div class="mini" style="margin-top:6px;color:var(--green-deep);font-weight:600"><a href="'+safeUrl(j.howTo)+'" target="_blank" rel="noopener">📹 How-to '+(isVideo(j.howTo)?'video':'photo')+' attached →</a></div>':'')+
+      ((j.photos&&j.photos.length)?'<div class="wophotos">'+j.photos.map(woThumb).join("")+'</div>':'')+
       (j.status==="done"?'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" style="padding:5px 10px" onclick="makeCaseStudy(\''+j.id+'\')">★ Make case study</button><a class="btn" style="padding:5px 10px" href="invoice.html?job='+j.id+'" target="_blank">🧾 Invoice</a></div>':'')+
       reviewControls(j)+'</div>';
   }).join("") : '<div class="empty">No work orders today. Create one →</div>';
@@ -376,15 +381,29 @@ function setReview(id,st){var j=load(K_JOBS,[]);var x=j.find(function(y){return 
 function createWO(){
   var cust=document.getElementById("woCust").value.trim(); if(!cust){alert("Customer name?");return;}
   var crew=[].slice.call(document.querySelectorAll("#woCrew input:checked")).map(function(i){return i.value});
-  var jobs=load(K_JOBS,[]);
-  jobs.push({id:"W"+Date.now().toString(36),customer:cust,phone:document.getElementById("woPhone").value.trim(),service:document.getElementById("woSvc").value,
+  var svc=document.getElementById("woSvc").value;
+  var wo={id:"W"+Date.now().toString(36),customer:cust,phone:document.getElementById("woPhone").value.trim(),service:svc,
     address:document.getElementById("woAddr").value.trim(),scope:document.getElementById("woScope").value.trim(),
-    sop:document.getElementById("woSvc").value+" SOP",assignedTo:crew,date:new Date().toISOString().slice(0,10),
-    status:"assigned",estHours:parseFloat(document.getElementById("woHrs").value)||null});
-  save(K_JOBS,jobs);
-  ["woCust","woPhone","woAddr","woScope","woHrs"].forEach(function(id){document.getElementById(id).value=""});
-  document.querySelectorAll("#woCrew input:checked").forEach(function(i){i.checked=false});
-  render();
+    sop:svc+" SOP",assignedTo:crew,date:new Date().toISOString().slice(0,10),
+    status:"assigned",estHours:parseFloat(document.getElementById("woHrs").value)||null,howTo:""};
+  var file=(document.getElementById("woHowTo").files||[])[0];
+  var btn=document.getElementById("woCreateBtn"), hs=document.getElementById("woHowToStatus");
+  var finish=function(){
+    var jobs=load(K_JOBS,[]); jobs.push(wo); save(K_JOBS,jobs);
+    ["woCust","woPhone","woAddr","woScope","woHrs"].forEach(function(id){document.getElementById(id).value=""});
+    document.getElementById("woHowTo").value="";
+    document.querySelectorAll("#woCrew input:checked").forEach(function(i){i.checked=false});
+    if(btn){btn.disabled=false;btn.textContent="Create & assign";} if(hs)hs.textContent="";
+    render();
+  };
+  if(file && window.WeCareCloud && WeCareCloud.uploadPhoto){
+    if(file.size>100*1024*1024){ if(hs)hs.textContent="That file's too big (keep it under ~100MB / ~2 min)."; return; }
+    if(btn){btn.disabled=true;btn.textContent="Uploading video…";} if(hs)hs.textContent="Uploading the how-to — this can take a moment…";
+    WeCareCloud.uploadPhoto(file,wo.id).then(function(url){ wo.howTo=url||""; finish(); })
+      .catch(function(){ if(hs)hs.textContent="Video upload failed — creating the job without it."; finish(); });
+    return;
+  }
+  finish();
 }
 function resolveFix(id){var f=load(K_FIX,[]);var x=f.find(function(y){return y.id===id});if(x)x.resolved=true;save(K_FIX,f);render();}
 // owner fixes a forgotten clock-out so the shift's pay isn't lost (keeps an audit note)
