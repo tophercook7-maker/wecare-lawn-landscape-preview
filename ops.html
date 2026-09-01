@@ -133,7 +133,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
         <select id="rcSvc"><option>Lawn maintenance</option><option>Landscape design/build</option><option>Concrete Artistry</option><option>Sod install</option><option>Drainage</option><option>Irrigation</option><option>Water feature</option><option>Hardscape/patio</option></select>
         <input id="rcAddr" placeholder="Address">
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <select id="rcFreq" style="flex:1"><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every 4 weeks</option></select>
+          <select id="rcFreq" style="flex:1"><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every 4 weeks</option><option value="monthly_date">Same date each month</option></select>
           <select id="rcDow" style="flex:1"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select>
         </div>
         <div class="field" style="margin:0"><label>Assign crew</label><div class="chips" id="rcCrew"></div></div>
@@ -505,12 +505,27 @@ var DOWN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 function ymd(d){return d.toISOString().slice(0,10);}
 function nextDOW(dow){var d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+((dow-d.getDay()+7)%7));return d;}
 function stepDays(f){return f==="biweekly"?14:f==="monthly"?28:7;}
-function freqLabel(f){return f==="biweekly"?"Every 2 weeks":f==="monthly"?"Every 4 weeks":"Every week";}
+function freqLabel(f){return f==="biweekly"?"Every 2 weeks":f==="monthly"?"Every 4 weeks":f==="monthly_date"?"Same date each month":"Every week";}
+// add n calendar months, keeping the day-of-month (clamped for short months: Jan 31 → Feb 28/29)
+function addMonthsClamped(base,n){
+  var d=new Date(base.getFullYear(),base.getMonth()+n,1,12,0,0,0);
+  var lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  d.setDate(Math.min(base.getDate(),lastDay));
+  return d;
+}
 function recurNextDue(s){
   var anchor=s.anchor?new Date(s.anchor+"T12:00:00"):nextDOW(s.dow||1);
-  var step=stepDays(s.freq),today=new Date();today.setHours(0,0,0,0);
-  var d=new Date(anchor); while(d.getTime()<today.getTime()) d.setDate(d.getDate()+step);
-  return ymd(d);
+  var today=new Date();today.setHours(0,0,0,0);
+  if(s.freq==="monthly_date"){
+    // same calendar date each month — always derive from the ORIGINAL anchor so the
+    // day-of-month stays stable (a 31st schedule doesn't drift to the 28th permanently)
+    var diff=(today.getFullYear()-anchor.getFullYear())*12+(today.getMonth()-anchor.getMonth());
+    var d=addMonthsClamped(anchor,Math.max(0,diff));
+    if(d.getTime()<today.getTime()) d=addMonthsClamped(anchor,Math.max(0,diff)+1);
+    return ymd(d);
+  }
+  var step=stepDays(s.freq),d2=new Date(anchor); while(d2.getTime()<today.getTime()) d2.setDate(d2.getDate()+step);
+  return ymd(d2);
 }
 function generateRecurring(){
   var recur=load(K_RECUR,[]).filter(function(s){return s.active!==false;});
