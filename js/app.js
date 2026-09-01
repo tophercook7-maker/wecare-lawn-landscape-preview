@@ -308,23 +308,23 @@ var Sage=(function(){
   }
   var _booked=false;
   function maybeBook(reply){
-    // Sage emits [[BOOK]]{json} when it has booked a consultation. Create it, strip the marker.
+    // Sage emits [[BOOK]]{json} when it has booked a consultation. Strip the marker and
+    // return the record so answer() can save it with CONFIRMATION — we must never tell a
+    // customer "you're booked" unless the write actually landed.
     var m=reply.match(/\[\[BOOK\]\]\s*(\{[\s\S]*?\})/);
-    if(!m) return reply;
+    if(!m) return {clean:reply, rec:null};
     var clean=reply.replace(m[0],"").trim();
-    if(_booked) return clean;                     // one booking per chat
+    if(_booked) return {clean:clean, rec:null};    // one booking per chat
     try{
       var o=JSON.parse(m[1]);
       if(o && (o.name||o.phone)){
-        var rec={id:"C"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8),name:o.name||"",phone:o.phone||"",email:o.email||"",
-          service:o.service||"",address:o.address||"",date:o.date||"",time:o.time||"",
-          notes:o.notes||"",status:"requested",source:"Sage (AI chat)",leadId:_leadId||"",created:new Date().toISOString()};
-        var key="wecare_consults", all; try{all=JSON.parse(localStorage.getItem(key))||[]}catch(e){all=[]}
-        all.push(rec); localStorage.setItem(key,JSON.stringify(all));
         _booked=true;
+        return {clean:clean, rec:{id:"C"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8),name:o.name||"",phone:o.phone||"",email:o.email||"",
+          service:o.service||"",address:o.address||"",date:o.date||"",time:o.time||"",
+          notes:o.notes||"",status:"requested",source:"Sage (AI chat)",leadId:_leadId||"",created:new Date().toISOString()}};
       }
     }catch(e){}
-    return clean;
+    return {clean:clean, rec:null};
   }
   function answer(t){
     if(isHuman()) return;                        // Derrick took over → Sage stays quiet
@@ -338,10 +338,21 @@ var Sage=(function(){
         var reply=(d&&d.reply)?d.reply:"";
         if(!reply) reply="I want to make sure I get this right for you — the best next step is a quick word with Derrick. What's a good name and number, and I'll have him reach out? Or call us at "+BIZ.phone+".";
         maybeCaptureLead();                        // capture the lead first so a booking can link to it
-        reply=maybeBook(reply);                    // then handle any consultation booking (linked via leadId), strip marker
+        var bk=maybeBook(reply); reply=bk.clean;   // then handle any consultation booking (linked via leadId), strip marker
         llmHist.push({role:"assistant",content:reply});
         var b=el("ai-msg bot", escapeHtml(reply).replace(/\n/g,"<br>"));
         msgs.appendChild(b); scroll(); logTurn("sage",reply);
+        if(bk.rec){                                // CONFIRM the booking write; if it fails, don't leave the customer thinking they're booked
+          WeCareCloud.save("wecare_consults", bk.rec).then(function(okSaved){
+            if(!okSaved){
+              _booked=false;                       // allow a retry later in the chat
+              var warn="Quick heads-up — I had a hiccup saving that on my end. So you don't slip through the cracks, please call or text us at "+BIZ.phone+" and mention "+(bk.rec.service||"your project")+" and I'll make sure Derrick has it.";
+              llmHist.push({role:"assistant",content:warn});
+              var w=el("ai-msg bot", escapeHtml(warn).replace(/\n/g,"<br>"));
+              msgs.appendChild(w); scroll(); logTurn("sage",warn);
+            }
+          });
+        }
       })
       .catch(function(){
         stopTyping();

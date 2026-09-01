@@ -226,7 +226,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0840"></script>
+<script src="js/wecare-cloud.js?v=0841"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -249,6 +249,9 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){retur
 function safeUrl(u){u=String(u==null?"":u);return /^https?:\/\//i.test(u)?esc(u):"";}
 function fmtDur(ms){var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h+":"+String(m).padStart(2,"0")}
 function weekStart(){var d=new Date();var day=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-day);return d.getTime()}
+// day-rate is paid per CENTRAL calendar day worked (the business runs on Central). Using
+// UTC here double-counted an evening shift that rolled past midnight UTC.
+function centralDay(iso){try{return new Date(iso).toLocaleDateString("en-CA",{timeZone:"America/Chicago"})}catch(e){return String(iso).slice(0,10)}}
 
 function render(){
   CREW=allEmps();  // keep roster/rates current with the cloud employee directory
@@ -267,16 +270,18 @@ function render(){
   }).join("") : '<div class="empty">Nobody clocked in right now.</div>';
 
   // weekly hours + pay (per-person rates; Chris Crain = $150/workday)
-  var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={},days={};
+  var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={},days={},review={};
   punches.forEach(function(p){ if(!p.out)return; var t0=new Date(p.in).getTime(); if(t0<ws)return;
     tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000;
-    (days[p.empId]||(days[p.empId]={}))[new Date(p.in).toISOString().slice(0,10)]=1; });
+    (days[p.empId]||(days[p.empId]={}))[centralDay(p.in)]=1;
+    if(p.needs_review||p.needsReview) review[p.empId]=true; });   // auto-capped forgotten clock-out → owner should verify
   var totPay=0;
   var rows=CREW.filter(function(c){return tot[c.id]}).map(function(c){
     var h=tot[c.id],reg=Math.min(h,ot),o=Math.max(0,h-ot);
     var pay = c.dayRate ? c.dayRate*Object.keys(days[c.id]||{}).length : (reg*(c.rate||0)+o*(c.rate||0)*1.5);
     totPay+=pay;
-    return '<tr><td>'+esc(c.name)+(c.dayRate?' <span class="mini">($'+c.dayRate+'/day)</span>':'')+'</td><td class="num">'+reg.toFixed(1)+'</td><td class="num">'+(o>0?o.toFixed(1):'—')+'</td><td class="num">'+h.toFixed(1)+'</td><td class="num"><b>$'+pay.toFixed(2)+'</b></td></tr>';
+    var flag = review[c.id] ? ' <span class="mini" style="color:#b5751f;font-weight:700" title="A shift was auto-capped after a forgotten clock-out — verify the real hours">⚠️ review</span>' : '';
+    return '<tr><td>'+esc(c.name)+(c.dayRate?' <span class="mini">($'+c.dayRate+'/day)</span>':'')+flag+'</td><td class="num">'+reg.toFixed(1)+'</td><td class="num">'+(o>0?o.toFixed(1):'—')+'</td><td class="num">'+h.toFixed(1)+'</td><td class="num"><b>$'+pay.toFixed(2)+'</b></td></tr>';
   }).join("");
   document.getElementById("hours").innerHTML = rows ?
     '<table><tr><th>Employee</th><th class="num">Reg</th><th class="num">OT</th><th class="num">Hrs</th><th class="num">Pay</th></tr>'+rows+
