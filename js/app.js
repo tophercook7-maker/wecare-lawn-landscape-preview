@@ -385,7 +385,7 @@ var Sage=(function(){
     var msgText=label;
     if(value.indexOf("svc:")===0){
       var k=value.slice(4);
-      var m={sod:"I'm interested in a new Zoysia lawn (sod).",luxury:"I'm interested in a full landscape transformation (design & build).",
+      var m={sod:"I'm interested in a new Zoysia lawn.",luxury:"I'm interested in a full landscape transformation (design & build).",
              concrete:"I'm interested in custom carved concrete features.",drainage:"I'm interested in drainage / erosion solutions.",
              commercial:"I'm interested in commercial property grounds care & maintenance.",residential:"I'm interested in residential property maintenance.",
              maintenance:"I'm interested in lawn & property maintenance."};
