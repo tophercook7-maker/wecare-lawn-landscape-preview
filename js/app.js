@@ -363,9 +363,18 @@ var Sage=(function(){
   }
 
   function menu(intro){
-    say(intro||"How can I help you today?",function(){
-      chips([{label:"🌱 Estimate sod",value:"svc:sod"},{label:"🎨 Concrete Artistry",value:"svc:concrete"},{label:"🏡 Luxury Landscapes",value:"svc:luxury"},{label:"✂️ Lawn & Property Care",value:"svc:maintenance"},{label:"📞 Talk to Derrick",value:"human"}]);
-    });
+    var startChips=function(){
+      chips([
+        {label:"🏡 Landscape Transformation",value:"svc:luxury"},
+        {label:"💧 Drainage Solutions",value:"svc:drainage"},
+        {label:"🌱 New Zoysia Lawn",value:"svc:sod"},
+        {label:"🎨 Custom Concrete Features",value:"svc:concrete"},
+        {label:"🏢 Commercial Property Maintenance",value:"svc:commercial"},
+        {label:"🏠 Residential Property Maintenance",value:"svc:residential"},
+        {label:"💬 Talk to a Team Member",value:"human"}
+      ]);
+    };
+    if(intro){ say(intro,startChips); } else { startChips(); }
   }
 
   function handle(value,display){
@@ -376,10 +385,12 @@ var Sage=(function(){
     var msgText=label;
     if(value.indexOf("svc:")===0){
       var k=value.slice(4);
-      var m={sod:"I'm interested in sod.",luxury:"I'm interested in a landscape design/build project.",
-             concrete:"I'm interested in custom carved concrete work.",maintenance:"I'm interested in lawn & property maintenance."};
+      var m={sod:"I'm interested in a new Zoysia lawn (sod).",luxury:"I'm interested in a full landscape transformation (design & build).",
+             concrete:"I'm interested in custom carved concrete features.",drainage:"I'm interested in drainage / erosion solutions.",
+             commercial:"I'm interested in commercial property grounds care & maintenance.",residential:"I'm interested in residential property maintenance.",
+             maintenance:"I'm interested in lawn & property maintenance."};
       msgText=m[k]||serviceLabel(k);
-    } else if(value==="human"){ msgText="I'd like to talk to Derrick / have a real person reach out."; }
+    } else if(value==="human"){ msgText="I'd like to talk to a team member / have a real person reach out."; }
     answer(msgText);
   }
 
@@ -412,7 +423,7 @@ var Sage=(function(){
     if(window.track && !convoId) window.track("sage_opened",{page:window.SAGE_PAGE||""});
     if(!convoId){ convoId=window.WeCareConvos.neu(); watchOwner(); }   // start a live conversation Derrick can watch/join
     if(!greeted){greeted=true;
-      say("Hi, I'm <b>Sage</b> 🌱 — I help folks with their outdoor projects here at WeCare Landscapes. I'd love to hear what you're thinking about. What's got you looking into your property right now?",function(){menu("Or pick a starting point:")});
+      say("Hi, I'm <b>Sage</b> 🌱 — your WeCare Landscape Guide.<br><br>I'm here to learn a little about your property, understand what you'd like to improve, and help you figure out what might make the most sense.<br><br>What are you looking into today?",function(){menu("")});
     }
     setTimeout(function(){inputEl&&inputEl.focus()},300);
   }
