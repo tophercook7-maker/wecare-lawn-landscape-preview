@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Landscape Design — WeCare Landscapes | Central Arkansas</title>
+<meta name="description" content="Creative landscape design and build for Central Arkansas. We don't design every property the same way — we design around your property, architecture, and how you want to live. Full transformations typically begin around $25,000.">
+<link rel="canonical" href="https://wecarelandscapes.expert/design-services.html">
+<meta property="og:title" content="Landscape Design — WeCare Landscapes"><meta property="og:description" content="Your property. Your style. Designed around you. Creative landscape design-build for Central Arkansas."><meta property="og:type" content="website"><meta property="og:image" content="https://wecarelandscapes.expert/img/proj-transform-after-1.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="img/mark.png">
+<style>
+  :root{
+    --paper:#f6f3ec; --paper-2:#efe8db; --ink:#20231e; --ink-soft:#4a4f45;
+    --stone:#b39b7d; --stone-deep:#8a6f52; --forest:#354a3c; --forest-deep:#222d26;
+    --line:rgba(34,45,38,.14); --shadow:0 26px 70px rgba(30,40,32,.18);
+    --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif;
+    --mx:clamp(20px,6vw,110px);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-weight:400;
+    -webkit-font-smoothing:antialiased;line-height:1.6;overflow-x:hidden}
+  img{display:block;max-width:100%}
+  a{color:inherit}
+  .label{font-family:var(--sans);font-size:.72rem;font-weight:600;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--stone-deep)}
+  h1,h2,h3{font-family:var(--serif);font-weight:400;line-height:1.04;letter-spacing:-.01em;margin:0}
+  p{margin:0}
+  .measure{max-width:46ch}
+
+  /* ---- nav ---- */
+  .nav{position:absolute;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;
+    justify-content:space-between;padding:26px var(--mx);color:#fff}
+  .nav a{text-decoration:none}
+  .brand{display:flex;align-items:center;gap:11px;font-family:var(--serif);font-size:1.18rem;color:#fff}
+  .brand img{height:34px;width:auto;filter:brightness(0) invert(1);opacity:.96}
+  .nav-links{display:flex;gap:30px;font-size:.82rem;letter-spacing:.04em}
+  .nav-links a{opacity:.9}.nav-links a:hover{opacity:1}
+  @media(max-width:820px){.nav-links{display:none}}
+
+  /* ---- hero ---- */
+  .hero{position:relative;min-height:96vh;display:flex;align-items:flex-end;
+    padding:0 var(--mx) clamp(60px,9vh,120px);color:#fff;isolation:isolate}
+  .hero::before{content:"";position:absolute;inset:0;z-index:-2;
+    background:url('img/proj-transform-after-1.jpg') center 40%/cover no-repeat}
+  .hero::after{content:"";position:absolute;inset:0;z-index:-1;
+    background:linear-gradient(180deg,rgba(20,26,20,.34) 0%,rgba(20,26,20,.05) 34%,rgba(18,24,19,.62) 100%)}
+  .hero-in{max-width:1000px}
+  .hero h1{color:#fff;font-size:clamp(2.7rem,8vw,6.6rem);font-weight:300;letter-spacing:-.02em;
+    line-height:.98;text-shadow:0 2px 30px rgba(0,0,0,.28)}
+  .hero h1 span{display:block}
+  .hero .sub{margin-top:26px;font-size:clamp(1rem,1.7vw,1.28rem);font-weight:300;letter-spacing:.01em;
+    color:rgba(255,255,255,.94);max-width:34ch}
+  .cta{display:inline-block;margin-top:34px;font-family:var(--sans);font-size:.8rem;font-weight:600;
+    letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#fff;
+    padding:16px 30px;border:1px solid rgba(255,255,255,.55);border-radius:2px;
+    transition:background .5s ease,color .5s ease,border-color .5s ease}
+  .cta:hover{background:#fff;color:var(--ink);border-color:#fff}
+  .cta.dark{color:var(--ink);border-color:var(--ink)}
+  .cta.dark:hover{background:var(--ink);color:var(--paper)}
+
+  /* ---- reveal ---- */
+  .r{opacity:0;transform:translateY(26px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1)}
+  .r.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.r{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+  /* ---- statement ---- */
+  .statement{padding:clamp(90px,15vh,180px) var(--mx);max-width:1180px;margin:0 auto}
+  .statement h2{font-size:clamp(2rem,5vw,3.9rem);font-weight:300;max-width:16ch;letter-spacing:-.015em}
+  .statement p{margin-top:26px;font-size:1.12rem;color:var(--ink-soft);max-width:52ch;font-weight:300}
+  .statement .em{font-style:italic;color:var(--forest)}
+
+  /* ---- editorial concept spreads ---- */
+  .spread{padding:clamp(60px,9vh,120px) var(--mx);max-width:1320px;margin:0 auto;
+    display:grid;gap:clamp(20px,3vw,54px);align-items:center}
+  .spread .txt .num{font-family:var(--serif);font-size:1.05rem;color:var(--stone-deep);font-style:italic}
+  .spread .txt h3{font-size:clamp(1.8rem,3.6vw,3rem);font-weight:400;margin:12px 0 0;max-width:14ch}
+  .spread .txt p{margin-top:20px;color:var(--ink-soft);font-weight:300;max-width:40ch}
+  .spread figure{margin:0;overflow:hidden;border-radius:3px;box-shadow:var(--shadow)}
+  .spread figure img{width:100%;height:100%;object-fit:cover}
+  .cap{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--stone-deep);
+    margin-top:12px;font-weight:500}
+
+  /* concept 1 — big left image, tall detail, text right */
+  .c1{grid-template-columns:1.15fr .85fr}
+  .c1 .stack{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .c1 .big{grid-column:1/-1;aspect-ratio:16/10}
+  .c1 .d1{aspect-ratio:3/4}.c1 .d2{aspect-ratio:3/4}
+  /* concept 2 — tall hero image left, text + wide image right */
+  .c2{grid-template-columns:.82fr 1.18fr}
+  .c2 .tall{aspect-ratio:3/4.1}
+  .c2 .wide{aspect-ratio:16/10;margin-top:20px}
+  /* concept 3 — text left, offset images right */
+  .c3{grid-template-columns:.9fr 1.1fr}
+  .c3 .main{aspect-ratio:16/10}
+  .c3 .sub{aspect-ratio:16/9;width:78%;margin:-56px 0 0 auto;border:6px solid var(--paper)}
+  @media(max-width:860px){
+    .spread{grid-template-columns:1fr!important}
+    .c3 .sub{width:88%;margin-top:-30px}
+    .spread .txt{order:-1}
+  }
+
+  /* ---- creativity / craftsmanship gallery ---- */
+  .craft{padding:clamp(80px,12vh,150px) var(--mx);background:var(--forest-deep);color:var(--paper)}
+  .craft .head{max-width:1180px;margin:0 auto 46px}
+  .craft .head .label{color:var(--stone)}
+  .craft .head h2{color:var(--paper);font-size:clamp(2rem,4.6vw,3.4rem);font-weight:300;margin-top:16px;max-width:18ch}
+  .craft .head p{color:rgba(246,243,236,.7);margin-top:20px;max-width:48ch;font-weight:300}
+  .gal{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);
+    grid-auto-rows:200px;gap:14px}
+  .gal figure{margin:0;overflow:hidden;border-radius:3px}
+  .gal img{width:100%;height:100%;object-fit:cover;transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
+  .gal figure:hover img{transform:scale(1.05)}
+  .gal .t{grid-row:span 2}.gal .w{grid-column:span 2}.gal .b{grid-column:span 2;grid-row:span 2}
+  @media(max-width:820px){.gal{grid-template-columns:repeat(2,1fr);grid-auto-rows:150px}
+    .gal .b{grid-column:span 2}}
+
+  /* ---- proof: before / after ---- */
+  .proof{padding:clamp(80px,12vh,150px) var(--mx)}
+  .proof .head{max-width:1180px;margin:0 auto 40px}
+  .proof .head h2{font-size:clamp(2rem,4.6vw,3.4rem);font-weight:300;margin-top:14px;max-width:16ch}
+  .proof .head p{color:var(--ink-soft);margin-top:18px;max-width:46ch;font-weight:300}
+  .ba{max-width:1320px;margin:0 auto 20px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .ba figure{margin:0;position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:3px}
+  .ba img{width:100%;height:100%;object-fit:cover}
+  .ba .tag{position:absolute;top:14px;left:14px;font-size:.66rem;font-weight:600;letter-spacing:.16em;
+    text-transform:uppercase;padding:6px 13px;border-radius:2px;color:#fff;background:rgba(20,26,20,.6);backdrop-filter:blur(3px)}
+  .ba .tag.a{background:rgba(53,74,60,.85)}
+  .ba-note{max-width:1320px;margin:0 auto 60px;color:var(--ink-soft);font-weight:300;font-style:italic;
+    font-family:var(--serif);font-size:1.05rem}
+  @media(max-width:600px){.ba{grid-template-columns:1fr}}
+
+  /* ---- capability band ---- */
+  .cap-band{position:relative;min-height:62vh;display:flex;align-items:center;color:#fff;
+    padding:0 var(--mx);isolation:isolate}
+  .cap-band::before{content:"";position:absolute;inset:0;z-index:-2;
+    background:url('img/proj-transform-after-3.jpg') center/cover no-repeat}
+  .cap-band::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(22,28,22,.5)}
+  .cap-band .in{max-width:640px}
+  .cap-band h2{color:#fff;font-size:clamp(1.7rem,3.6vw,2.8rem);font-weight:300;max-width:18ch}
+  .cap-band p{margin-top:20px;color:rgba(255,255,255,.9);font-weight:300;max-width:40ch}
+
+  /* ---- investment + close ---- */
+  .close{padding:clamp(100px,17vh,200px) var(--mx);text-align:center;background:var(--paper-2)}
+  .close .big{font-family:var(--serif);font-size:clamp(1.8rem,4vw,3rem);font-weight:300;
+    letter-spacing:-.01em;max-width:20ch;margin:0 auto;line-height:1.12}
+  .close .amt{color:var(--forest);font-style:italic}
+  .close p{margin:22px auto 0;color:var(--ink-soft);font-weight:300;max-width:40ch}
+  .close .cta{margin-top:40px}
+  .close .fine{margin-top:26px;font-size:.86rem;color:var(--stone-deep)}
+
+  footer{background:var(--forest-deep);color:rgba(246,243,236,.72);padding:44px var(--mx);
+    font-size:.86rem;display:flex;flex-wrap:wrap;gap:12px 26px;justify-content:space-between;align-items:center}
+  footer a{color:rgba(246,243,236,.9);text-decoration:none}
+</style>
+</head><body>
+
+<nav class="nav">
+  <a class="brand" href="index.html"><img src="img/logo.png" alt="WeCare Landscapes"> WeCare Landscapes</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="case-studies.html">Our Work</a>
+    <a href="sod.html">Sod Farm</a>
+    <a href="about.html">About</a>
+    <a href="book.html">Contact</a>
+  </div>
+</nav>
+
+<!-- ASPIRATION -->
+<header class="hero">
+  <div class="hero-in">
+    <h1><span>Your property.</span><span>Your style.</span><span>Designed around you.</span></h1>
+    <p class="sub">Creative design. Thoughtful solutions. Built for Arkansas.</p>
+    <div><a class="cta" href="book.html">Start a Conversation</a></div>
+  </div>
+</header>
+
+<!-- RANGE — the core message -->
+<section class="statement">
+  <h2 class="r">We don't design every property the same&nbsp;way.</h2>
+  <p class="r">We design around your property, its architecture, and how you want to live in it — reading the site's character rather than imposing a single look. The result feels less like landscaping that was <em class="em">installed</em>, and more like it always&nbsp;belonged.</p>
+</section>
+
+<!-- CREATIVITY / RANGE — three directions -->
+<!-- Concept 01 -->
+<section class="spread c1">
+  <div class="stack r">
+    <figure class="big"><img src="img/proj2-after.jpg" loading="lazy" alt="A designed dry-creek bed with natural stone, layered planting and subtle lighting"></figure>
+    <figure class="d1"><img src="img/concrete-craft-2.jpg" loading="lazy" alt="Hand-sculpted natural-look stone feature"></figure>
+    <figure class="d2"><img src="img/proj-transform-after-1.jpg" loading="lazy" alt="Rose beds, river rock and natural stone edging"></figure>
+  </div>
+  <div class="txt r">
+    <span class="num">01</span>
+    <h3>Arkansas Natural Luxury</h3>
+    <p>Ouachita stone, natural boulders, and layered Zone&nbsp;8A planting that settle into the land and the surrounding woods. Expensive in feel — never artificial.</p>
+    <div class="cap">Hot Springs Village character</div>
+  </div>
+</section>
+
+<!-- Concept 02 -->
+<section class="spread c2">
+  <figure class="tall r"><img src="img/proj3-after.jpg" loading="lazy" alt="Lakeside flagstone patio, natural-stone wall, putting green and pondless waterfall"></figure>
+  <div class="r">
+    <div class="txt">
+      <span class="num">02</span>
+      <h3>Golf &amp; Lake Outdoor Living</h3>
+      <p>Patios, fire and water features, and stone terraces that connect the home to the view — landscape and architecture as one, not simply installed around the house.</p>
+    </div>
+    <figure class="wide"><img src="img/proj-transform-after-3.jpg" loading="lazy" alt="Outdoor living space with turf lawn, stone and mature planting"></figure>
+    <div class="cap">Integrated outdoor living</div>
+  </div>
+</section>
+
+<!-- Concept 03 -->
+<section class="spread c3">
+  <div class="txt r">
+    <span class="num">03</span>
+    <h3>Modern Low-Maintenance</h3>
+    <p>Clean lines, defined entertaining spaces, and restrained planting for a contemporary property — designed to look sharp with very little upkeep. Artificial turf is simply one of the tools.</p>
+    <div class="cap">City &amp; suburban settings</div>
+  </div>
+  <div class="r">
+    <figure class="main"><img src="img/proj-transform-after-2.jpg" loading="lazy" alt="Clean turf lawn with flagstone geometry and defined edges"></figure>
+    <figure class="sub"><img src="img/concrete-craft-3.jpg" loading="lazy" alt="Architectural stone and hardscape detail"></figure>
+  </div>
+</section>
+
+<!-- CREATIVITY — craftsmanship -->
+<section class="craft">
+  <div class="head r">
+    <span class="label">Creativity is our craft</span>
+    <h2>The details other companies can't build.</h2>
+    <p>Our signature is custom-sculpted concrete — boulders, stone formations, and features shaped by hand for one property and one property only. It's also how we solve difficult sites others walk away from.</p>
+  </div>
+  <div class="gal">
+    <figure class="t r"><img src="img/concrete-craft-1.jpg" loading="lazy" alt="Carved tree-stump concrete feature"></figure>
+    <figure class="w r"><img src="img/concrete-craft-2.jpg" loading="lazy" alt="Sculpted faux-rock stone formation"></figure>
+    <figure class="r"><img src="img/proj-transform-after-1.jpg" loading="lazy" alt="Natural stone edging and planting"></figure>
+    <figure class="b r"><img src="img/proj3-after.jpg" loading="lazy" alt="Flagstone patio and pondless waterfall"></figure>
+    <figure class="r"><img src="img/concrete-craft-3.jpg" loading="lazy" alt="Architectural concrete and stone wall"></figure>
+    <figure class="w r"><img src="img/proj2-after.jpg" loading="lazy" alt="Dry-creek bed with layered planting"></figure>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section class="proof">
+  <div class="head r">
+    <span class="label">Real transformations</span>
+    <h2>The proof is in the before.</h2>
+    <p>Real Central Arkansas properties — reimagined and rebuilt by our own crews.</p>
+  </div>
+  <div class="ba r">
+    <figure><span class="tag">Before</span><img src="img/proj-transform-before-2.jpg" loading="lazy" alt="Bare gravel backyard before"></figure>
+    <figure><span class="tag a">After</span><img src="img/proj-transform-after-2.jpg" loading="lazy" alt="Finished landscape after — lawn, stone, flagstone and lighting"></figure>
+  </div>
+  <p class="ba-note r">A difficult backyard, designed around how the family actually wanted to live.</p>
+  <div class="ba r">
+    <figure><span class="tag">Before</span><img src="img/proj2-before.jpg" loading="lazy" alt="Eroding rock slope before"></figure>
+    <figure><span class="tag a">After</span><img src="img/proj2-after.jpg" loading="lazy" alt="Designed dry-creek garden after"></figure>
+  </div>
+  <p class="ba-note r">An eroding slope and a drainage problem — turned into the best-looking part of the property.</p>
+</section>
+
+<!-- CAPABILITY -->
+<section class="cap-band">
+  <div class="in r">
+    <span class="label" style="color:var(--stone)">Established 1998</span>
+    <h2 style="margin-top:14px">The crews, the equipment, and the experience to build it.</h2>
+    <p>A family-owned Arkansas company with our own sod farm and owner-led crews — resourced to take on substantial projects from first idea to finished space.</p>
+  </div>
+</section>
+
+<!-- INVESTMENT + LOW-PRESSURE ACTION -->
+<section class="close">
+  <p class="big r">Full landscape transformations typically begin around <span class="amt">$25,000</span>.</p>
+  <p class="r">Have a more focused project in mind? Let's explore what's possible.</p>
+  <div class="r"><a class="cta dark" href="book.html">Start a Conversation</a></div>
+  <p class="fine r">Serving Hot Springs, Hot Springs Village &amp; Central Arkansas · 501-627-4384</p>
+</section>
+
+<footer>
+  <span>© 2026 WeCare Landscapes · Landscape Design &amp; Build</span>
+  <span><a href="index.html">Home</a> &nbsp;·&nbsp; <a href="case-studies.html">Our Work</a> &nbsp;·&nbsp; <a href="book.html">Start a Conversation</a></span>
+</footer>
+
+<script>
+(function(){
+  if(!("IntersectionObserver" in window)){document.querySelectorAll(".r").forEach(function(e){e.classList.add("in")});return;}
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});},{threshold:.12,rootMargin:"0px 0px -8% 0px"});
+  document.querySelectorAll(".r").forEach(function(e){io.observe(e);});
+})();
+</script>
+</body></html>
