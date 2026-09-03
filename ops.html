@@ -102,12 +102,50 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
         <div class="field"><label>Phone <span class="mini">(for review/confirmation texts)</span></label><input id="woPhone" placeholder="(501) 555-0123"></div>
         <div class="field"><label>Service</label><select id="woSvc"><option>Lawn maintenance</option><option>Landscape design/build</option><option>Tree &amp; shrub planting</option><option>Concrete Artistry</option><option>Artificial turf</option><option>Landscape lighting</option><option>Sod install</option><option>Drainage</option><option>Irrigation</option><option>Water feature</option><option>Hardscape/patio</option></select></div>
         <div class="field"><label>Address</label><input id="woAddr" placeholder="Street, town"></div>
+        <div class="field"><label>🏡 Property card <span class="mini">(attach so the crew sees the full property profile)</span></label><select id="woProp" onchange="woPropPick()"><option value="">— none —</option></select></div>
         <div class="field"><label>Scope of work</label><textarea id="woScope" rows="2" placeholder="What's being done…"></textarea></div>
         <div class="field"><label>Assign crew</label><div class="chips" id="woCrew"></div></div>
         <div class="field"><label>Est. labor hours</label><input id="woHrs" type="number" step="0.5" placeholder="e.g. 4"></div>
         <div class="field"><label>📹 How-to video / photo <span class="mini">(optional — the crew sees this on the job)</span></label><input id="woHowTo" type="file" accept="image/*,video/*"></div>
         <div class="mini" id="woHowToStatus" style="margin:-4px 0 8px;color:var(--muted)"></div>
         <button class="btn p" id="woCreateBtn" onclick="createWO()" style="width:100%">Create &amp; assign</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="propPanel" style="margin-top:16px">
+    <h2>🏡 Property cards <span class="mini" style="font-weight:400">— a living profile for each property, attachable to any work order</span></h2>
+    <p class="mini" style="margin-top:-2px">Everything the crew needs to service a property — even a tech who's never been there. Build it up over time with notes and photos, then attach the card to a work order and it rides along.</p>
+    <div id="propList"></div>
+    <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">
+      <h3 style="margin:0 0 10px;font-family:var(--ff-d);font-size:1.05rem;color:var(--green-ink)" id="propFormTitle">Add a property card</h3>
+      <input type="hidden" id="prId">
+      <div class="field"><label>Card name</label><input id="prName" placeholder="e.g. Smith Residence — Hot Springs Village"></div>
+      <div class="field"><label>Customer</label><input id="prCust" placeholder="Name"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:130px"><label>Phone</label><input id="prPhone" placeholder="(501) 555-0123"></div>
+        <div class="field" style="flex:1;min-width:130px"><label>Email</label><input id="prEmail" placeholder="name@email.com"></div>
+      </div>
+      <div class="field"><label>Address</label><input id="prAddr" placeholder="Street, town"></div>
+      <div class="field"><label>Areas we maintain</label><textarea id="prAreas" rows="2" placeholder="Front beds, back lawn, side hill, etc."></textarea></div>
+      <div class="field"><label>Turf &amp; plant information</label><textarea id="prTurf" rows="2" placeholder="Zoysia lawn, boxwoods along the walk, roses in the front bed…"></textarea></div>
+      <div class="field"><label>Irrigation details</label><textarea id="prIrr" rows="2" placeholder="Controller in the garage, 6 zones, drip in the beds…"></textarea></div>
+      <div class="field"><label>Gate / access instructions</label><textarea id="prAccess" rows="2" placeholder="Gate code 1234, dog is friendly, park in the drive…"></textarea></div>
+      <div class="field"><label>Customer preferences</label><textarea id="prPref" rows="2" placeholder="Bag clippings, edge every visit, text before arriving…"></textarea></div>
+      <div class="field"><label>Recurring problem areas</label><textarea id="prProb" rows="2" placeholder="Low spot by the patio floods, shade under the oak stays thin…"></textarea></div>
+      <div class="field"><label>Special instructions</label><textarea id="prSpecial" rows="2" placeholder="Anything else the crew must know."></textarea></div>
+      <div class="field"><label>Photos <span class="mini">(the property, problem areas, reference shots)</span></label>
+        <input id="prPhoto" type="file" accept="image/*" multiple onchange="uploadPropPhotos(this)">
+        <div class="mini" id="prPhotoStatus" style="color:var(--muted)"></div>
+        <div id="prPhotos" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
+      </div>
+      <div class="field"><label>Notes &amp; history</label>
+        <div id="prNotes" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
+        <div style="display:flex;gap:6px"><input id="prNoteNew" placeholder="Add a dated note…" style="flex:1"><button class="btn" onclick="addPropNote()">Add note</button></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn p" onclick="savePropCard()">Save card</button>
+        <button class="btn" onclick="resetPropForm()">Clear / new</button>
       </div>
     </div>
   </div>
@@ -244,7 +282,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0845"></script>
+<script src="js/wecare-cloud.js?v=0846"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -254,7 +292,7 @@ var DEFAULT_CREW=[
   {id:"christian",name:"Christian Benton",role:"Maintenance Technician",rate:23},
   {id:"chris",name:"Chris Crain",role:"Maintenance Technician",rate:18.75,dayRate:150},
 ];
-var K_PUNCH="wecare_punches",K_JOBS="wecare_workorders",K_FIX="wecare_punch_fixes",K_SOPS="wecare_sops",K_EMP="wecare_employees";
+var K_PUNCH="wecare_punches",K_JOBS="wecare_workorders",K_FIX="wecare_punch_fixes",K_SOPS="wecare_sops",K_EMP="wecare_employees",K_PROPS="wecare_properties";
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 /* employee directory is the source of truth (falls back to defaults until it loads) */
@@ -401,13 +439,13 @@ function createWO(){
   var wo={id:"W"+Date.now().toString(36),customer:cust,phone:document.getElementById("woPhone").value.trim(),service:svc,
     address:document.getElementById("woAddr").value.trim(),scope:document.getElementById("woScope").value.trim(),
     sop:svc+" SOP",assignedTo:crew,date:new Date().toISOString().slice(0,10),
-    status:"assigned",estHours:parseFloat(document.getElementById("woHrs").value)||null,howTo:""};
+    status:"assigned",estHours:parseFloat(document.getElementById("woHrs").value)||null,howTo:"",propertyId:document.getElementById("woProp").value||""};
   var file=(document.getElementById("woHowTo").files||[])[0];
   var btn=document.getElementById("woCreateBtn"), hs=document.getElementById("woHowToStatus");
   var finish=function(){
     var jobs=load(K_JOBS,[]); jobs.push(wo); save(K_JOBS,jobs);
     ["woCust","woPhone","woAddr","woScope","woHrs"].forEach(function(id){document.getElementById(id).value=""});
-    document.getElementById("woHowTo").value="";
+    document.getElementById("woHowTo").value=""; document.getElementById("woProp").value="";
     document.querySelectorAll("#woCrew input:checked").forEach(function(i){i.checked=false});
     if(btn){btn.disabled=false;btn.textContent="Create & assign";} if(hs)hs.textContent="";
     render();
@@ -420,6 +458,106 @@ function createWO(){
     return;
   }
   finish();
+}
+/* ---------- Property cards: a living profile per property, attachable to a work order ---------- */
+var _prNotes=[], _prPhotos=[];
+function loadProps(){return load(K_PROPS,[]);}
+function propLabel(p){return (p.name||p.customer||"Property")+(p.address?" · "+p.address:"");}
+function newPrId(){return "PR"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function renderProps(){
+  var list=document.getElementById("propList"); if(!list) return;
+  var props=loadProps().sort(function(a,b){return (a.name||a.customer||"").localeCompare(b.name||b.customer||"");});
+  list.innerHTML = props.length ? props.map(function(p){
+    var n=(p.notes||[]).length, ph=(p.photos||[]).length;
+    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)">'+
+      '<span><b>'+esc(p.name||p.customer||"Property")+'</b>'+(p.address?' <span class="mini">'+esc(p.address)+'</span>':'')+
+      ' <span class="mini" style="color:var(--muted)">· '+ph+' photo'+(ph===1?'':'s')+' · '+n+' note'+(n===1?'':'s')+'</span></span>'+
+      '<button class="btn" style="padding:3px 9px" onclick="editProp(\''+p.id+'\')">Open / edit</button></div>';
+  }).join("") : '<p class="mini" style="color:var(--muted)">No property cards yet — add one below.</p>';
+  populatePropSelect();
+}
+function populatePropSelect(){
+  var sel=document.getElementById("woProp"); if(!sel) return;
+  var cur=sel.value;
+  var props=loadProps().sort(function(a,b){return (a.name||a.customer||"").localeCompare(b.name||b.customer||"");});
+  sel.innerHTML='<option value="">— none —</option>'+props.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(propLabel(p))+'</option>';}).join("");
+  sel.value=cur;
+}
+function woPropPick(){
+  var id=document.getElementById("woProp").value; if(!id) return;
+  var p=loadProps().find(function(x){return x.id===id;}); if(!p) return;
+  if(!document.getElementById("woCust").value && p.customer) document.getElementById("woCust").value=p.customer;
+  if(!document.getElementById("woPhone").value && p.phone) document.getElementById("woPhone").value=p.phone;
+  if(!document.getElementById("woAddr").value && p.address) document.getElementById("woAddr").value=p.address;
+}
+function resetPropForm(){
+  document.getElementById("prId").value=newPrId();
+  ["prName","prCust","prPhone","prEmail","prAddr","prAreas","prTurf","prIrr","prAccess","prPref","prProb","prSpecial","prNoteNew"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});
+  _prNotes=[]; _prPhotos=[]; renderPrNotes(); renderPrPhotos();
+  var t=document.getElementById("propFormTitle"); if(t)t.textContent="Add a property card";
+  var s=document.getElementById("prPhotoStatus"); if(s)s.textContent="";
+}
+function editProp(id){
+  var p=loadProps().find(function(x){return x.id===id;}); if(!p) return;
+  document.getElementById("prId").value=p.id;
+  document.getElementById("prName").value=p.name||""; document.getElementById("prCust").value=p.customer||"";
+  document.getElementById("prPhone").value=p.phone||""; document.getElementById("prEmail").value=p.email||"";
+  document.getElementById("prAddr").value=p.address||""; document.getElementById("prAreas").value=p.areas||"";
+  document.getElementById("prTurf").value=p.turfPlants||""; document.getElementById("prIrr").value=p.irrigation||"";
+  document.getElementById("prAccess").value=p.access||""; document.getElementById("prPref").value=p.preferences||"";
+  document.getElementById("prProb").value=p.problemAreas||""; document.getElementById("prSpecial").value=p.special||"";
+  _prNotes=(p.notes||[]).slice(); _prPhotos=(p.photos||[]).slice();
+  renderPrNotes(); renderPrPhotos();
+  var t=document.getElementById("propFormTitle"); if(t)t.textContent="Edit property card";
+  document.getElementById("propPanel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function renderPrNotes(){
+  var box=document.getElementById("prNotes"); if(!box) return;
+  box.innerHTML=_prNotes.length?_prNotes.slice().reverse().map(function(n,i){
+    var real=_prNotes.length-1-i;
+    return '<div style="background:var(--bg,#f6f4ee);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.86rem;display:flex;justify-content:space-between;gap:8px">'+
+      '<span><span class="mini" style="color:var(--muted)">'+esc(n.t||"")+(n.by?' · '+esc(n.by):'')+'</span><br>'+esc(n.text||"")+'</span>'+
+      '<button class="btn" style="padding:1px 7px" onclick="delPropNote('+real+')">✕</button></div>';
+  }).join(""):'<p class="mini" style="color:var(--muted);margin:0">No notes yet.</p>';
+}
+function addPropNote(){
+  var inp=document.getElementById("prNoteNew"); var t=inp.value.trim(); if(!t) return;
+  _prNotes.push({t:new Date().toLocaleDateString(),by:"office",text:t}); inp.value=""; renderPrNotes();
+}
+function delPropNote(i){ _prNotes.splice(i,1); renderPrNotes(); }
+function renderPrPhotos(){
+  var box=document.getElementById("prPhotos"); if(!box) return;
+  box.innerHTML=_prPhotos.map(function(u,i){
+    return '<div style="position:relative"><a href="'+esc(u)+'" target="_blank" rel="noopener"><img src="'+esc(u)+'" style="width:74px;height:74px;object-fit:cover;border-radius:8px;border:1px solid var(--line)"></a>'+
+      '<button class="btn" style="position:absolute;top:-6px;right:-6px;padding:0 6px;border-radius:50%" onclick="delPropPhoto('+i+')">✕</button></div>';
+  }).join("");
+}
+function delPropPhoto(i){ _prPhotos.splice(i,1); renderPrPhotos(); }
+function uploadPropPhotos(input){
+  var files=[].slice.call(input.files||[]); if(!files.length) return;
+  if(!(window.WeCareCloud&&WeCareCloud.uploadPhoto)){ return; }
+  var pid=document.getElementById("prId").value||newPrId(); document.getElementById("prId").value=pid;
+  var st=document.getElementById("prPhotoStatus"); if(st)st.textContent="Uploading "+files.length+" photo"+(files.length>1?"s":"")+"…";
+  Promise.all(files.map(function(f){return WeCareCloud.uploadPhoto(f,pid,null,null,"property");}))
+    .then(function(urls){ (urls||[]).filter(Boolean).forEach(function(u){_prPhotos.push(u);}); renderPrPhotos(); if(st)st.textContent=""; input.value=""; })
+    .catch(function(){ if(st)st.textContent="Upload failed — try again."; });
+}
+function savePropCard(){
+  var id=document.getElementById("prId").value||newPrId();
+  var name=document.getElementById("prName").value.trim(), cust=document.getElementById("prCust").value.trim();
+  if(!name && !cust){ alert("Give the card a name or a customer."); return; }
+  var props=loadProps(); var ex=props.find(function(x){return x.id===id;});
+  var card={id:id,name:name,customer:cust,
+    phone:document.getElementById("prPhone").value.trim(),email:document.getElementById("prEmail").value.trim(),
+    address:document.getElementById("prAddr").value.trim(),leadId:(ex&&ex.leadId)||"",
+    areas:document.getElementById("prAreas").value.trim(),turfPlants:document.getElementById("prTurf").value.trim(),
+    irrigation:document.getElementById("prIrr").value.trim(),access:document.getElementById("prAccess").value.trim(),
+    preferences:document.getElementById("prPref").value.trim(),problemAreas:document.getElementById("prProb").value.trim(),
+    special:document.getElementById("prSpecial").value.trim(),notes:_prNotes.slice(),photos:_prPhotos.slice(),
+    created:(ex&&ex.created)||new Date().toISOString(),updated:new Date().toISOString()};
+  if(ex){ props=props.map(function(x){return x.id===id?card:x;}); } else { props.push(card); }
+  save(K_PROPS,props); renderProps(); resetPropForm();
+  var s=document.getElementById("prPhotoStatus"); if(s){s.textContent="Saved ✓"; setTimeout(function(){s.textContent="";},1500);}
 }
 function resolveFix(id){var f=load(K_FIX,[]);var x=f.find(function(y){return y.id===id});if(x)x.resolved=true;save(K_FIX,f);render();}
 // owner fixes a forgotten clock-out so the shift's pay isn't lost (keeps an audit note)
@@ -978,7 +1116,7 @@ document.getElementById("otAfter").addEventListener("input",render);
 var _lr=document.getElementById("laborRate");
 _lr.value=localStorage.getItem("wecare_labor_rate")||"";
 _lr.addEventListener("input",function(){localStorage.setItem("wecare_labor_rate",_lr.value);renderCosting();});
-window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();renderRecur();renderRoutes();renderTeam();});
+window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();renderRecur();renderRoutes();renderTeam();renderProps();});
 setInterval(function(){generateRecurring();generateRoutes();render();renderCosting();renderCases();renderRecur();renderRoutes();renderTeam();},5000);
 seedSOPs();
 generateRecurring();
@@ -990,6 +1128,8 @@ renderCases();
 renderRecur();
 renderRoutes();
 loadTeam();
+resetPropForm();
+renderProps();
 </script>
 <script src="js/wecare-onboard.js?v=0834"></script>
 </body>

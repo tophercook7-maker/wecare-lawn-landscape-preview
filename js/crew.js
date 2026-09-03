@@ -17,8 +17,9 @@ var DEFAULT_CREW = [
 
 /* ---- shared stores (owner dashboard reads the same keys) ---- */
 var K_PUNCH="wecare_punches";      // [{id, empId, empName, jobId, in, out, inGeo, outGeo, edits:[]}]
-var K_JOBS ="wecare_workorders";   // [{id, customer, service, address, scope, sop, assignedTo[], date, status, estHours}]
+var K_JOBS ="wecare_workorders";   // [{id, customer, service, address, scope, sop, assignedTo[], date, status, estHours, propertyId}]
 var K_SOPS ="wecare_sops";         // SOP library (owner-written) [{id,title,service,steps[],notes}]
+var K_PROPS="wecare_properties";   // property cards attached to jobs [{id,name,access,areas,...,notes[],photos[]}]
 var K_EMP  ="wecare_employees";    // employee directory (owner-managed): profile + clock-in PIN
 var K_ME   ="wecare_crew_me";      // current employee id on THIS phone
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
@@ -113,7 +114,8 @@ function fetchRoster(){
 // crew_data returns raw DB rows (snake_case); the crew app works in camelCase — map them.
 function normJob(r){return {id:r.id,customer:r.customer,phone:r.phone||"",service:r.service,address:r.address,scope:r.scope,sop:r.sop,
   assignedTo:r.assigned_to||[],date:r.date,status:r.status,estHours:r.est_hours,paid:r.paid,reviewStatus:r.review_status||"",
-  photos:r.photos||[],howTo:r.how_to||"",recurId:r.recur_id||"",routeId:r.route_id||"",routeName:r.route_name||"",seq:r.seq||0};}
+  photos:r.photos||[],howTo:r.how_to||"",recurId:r.recur_id||"",routeId:r.route_id||"",routeName:r.route_name||"",seq:r.seq||0,propertyId:r.property_id||""};}
+function normProp(r){return {id:r.id,name:r.name||"",customer:r.customer||"",phone:r.phone||"",email:r.email||"",address:r.address||"",areas:r.areas||"",turfPlants:r.turf_plants||"",irrigation:r.irrigation||"",access:r.access||"",preferences:r.preferences||"",problemAreas:r.problem_areas||"",special:r.special||"",notes:r.notes||[],photos:r.photos||[]};}
 function normPunch(r){return {id:r.id,empId:r.emp_id,empName:r.emp_name,jobId:r.job_id,in:r.clock_in,out:r.clock_out,
   inGeo:r.in_geo,outGeo:r.out_geo,edits:r.edits||[],needsReview:!!r.needs_review};}
 function fetchCrewData(){
@@ -123,6 +125,7 @@ function fetchCrewData(){
       save(K_JOBS,(res.jobs||[]).map(normJob));
       save(K_PUNCH,(res.punches||[]).map(normPunch));
       save(K_SOPS,res.sops||[]);
+      save(K_PROPS,(res.properties||[]).map(normProp));
       render();
     }
   });
@@ -269,12 +272,33 @@ function jobCard(j){
     '<div class="h"><span class="cust">'+esc(j.customer)+'</span><span class="svc">'+esc(j.service)+'</span></div>'+
     '<div class="addr">📍 '+esc(j.address)+'</div>'+
     '<div class="muted" style="font-size:.88rem">'+esc(j.scope)+'</div>'+
+    propertyBlock(j)+
     sopBlock(j)+
     '<div class="linkrow"><button onclick="window.open(\''+maps+'\')">🍎 Apple Maps</button><button onclick="window.open(\''+gmaps+'\')">📍 Google Maps</button></div>'+
     '<div class="steps">'+STATUSES.map(function(s){return '<button data-st="'+s[0]+'" class="'+(j.status===s[0]?'active':'')+'">'+s[1]+'</button>'}).join("")+'</div>'+
     howToBlock(j)+
     photosBlock(j)+
   '</div>';
+}
+// the attached property card — everything the tech needs to service this property,
+// even if they've never been here. Shown open by default, above the job steps.
+function propertyBlock(j){
+  if(!j.propertyId) return "";
+  var p=(load(K_PROPS,[])||[]).find(function(x){return x.id===j.propertyId;}); if(!p) return "";
+  function row(label,val){ return val?'<div style="margin:7px 0"><span style="display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#8a6f52;font-weight:700">'+label+'</span><span style="white-space:pre-wrap">'+esc(val)+'</span></div>':''; }
+  var photos=(p.photos||[]).map(function(u){var s=safeUrl(u);return s?'<a href="'+s+'" target="_blank" rel="noopener" class="jphoto"><img src="'+s+'" loading="lazy" alt="property"></a>':'';}).join("");
+  var notes=(p.notes||[]).slice().reverse().map(function(n){return '<div class="muted" style="font-size:.82rem;margin:3px 0">• '+esc(n.text||"")+' <span style="opacity:.55">'+esc(n.t||"")+'</span></div>';}).join("");
+  return '<details class="sop" open><summary>🏡 Property info — '+esc(p.name||p.customer||"this property")+'</summary><div style="margin-top:8px">'+
+    row("🔑 Access / gate",p.access)+
+    row("Areas we maintain",p.areas)+
+    row("Turf &amp; plants",p.turfPlants)+
+    row("Irrigation",p.irrigation)+
+    row("Customer preferences",p.preferences)+
+    row("⚠️ Problem areas",p.problemAreas)+
+    row("Special instructions",p.special)+
+    (photos?'<div class="jphotos" style="margin-top:8px">'+photos+'</div>':'')+
+    (notes?'<div style="margin-top:8px"><span style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#8a6f52;font-weight:700">Notes &amp; history</span>'+notes+'</div>':'')+
+  '</div></details>';
 }
 function isVideo(u){return /\.(mp4|mov|webm|m4v|ogg|ogv)(\?|$)/i.test(String(u==null?"":u));}
 // owner-attached "how to do this job" clip/photo, shown up top for the crew

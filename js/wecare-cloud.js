@@ -38,8 +38,11 @@ var STORES=[
   toRow:function(o){return {id:o.id,customer:o.customer||{},service:o.service,msgs:o.msgs||[],control:o.control,status:o.status,unseen:!!o.unseen,created:o.created,updated:o.updated};},
   fromRow:function(r){return {id:r.id,customer:r.customer||{},service:r.service,msgs:r.msgs||[],control:r.control,status:r.status,unseen:r.unseen,created:r.created,updated:r.updated};}},
  {key:"wecare_workorders", table:"work_orders", shape:"array",
-  toRow:function(o){return {id:o.id,customer:o.customer,phone:o.phone||"",service:o.service,address:o.address,scope:o.scope,sop:o.sop,assigned_to:o.assignedTo||[],date:o.date,status:o.status,est_hours:o.estHours||null,paid:!!o.paid,review_status:o.reviewStatus||"",materials:(o.materials||o.materials===0)?o.materials:null,price:(o.price||o.price===0)?o.price:null,photos:o.photos||[],how_to:o.howTo||"",recur_id:o.recurId||"",route_id:o.routeId||"",route_name:o.routeName||"",seq:(o.seq||o.seq===0)?o.seq:0};},
-  fromRow:function(r){return {id:r.id,customer:r.customer,phone:r.phone||"",service:r.service,address:r.address,scope:r.scope,sop:r.sop,assignedTo:r.assigned_to||[],date:r.date,status:r.status,estHours:r.est_hours,paid:r.paid,reviewStatus:r.review_status||"",materials:r.materials,price:r.price,photos:r.photos||[],howTo:r.how_to||"",recurId:r.recur_id||"",routeId:r.route_id||"",routeName:r.route_name||"",seq:r.seq||0};}},
+  toRow:function(o){return {id:o.id,customer:o.customer,phone:o.phone||"",service:o.service,address:o.address,scope:o.scope,sop:o.sop,assigned_to:o.assignedTo||[],date:o.date,status:o.status,est_hours:o.estHours||null,paid:!!o.paid,review_status:o.reviewStatus||"",materials:(o.materials||o.materials===0)?o.materials:null,price:(o.price||o.price===0)?o.price:null,photos:o.photos||[],how_to:o.howTo||"",recur_id:o.recurId||"",route_id:o.routeId||"",route_name:o.routeName||"",seq:(o.seq||o.seq===0)?o.seq:0,property_id:o.propertyId||""};},
+  fromRow:function(r){return {id:r.id,customer:r.customer,phone:r.phone||"",service:r.service,address:r.address,scope:r.scope,sop:r.sop,assignedTo:r.assigned_to||[],date:r.date,status:r.status,estHours:r.est_hours,paid:r.paid,reviewStatus:r.review_status||"",materials:r.materials,price:r.price,photos:r.photos||[],howTo:r.how_to||"",recurId:r.recur_id||"",routeId:r.route_id||"",routeName:r.route_name||"",seq:r.seq||0,propertyId:r.property_id||""};}},
+ {key:"wecare_properties", table:"properties", shape:"array",
+  toRow:function(o){return {id:o.id,name:o.name||"",customer:o.customer||"",phone:o.phone||"",email:o.email||"",address:o.address||"",lead_id:o.leadId||"",areas:o.areas||"",turf_plants:o.turfPlants||"",irrigation:o.irrigation||"",access:o.access||"",preferences:o.preferences||"",problem_areas:o.problemAreas||"",special:o.special||"",notes:o.notes||[],photos:o.photos||[],created:o.created,updated:o.updated};},
+  fromRow:function(r){return {id:r.id,name:r.name||"",customer:r.customer||"",phone:r.phone||"",email:r.email||"",address:r.address||"",leadId:r.lead_id||"",areas:r.areas||"",turfPlants:r.turf_plants||"",irrigation:r.irrigation||"",access:r.access||"",preferences:r.preferences||"",problemAreas:r.problem_areas||"",special:r.special||"",notes:r.notes||[],photos:r.photos||[],created:r.created,updated:r.updated};}},
  {key:"wecare_recurring", table:"recurring_jobs", shape:"array",
   toRow:function(o){return {id:o.id,customer:o.customer||"",phone:o.phone||"",service:o.service||"",address:o.address||"",crew:o.crew||[],freq:o.freq||"weekly",dow:o.dow,est_hours:(o.estHours||o.estHours===0)?o.estHours:null,anchor:o.anchor||"",active:o.active!==false,created:o.created};},
   fromRow:function(r){return {id:r.id,customer:r.customer,phone:r.phone,service:r.service,address:r.address,crew:r.crew||[],freq:r.freq,dow:r.dow,estHours:r.est_hours,anchor:r.anchor,active:r.active,created:r.created};}},
@@ -208,25 +211,28 @@ function initialSync(){
 // Preferred path: a PIN-verified, single-use SIGNED upload URL minted by the team
 // edge function — so the bucket needs NO anon write rights. Falls back to the legacy
 // direct upload if creds are missing or the server action isn't live yet.
-function uploadPhoto(file, jobId, id, pin){
+function uploadPhoto(file, jobId, id, pin, kind){
   var ext=(file.name||"jpg").split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+  var ct=file.type||"image/jpeg";
   function directUpload(){
     var path="wo/"+(jobId||"misc")+"/"+Date.now()+"-"+Math.floor(Math.random()*1e6)+"."+ext;
     return fetch(URL_+"/storage/v1/object/job-photos/"+path,{
-      method:"POST",
-      headers:{apikey:ANON,Authorization:"Bearer "+ANON,"Content-Type":file.type||"image/jpeg","x-upsert":"true"},
-      body:file
+      method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+ANON,"Content-Type":ct,"x-upsert":"true"},body:file
     }).then(function(r){ if(!r.ok) throw new Error("upload failed"); return URL_+"/storage/v1/object/public/job-photos/"+path; });
   }
-  if(id && pin){
-    return team("crew_sign_upload",{id:id,pin:pin,jobId:jobId,ext:ext}).then(function(r){
+  function viaSigned(action, extra){
+    return team(action, Object.assign({jobId:jobId,ext:ext,kind:kind||"wo"}, extra||{})).then(function(r){
       if(r&&r.ok&&r.uploadUrl){
-        return fetch(r.uploadUrl,{method:"PUT",headers:{"Content-Type":file.type||"image/jpeg","x-upsert":"true"},body:file})
+        return fetch(r.uploadUrl,{method:"PUT",headers:{"Content-Type":ct,"x-upsert":"true"},body:file})
           .then(function(u){ if(!u.ok) throw new Error("signed upload failed"); return r.publicUrl; });
       }
       return directUpload();   // server action not available yet → legacy path
     }).catch(function(){ return directUpload(); });
   }
+  // Owner (logged in) → JWT-verified signed upload. Crew (id+pin) → PIN-verified
+  // signed upload. Neither needs anon write rights on the bucket.
+  if(sessionValid()) return viaSigned("owner_sign_upload");
+  if(id && pin)      return viaSigned("crew_sign_upload",{id:id,pin:pin});
   return directUpload();
 }
 // Employee directory goes through the service-role `team` edge function so crew
