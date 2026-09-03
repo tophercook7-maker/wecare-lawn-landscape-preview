@@ -204,25 +204,44 @@ function initialSync(){
   startRealtime();
   setInterval(function(){ if(document.visibilityState!=="hidden") pullAll(); }, 20000);  // slow fallback; realtime carries the fast path
 }
-// upload a job photo to Supabase Storage → returns the public URL
-function uploadPhoto(file, jobId){
+// upload a job photo to Supabase Storage → returns the public URL.
+// Preferred path: a PIN-verified, single-use SIGNED upload URL minted by the team
+// edge function — so the bucket needs NO anon write rights. Falls back to the legacy
+// direct upload if creds are missing or the server action isn't live yet.
+function uploadPhoto(file, jobId, id, pin){
   var ext=(file.name||"jpg").split(".").pop().toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
-  var path="wo/"+(jobId||"misc")+"/"+Date.now()+"-"+Math.floor(Math.random()*1e6)+"."+ext;
-  return fetch(URL_+"/storage/v1/object/job-photos/"+path,{
-    method:"POST",
-    headers:{apikey:ANON,Authorization:"Bearer "+ANON,"Content-Type":file.type||"image/jpeg","x-upsert":"true"},
-    body:file
-  }).then(function(r){ if(!r.ok) throw new Error("upload failed"); return URL_+"/storage/v1/object/public/job-photos/"+path; });
+  function directUpload(){
+    var path="wo/"+(jobId||"misc")+"/"+Date.now()+"-"+Math.floor(Math.random()*1e6)+"."+ext;
+    return fetch(URL_+"/storage/v1/object/job-photos/"+path,{
+      method:"POST",
+      headers:{apikey:ANON,Authorization:"Bearer "+ANON,"Content-Type":file.type||"image/jpeg","x-upsert":"true"},
+      body:file
+    }).then(function(r){ if(!r.ok) throw new Error("upload failed"); return URL_+"/storage/v1/object/public/job-photos/"+path; });
+  }
+  if(id && pin){
+    return team("crew_sign_upload",{id:id,pin:pin,jobId:jobId,ext:ext}).then(function(r){
+      if(r&&r.ok&&r.uploadUrl){
+        return fetch(r.uploadUrl,{method:"PUT",headers:{"Content-Type":file.type||"image/jpeg","x-upsert":"true"},body:file})
+          .then(function(u){ if(!u.ok) throw new Error("signed upload failed"); return r.publicUrl; });
+      }
+      return directUpload();   // server action not available yet → legacy path
+    }).catch(function(){ return directUpload(); });
+  }
+  return directUpload();
 }
 // Employee directory goes through the service-role `team` edge function so crew
 // PINs + personal info are never exposed to this public anon key.
 var TEAM_FN=URL_+"/functions/v1/team";
 function team(action, payload){
   var body=Object.assign({action:action}, payload||{});
+  // 20s timeout so a weak field signal fails cleanly (UI prompts a retry) instead of
+  // hanging forever. No auto-retry — some actions (e.g. crew_add_media) aren't idempotent.
+  var ctrl=("AbortController" in window)?new AbortController():null;
+  var to=ctrl?setTimeout(function(){ctrl.abort();},20000):null;
   // send the owner session JWT when present so the function can authorize by real login
-  return fetch(TEAM_FN,{method:"POST",headers:authHeaders(),body:JSON.stringify(body)})
-    .then(function(r){return r.json();})
-    .catch(function(e){return {error:String(e)};});
+  return fetch(TEAM_FN,{method:"POST",headers:authHeaders(),body:JSON.stringify(body),signal:ctrl?ctrl.signal:undefined})
+    .then(function(r){ if(to)clearTimeout(to); return r.json();})
+    .catch(function(e){ if(to)clearTimeout(to); return {error:String(e)};});
 }
 // CONFIRMED write: upsert one record and resolve true/false so callers (e.g. the
 // public booking + contact forms) can show success only after the save is durable.

@@ -323,7 +323,7 @@ function wireJobs(){
         var hasVid=files.some(function(f){return /^video\//.test(f.type||"");});
         if(st)st.textContent="Uploading "+files.length+" "+(hasVid?"file":"photo")+(files.length>1?"s":"")+"… "+(hasVid?"(video can take a minute on a weak signal)":"");
         if(!(window.WeCareCloud&&WeCareCloud.uploadPhoto)){ if(st)st.textContent="Need a connection — try again in a moment."; return; }
-        Promise.all(files.map(function(f){return WeCareCloud.uploadPhoto(f,id);}))
+        Promise.all(files.map(function(f){return WeCareCloud.uploadPhoto(f,id,me,_pin);}))
           .then(function(urls){
             urls=(urls||[]).filter(Boolean);
             var jobs=load(K_JOBS,[]),j=jobs.find(function(x){return x.id===id});
