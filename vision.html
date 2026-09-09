@@ -79,7 +79,8 @@
 
   /* CTA panel */
   .cta{background:var(--ink);align-items:center;text-align:center}
-  .cta .scrim{background:linear-gradient(180deg,rgba(8,11,9,.72),rgba(8,11,9,.55) 45%,rgba(8,11,9,.82))}
+  .cta video{filter:brightness(.55) saturate(1.05)}   /* less exposure — moody finish */
+  .cta .scrim{background:linear-gradient(180deg,rgba(8,11,9,.66),rgba(8,11,9,.5) 45%,rgba(8,11,9,.8))}
   .cta h2,.cta .site{text-shadow:0 2px 30px rgba(0,0,0,.5)}
   .cta .content{max-width:none;padding-bottom:0}
   .cta .eyebrow{display:block;margin-bottom:16px}
@@ -131,17 +132,6 @@
   </div>
 </section>
 
-<!-- OUTDOOR LIVING -->
-<section class="panel" data-label="Living">
-  <video src="video/v-path.mp4" muted loop playsinline preload="none"></video>
-  <div class="scrim"></div>
-  <div class="content">
-    <p class="kicker rv">Outdoor living</p>
-    <h2 class="rv">Spaces built for how you live.</h2>
-    <p class="sub rv">Flagstone, turf and stonework composed into one place to actually use — not just look at.</p>
-  </div>
-</section>
-
 <!-- CRAFT -->
 <section class="panel" data-label="Craft">
   <video src="video/v-wall.mp4" muted loop playsinline preload="none"></video>
@@ -166,18 +156,18 @@
 
 <!-- DIFFICULT SITES — set up the transformation -->
 <section class="panel" data-label="Solve">
-  <video src="video/v-construction.mp4" muted loop playsinline preload="none"></video>
+  <video src="video/v-drainage.mp4" muted loop playsinline preload="none"></video>
   <div class="scrim"></div>
   <div class="content">
     <p class="kicker rv">Difficult sites</p>
     <h2 class="rv">The hardest sites become the best features.</h2>
-    <p class="sub rv">An eroding slope or a drainage problem — where others see a problem, we see the property's next defining feature.</p>
+    <p class="sub rv">An eroding slope or a drainage problem — reworked into something the whole property is planned around.</p>
   </div>
 </section>
 
-<!-- CTA — end on the transformation of that difficult site -->
+<!-- CTA — end on the FINISHED YARD (the transformation), darker -->
 <section class="panel cta" data-label="Transformed">
-  <video src="video/v-drainage.mp4" muted loop playsinline preload="none"></video>
+  <video src="video/v-path.mp4" muted loop playsinline preload="none"></video>
   <div class="scrim"></div>
   <div class="content">
     <span class="eyebrow rv">The hardest sites, transformed</span>
