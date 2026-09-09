@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>In Motion — WeCare Luxury Landscapes</title>
+<meta name="description" content="An immersive look at WeCare Luxury Landscapes — carved stone, water features and design-build for Central Arkansas, in motion.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="img/mark.png">
+<style>
+  :root{
+    --ink:#0d120f; --paper:#f6f3ec; --paper-dim:rgba(246,243,236,.72);
+    --stone:#c9b48f; --gold:#d8b463; --forest:#2c4436;
+    --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif;
+    --mx:clamp(22px,6vw,96px);
+  }
+  *{box-sizing:border-box}
+  html{scroll-snap-type:y mandatory;scroll-behavior:smooth}
+  body{margin:0;background:var(--ink);color:var(--paper);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2{font-family:var(--serif);font-weight:300;line-height:1.02;letter-spacing:-.015em;margin:0}
+  .eyebrow{font-family:var(--sans);font-size:.72rem;font-weight:600;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--gold)}
+
+  /* fixed chrome */
+  .top{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;
+    justify-content:space-between;padding:20px var(--mx);
+    background:linear-gradient(180deg,rgba(8,11,9,.55),rgba(8,11,9,0));pointer-events:none}
+  .top a,.top button{pointer-events:auto}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-size:1.06rem;
+    color:#fff;text-decoration:none;letter-spacing:.01em}
+  .brand img{height:30px;width:auto;filter:brightness(0) invert(1);opacity:.95}
+  .top-right{display:flex;align-items:center;gap:18px}
+  .backlink{font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--paper-dim);text-decoration:none}
+  .backlink:hover{color:#fff}
+  .sound{display:flex;align-items:center;gap:8px;font-family:var(--sans);font-size:.72rem;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--paper);background:rgba(20,26,20,.35);
+    border:1px solid rgba(246,243,236,.28);border-radius:100px;padding:8px 15px;cursor:pointer;
+    backdrop-filter:blur(6px);transition:.25s}
+  .sound:hover{border-color:var(--gold);color:var(--gold)}
+  .sound .ico{width:14px;height:14px;display:inline-block}
+
+  /* side dots */
+  .dots{position:fixed;right:clamp(14px,3vw,34px);top:50%;transform:translateY(-50%);z-index:40;
+    display:flex;flex-direction:column;gap:14px}
+  .dots button{width:9px;height:9px;border-radius:50%;border:1px solid rgba(246,243,236,.5);
+    background:transparent;cursor:pointer;padding:0;transition:.3s}
+  .dots button[aria-current="true"]{background:var(--gold);border-color:var(--gold);transform:scale(1.25)}
+  @media(max-width:700px){.dots{display:none}}
+
+  /* panels */
+  .panel{position:relative;height:100svh;scroll-snap-align:start;overflow:hidden;isolation:isolate;
+    display:flex;align-items:flex-end}
+  .panel video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+  .panel .scrim{position:absolute;inset:0;z-index:-1;
+    background:linear-gradient(180deg,rgba(8,11,9,.5) 0%,rgba(8,11,9,.05) 32%,rgba(8,11,9,.15) 60%,rgba(8,11,9,.82) 100%)}
+  .panel .content{padding:0 var(--mx) clamp(72px,13vh,150px);max-width:1200px}
+  .panel .kicker{font-family:var(--serif);font-style:italic;font-size:1.05rem;color:var(--stone);margin-bottom:12px}
+  .panel h2{font-size:clamp(2.1rem,6.4vw,5.2rem);max-width:15ch;color:#fff;text-shadow:0 2px 40px rgba(0,0,0,.4)}
+  .panel .sub{margin-top:20px;font-size:clamp(1rem,1.6vw,1.22rem);font-weight:300;color:var(--paper-dim);max-width:40ch}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.2,.7,.2,1),transform 1s cubic-bezier(.2,.7,.2,1)}
+  .panel.in .rv{opacity:1;transform:none}
+  .panel.in .rv:nth-child(2){transition-delay:.12s}
+  .panel.in .rv:nth-child(3){transition-delay:.22s}
+  @media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+  /* hero specifics */
+  .hero{align-items:center;text-align:center}
+  .hero .content{max-width:none;padding-bottom:0}
+  .hero h1{font-size:clamp(2.6rem,9vw,7rem);color:#fff;text-shadow:0 2px 50px rgba(0,0,0,.45)}
+  .hero .sub{margin:24px auto 0;text-align:center}
+  .scrollcue{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);z-index:2;
+    font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--paper-dim);
+    display:flex;flex-direction:column;align-items:center;gap:10px}
+  .scrollcue .line{width:1px;height:44px;background:linear-gradient(var(--gold),transparent);animation:cue 2.2s ease-in-out infinite}
+  @keyframes cue{0%,100%{transform:scaleY(.4);opacity:.4;transform-origin:top}50%{transform:scaleY(1);opacity:1;transform-origin:top}}
+
+  /* CTA panel */
+  .cta{background:var(--ink);align-items:center;text-align:center}
+  .cta .content{max-width:none;padding-bottom:0}
+  .cta .eyebrow{display:block;margin-bottom:16px}
+  .cta h2{margin:0 auto;max-width:20ch;font-size:clamp(2.2rem,6vw,4.4rem)}
+  .cta .rule{width:60px;height:1px;background:var(--gold);margin:30px auto}
+  .cta .site{font-family:var(--serif);font-size:clamp(1.2rem,2.4vw,1.7rem);color:#fff}
+  .cta .phone{font-family:var(--serif);font-style:italic;font-size:1.3rem;color:var(--gold);margin-top:8px}
+  .cta .btn{display:inline-block;margin-top:38px;font-family:var(--sans);font-size:.8rem;font-weight:600;
+    letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#fff;
+    padding:16px 34px;border:1px solid rgba(246,243,236,.55);border-radius:2px;transition:.45s}
+  .cta .btn:hover{background:#fff;color:var(--ink);border-color:#fff}
+  .cta .tag{margin-top:34px;font-family:var(--serif);font-style:italic;color:var(--stone)}
+</style>
+</head><body>
+
+<div class="top">
+  <a class="brand" href="index.html"><img src="img/logo.png" alt="WeCare"> WeCare</a>
+  <div class="top-right">
+    <a class="backlink" href="index.html">← Full site</a>
+    <button class="sound" id="soundBtn" aria-pressed="false">
+      <svg class="ico" id="soundIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+      <span id="soundTxt">Sound off</span>
+    </button>
+  </div>
+</div>
+
+<div class="dots" id="dots" aria-label="Section navigation"></div>
+
+<!-- HERO -->
+<section class="panel hero" data-label="Intro">
+  <video src="video/v-sphere.mp4" autoplay muted loop playsinline preload="auto"></video>
+  <div class="scrim"></div>
+  <div class="content">
+    <p class="eyebrow rv">We Care · Luxury Landscapes</p>
+    <h1 class="rv" style="margin-top:16px">Where nature<br>meets artistry.</h1>
+    <p class="sub rv">Carved stone, water, and design-build — shaped by hand for Central Arkansas.</p>
+  </div>
+  <div class="scrollcue"><span>Scroll</span><span class="line"></span></div>
+</section>
+
+<!-- WATER -->
+<section class="panel" data-label="Water">
+  <video src="video/v-fountain.mp4" muted loop playsinline preload="none"></video>
+  <div class="scrim"></div>
+  <div class="content">
+    <p class="kicker rv">Water &amp; stone features</p>
+    <h2 class="rv">Water, made part of the landscape.</h2>
+    <p class="sub rv">Pondless waterfalls, fountains and creek beds — built so the water belongs to the setting, not added on top of it.</p>
+  </div>
+</section>
+
+<!-- OUTDOOR LIVING -->
+<section class="panel" data-label="Living">
+  <video src="video/v-path.mp4" muted loop playsinline preload="none"></video>
+  <div class="scrim"></div>
+  <div class="content">
+    <p class="kicker rv">Outdoor living</p>
+    <h2 class="rv">Spaces built for how you live.</h2>
+    <p class="sub rv">Flagstone, turf and stonework composed into one place to actually use — not just look at.</p>
+  </div>
+</section>
+
+<!-- CRAFT -->
+<section class="panel" data-label="Craft">
+  <video src="video/v-wall.mp4" muted loop playsinline preload="none"></video>
+  <div class="scrim"></div>
+  <div class="content">
+    <p class="kicker rv">Custom carved stone</p>
+    <h2 class="rv">Hand-carved — for one property only.</h2>
+    <p class="sub rv">Our signature: concrete shaped and colored by hand into natural stone that fits the land instead of looking precast.</p>
+  </div>
+</section>
+
+<!-- BUILD -->
+<section class="panel" data-label="Build">
+  <video src="video/v-construction.mp4" muted loop playsinline preload="none"></video>
+  <div class="scrim"></div>
+  <div class="content">
+    <p class="kicker rv">The build</p>
+    <h2 class="rv">Built by hand, start to finish.</h2>
+    <p class="sub rv">One team carries a project from bare ground to finished space — the craftsmanship is in the parts you never see.</p>
+  </div>
+</section>
+
+<!-- DRAINAGE -->
+<section class="panel" data-label="Solve">
+  <video src="video/v-drainage.mp4" muted loop playsinline preload="none"></video>
+  <div class="scrim"></div>
+  <div class="content">
+    <p class="kicker rv">Difficult sites</p>
+    <h2 class="rv">The hardest sites become the best features.</h2>
+    <p class="sub rv">An eroding slope or a drainage problem, reworked into the part of the property people notice first.</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="panel cta" data-label="Contact">
+  <div class="content">
+    <span class="eyebrow rv">Established 1998 · Central Arkansas</span>
+    <h2 class="rv">Let's design yours.</h2>
+    <div class="rule rv"></div>
+    <p class="site rv">wecarelandscapes.expert</p>
+    <p class="phone rv">(501) 627-4384</p>
+    <div class="rv"><a class="btn" href="book.html">Start a Conversation</a></div>
+    <p class="tag rv">Where nature meets artistry.</p>
+  </div>
+</section>
+
+<script>
+(function(){
+  var panels=[].slice.call(document.querySelectorAll('.panel'));
+  var dotsWrap=document.getElementById('dots');
+  // build dots
+  panels.forEach(function(p,i){
+    var b=document.createElement('button');
+    b.setAttribute('aria-label', p.dataset.label||('Section '+(i+1)));
+    b.addEventListener('click',function(){p.scrollIntoView({behavior:'smooth'});});
+    dotsWrap.appendChild(b);
+  });
+  var dots=[].slice.call(dotsWrap.children);
+
+  // reveal + play/pause + active dot
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      var i=panels.indexOf(e.target);
+      var vid=e.target.querySelector('video');
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        dots.forEach(function(d,di){d.setAttribute('aria-current', di===i?'true':'false');});
+        if(vid){ var pr=vid.play(); if(pr&&pr.catch)pr.catch(function(){}); }
+      } else {
+        if(vid && !vid.paused) vid.pause();
+      }
+    });
+  },{threshold:.55});
+  panels.forEach(function(p){io.observe(p);});
+  if(dots[0])dots[0].setAttribute('aria-current','true');
+
+  // sound toggle
+  var vids=[].slice.call(document.querySelectorAll('video'));
+  var btn=document.getElementById('soundBtn'), txt=document.getElementById('soundTxt'), ico=document.getElementById('soundIco');
+  var on=false;
+  var ON='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
+  var OFF='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+  btn.addEventListener('click',function(){
+    on=!on; vids.forEach(function(v){v.muted=!on;});
+    btn.setAttribute('aria-pressed', on?'true':'false');
+    txt.textContent = on?'Sound on':'Sound off'; ico.innerHTML = on?ON:OFF;
+    // make sure the in-view video is playing
+    var cur=document.querySelector('.panel.in video'); if(cur){var pr=cur.play(); if(pr&&pr.catch)pr.catch(function(){});}
+  });
+})();
+</script>
+</body></html>
