@@ -108,8 +108,7 @@
 </div>
 
 <div class="dots" id="dots" aria-label="Section navigation"></div>
-<audio id="sndWater" src="audio/water.mp3?a2" loop preload="auto"></audio>
-<audio id="sndNight" src="audio/crickets.mp3?a2" loop preload="auto"></audio>
+<audio id="sndWater" src="audio/water-real.mp3?a3" loop preload="auto"></audio>
 
 <!-- HERO -->
 <section class="panel hero" data-label="Intro" data-sound="water">
@@ -210,8 +209,8 @@
   var OFF='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
   // clips stay muted (they contain talking). Sound = per-scene ambience that
   // switches as you scroll: running water on the water scenes, crickets/night elsewhere.
-  var water=document.getElementById('sndWater'), night=document.getElementById('sndNight');
-  water.volume=0; night.volume=0;
+  var water=document.getElementById('sndWater');
+  water.volume=0;
   var curSound='water';
   function fade(el,to){
     if(el._f)clearInterval(el._f);
@@ -225,10 +224,10 @@
     },40);
   }
   function applyAudio(){
-    if(!on){ fade(water,0); fade(night,0); return; }
-    var active = curSound==='water'?water:night, other = curSound==='water'?night:water;
-    active.muted=false; var pr=active.play(); if(pr&&pr.catch)pr.catch(function(){});
-    fade(active,1); fade(other,0);
+    // real running water on the water scenes only; other scenes stay quiet for now
+    if(!on || curSound!=='water'){ fade(water,0); return; }
+    water.muted=false; var pr=water.play(); if(pr&&pr.catch)pr.catch(function(){});
+    fade(water,1);
   }
   btn.addEventListener('click',function(){
     on=!on; applyAudio();
