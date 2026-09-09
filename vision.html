@@ -108,10 +108,11 @@
 </div>
 
 <div class="dots" id="dots" aria-label="Section navigation"></div>
-<audio id="amb" src="audio/outdoor-ambience.mp3?a1" loop preload="auto"></audio>
+<audio id="sndWater" src="audio/water.mp3?a2" loop preload="auto"></audio>
+<audio id="sndNight" src="audio/crickets.mp3?a2" loop preload="auto"></audio>
 
 <!-- HERO -->
-<section class="panel hero" data-label="Intro">
+<section class="panel hero" data-label="Intro" data-sound="water">
   <video src="video/v-sphere.mp4?s1" autoplay muted loop playsinline preload="auto"></video>
   <div class="scrim"></div>
   <div class="content">
@@ -123,7 +124,7 @@
 </section>
 
 <!-- WATER -->
-<section class="panel" data-label="Water">
+<section class="panel" data-label="Water" data-sound="water">
   <video src="video/v-fountain.mp4?s1" muted loop playsinline preload="none"></video>
   <div class="scrim"></div>
   <div class="content">
@@ -134,7 +135,7 @@
 </section>
 
 <!-- CRAFT -->
-<section class="panel" data-label="Craft">
+<section class="panel" data-label="Craft" data-sound="night">
   <video src="video/v-wall.mp4?s1" muted loop playsinline preload="none"></video>
   <div class="scrim"></div>
   <div class="content">
@@ -145,7 +146,7 @@
 </section>
 
 <!-- BUILD -->
-<section class="panel" data-label="Build">
+<section class="panel" data-label="Build" data-sound="night">
   <video src="video/v-construction.mp4?s1" muted loop playsinline preload="none"></video>
   <div class="scrim"></div>
   <div class="content">
@@ -155,19 +156,8 @@
   </div>
 </section>
 
-<!-- DIFFICULT SITES — set up the transformation -->
-<section class="panel" data-label="Solve">
-  <video src="video/v-drainage.mp4?s1" muted loop playsinline preload="none"></video>
-  <div class="scrim"></div>
-  <div class="content">
-    <p class="kicker rv">Difficult sites</p>
-    <h2 class="rv">The hardest sites become the best features.</h2>
-    <p class="sub rv">An eroding slope or a drainage problem — reworked into something the whole property is planned around.</p>
-  </div>
-</section>
-
 <!-- CTA — end on the FINISHED YARD (the transformation), darker -->
-<section class="panel cta" data-label="Transformed">
+<section class="panel cta" data-label="Transformed" data-sound="night">
   <video src="video/v-path.mp4?s1" muted loop playsinline preload="none"></video>
   <div class="scrim"></div>
   <div class="content">
@@ -202,6 +192,7 @@
       if(e.isIntersecting){
         e.target.classList.add('in');
         dots.forEach(function(d,di){d.setAttribute('aria-current', di===i?'true':'false');});
+        curSound = e.target.dataset.sound || 'night'; applyAudio();
         if(vid){ var pr=vid.play(); if(pr&&pr.catch)pr.catch(function(){}); }
       } else {
         if(vid && !vid.paused) vid.pause();
@@ -217,12 +208,30 @@
   var on=false;
   var ON='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
   var OFF='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
-  // clips stay muted always (they contain talking) — sound = one outdoor/water ambience bed
-  var amb=document.getElementById('amb');
+  // clips stay muted (they contain talking). Sound = per-scene ambience that
+  // switches as you scroll: running water on the water scenes, crickets/night elsewhere.
+  var water=document.getElementById('sndWater'), night=document.getElementById('sndNight');
+  water.volume=0; night.volume=0;
+  var curSound='water';
+  function fade(el,to){
+    if(el._f)clearInterval(el._f);
+    var step=(to-el.volume)/12;
+    if(step===0){ if(to===0)el.pause(); return; }
+    el._f=setInterval(function(){
+      var v=el.volume+step;
+      if((step>0&&v>=to)||(step<0&&v<=to)){ v=to; clearInterval(el._f); el._f=null; }
+      el.volume=Math.min(1,Math.max(0,v));
+      if(to===0&&el.volume===0)el.pause();
+    },40);
+  }
+  function applyAudio(){
+    if(!on){ fade(water,0); fade(night,0); return; }
+    var active = curSound==='water'?water:night, other = curSound==='water'?night:water;
+    active.muted=false; var pr=active.play(); if(pr&&pr.catch)pr.catch(function(){});
+    fade(active,1); fade(other,0);
+  }
   btn.addEventListener('click',function(){
-    on=!on;
-    if(on){ amb.muted=false; var pr=amb.play(); if(pr&&pr.catch)pr.catch(function(){}); }
-    else { amb.pause(); }
+    on=!on; applyAudio();
     btn.setAttribute('aria-pressed', on?'true':'false');
     txt.textContent = on?'Sound on':'Sound off'; ico.innerHTML = on?ON:OFF;
   });
