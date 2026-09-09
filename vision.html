@@ -108,6 +108,7 @@
 </div>
 
 <div class="dots" id="dots" aria-label="Section navigation"></div>
+<audio id="amb" src="audio/outdoor-ambience.mp3?a1" loop preload="auto"></audio>
 
 <!-- HERO -->
 <section class="panel hero" data-label="Intro">
@@ -216,12 +217,14 @@
   var on=false;
   var ON='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
   var OFF='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+  // clips stay muted always (they contain talking) — sound = one outdoor/water ambience bed
+  var amb=document.getElementById('amb');
   btn.addEventListener('click',function(){
-    on=!on; vids.forEach(function(v){v.muted=!on;});
+    on=!on;
+    if(on){ amb.muted=false; var pr=amb.play(); if(pr&&pr.catch)pr.catch(function(){}); }
+    else { amb.pause(); }
     btn.setAttribute('aria-pressed', on?'true':'false');
     txt.textContent = on?'Sound on':'Sound off'; ico.innerHTML = on?ON:OFF;
-    // make sure the in-view video is playing
-    var cur=document.querySelector('.panel.in video'); if(cur){var pr=cur.play(); if(pr&&pr.catch)pr.catch(function(){});}
   });
 })();
 </script>
