@@ -160,6 +160,20 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .legend span{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;color:var(--body)}
 .legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
 
+/* tabbed shell — a simple daily home; power tools one tap away */
+.tabbar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0 4px;padding:5px;position:sticky;top:0;z-index:50;background:var(--paper);scrollbar-width:none;border-radius:12px}
+.tabbar::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:0;background:transparent;padding:10px 15px;border-radius:10px;font-weight:700;font-size:.9rem;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;position:relative;transition:background .14s,color .14s,transform .1s}
+.tab:hover{background:var(--sand)}
+.tab:active{transform:scale(.97)}
+.tab.on{background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#fff;box-shadow:0 4px 14px rgba(43,107,120,.28)}
+.tab .tlabel{}
+.tab .tdot{position:absolute;top:5px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--paper)}
+.tabpane{display:none}
+.tabpane.on{display:block;animation:rvl .32s ease both}
+#newJobBtn{margin:2px 0 8px}
+@media(max-width:560px){.tab .tlabel{display:none}.tab{padding:11px 14px;font-size:1.05rem}}
+
 /* role gating: hide edit-only controls for viewers */
 body.viewer .editor-only{display:none!important}
 .reveal{animation:rvl .5s ease both}
@@ -179,12 +193,10 @@ body.viewer .editor-only{display:none!important}
   <div class="cmdbar">
     <div class="greet" id="greet">Welcome back<small>Let's get the crew moving.</small></div>
     <span class="rolebadge" id="roleBadge">Editor</span>
-    <button class="qbtn p editor-only" onclick="quickNewJob()">＋ New job</button>
-    <button class="qbtn editor-only" onclick="scrollToEl('propPanel')">🏡 Property</button>
-    <button class="qbtn editor-only" onclick="scrollToEl('recurPanel')">🔁 Recurring</button>
-    <button class="qbtn" onclick="calToday()">📅 Today</button>
   </div>
+  <nav class="tabbar" id="tabbar"></nav>
   <div id="hintHost"></div>
+  <div id="paneHost"></div>
 
   <div class="stats" id="stats"></div>
 
@@ -212,22 +224,22 @@ body.viewer .editor-only{display:none!important}
 
   <div class="grid">
     <div>
-      <div class="panel">
+      <div class="panel" id="clockPanel">
         <h2>🟢 On the clock now</h2>
         <div id="onclock"></div>
       </div>
-      <div class="panel">
+      <div class="panel" id="payrollPanel">
         <h2>Weekly payroll hours <button class="export" onclick="exportCSV()">⬇ CSV</button></h2>
         <p class="mini" style="margin-top:-2px">Week to date · overtime after <input id="otAfter" type="number" value="40" style="width:52px;padding:2px 6px;border:1px solid var(--line);border-radius:6px"> hrs</p>
         <div id="hours"></div>
       </div>
-      <div class="panel">
+      <div class="panel" id="fixPanel">
         <h2>✏️ Punch-fix requests</h2>
         <div id="fixes"></div>
       </div>
     </div>
     <div>
-      <div class="panel">
+      <div class="panel" id="ordersPanel">
         <h2>Today's work orders</h2>
         <div id="orders"></div>
       </div>
@@ -319,7 +331,7 @@ body.viewer .editor-only{display:none!important}
     </details>
   </div>
 
-  <div class="panel" style="margin-top:16px">
+  <div class="panel" id="routePanel" style="margin-top:16px">
     <h2>🗺️ Maintenance routes <span class="mini" style="font-weight:400">— a day's properties in service order, auto-created each cycle</span></h2>
     <div id="routeList"></div>
     <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700;color:var(--green-deep);font-size:.9rem">➕ New route</summary>
@@ -335,13 +347,13 @@ body.viewer .editor-only{display:none!important}
     </details>
   </div>
 
-  <div class="panel" style="margin-top:16px">
+  <div class="panel" id="costPanel" style="margin-top:16px">
     <h2>💵 Job costing <span class="mini" style="font-weight:400">— real labor hours per job, straight from the clock-ins</span></h2>
     <p class="mini" style="margin-top:-2px">Labor cost uses each person's real rate (set in the roster). Fallback rate for anyone without one: $<input id="laborRate" type="number" min="0" step="1" placeholder="—" style="width:56px;padding:2px 6px;border:1px solid var(--line);border-radius:6px">/hr.</p>
     <div id="costing"></div>
   </div>
 
-  <div class="panel" style="margin-top:16px">
+  <div class="panel" id="dataPanel" style="margin-top:16px">
     <h2>📦 Your data <span class="mini" style="font-weight:400">— you own all of it, export anytime, no lock-in</span></h2>
     <p class="mini" style="margin-top:-2px">Every lead, job, hour, booking, and estimate belongs to WeCare Landscapes. Download a full backup or any single list whenever you want.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
@@ -355,13 +367,13 @@ body.viewer .editor-only{display:none!important}
     </div>
   </div>
 
-  <div class="panel" style="margin-top:16px">
+  <div class="panel" id="casePanel" style="margin-top:16px">
     <h2>★ Case studies <span class="mini" style="font-weight:400">— turn a finished job into a portfolio piece for the website</span></h2>
     <p class="mini" style="margin-top:-2px">On a completed job above, tap “★ Make case study” to start one from its photos. Add a short story, then publish it to <a href="case-studies.html" target="_blank">Our Work</a>.</p>
     <div id="caseList"></div>
   </div>
 
-  <div class="panel" style="margin-top:16px">
+  <div class="panel" id="sopPanel" style="margin-top:16px">
     <h2>📋 SOP Library <span class="mini" style="font-weight:400">— you write them, the crew opens them right on the job</span></h2>
     <div id="sopList"></div>
     <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">
@@ -1352,11 +1364,63 @@ function toast(msg,kind){
   setTimeout(function(){ t.classList.add("out"); setTimeout(function(){ t.remove(); },320); }, kind==="warn"?4200:2600);
 }
 function scrollToEl(id){ var e=document.getElementById(id); if(e) e.scrollIntoView({behavior:"smooth",block:"start"}); }
-function quickNewJob(){ scrollToEl("woPanel"); var f=document.getElementById("woProp"); if(f) setTimeout(function(){f.focus();},400); }
+function gotoPanel(pid){ var el=document.getElementById(pid); if(!el) return; var pane=el.closest(".tabpane"); if(pane) showTab(pane.getAttribute("data-tab")); setTimeout(function(){ el.scrollIntoView({behavior:"smooth",block:"start"}); },80); }
+function quickNewJob(){ showTab("today"); newJobToggle(true); }
 function quickJobForProp(id){
-  scrollToEl("woPanel");
+  showTab("today"); newJobToggle(true);
   var sel=document.getElementById("woProp"); if(sel){ sel.value=id; if(typeof woPropPick==="function") woPropPick(); }
   toast("Property loaded into a new work order — add the scope &amp; date","ok");
+}
+
+/* ---- Tabs: a simple daily home; Calendar / Customers / Team / Money / Setup one tap away ---- */
+var TAB_DEFS=[
+ {id:"today",   label:"Today",     icon:"🏠", panels:["stats","newJobBtn","ordersPanel","clockPanel","woPanel"]},
+ {id:"calendar",label:"Calendar",  icon:"📅", panels:["calPanel"]},
+ {id:"customers",label:"Customers",icon:"🏡", panels:["propPanel"]},
+ {id:"team",    label:"Team",      icon:"👥", panels:["teamPanel"]},
+ {id:"money",   label:"Money",     icon:"💵", panels:["payrollPanel","fixPanel","costPanel","dataPanel"]},
+ {id:"setup",   label:"Setup",     icon:"⚙️", panels:["recurPanel","routePanel","sopPanel","casePanel"]},
+];
+function buildTabs(){
+  var host=document.getElementById("paneHost"); if(!host||host.getAttribute("data-built")) return; host.setAttribute("data-built","1");
+  // the big "＋ New job" button that lives at the top of Today
+  var njb=document.createElement("div"); njb.id="newJobBtn"; njb.className="editor-only";
+  njb.innerHTML='<button class="qbtn p" style="width:100%;justify-content:center;font-size:1rem;padding:14px" onclick="newJobToggle()">＋ New job</button>';
+  document.body.appendChild(njb); // parked; moved into Today pane below
+  TAB_DEFS.forEach(function(t){
+    var pane=document.createElement("section"); pane.className="tabpane"; pane.id="pane-"+t.id; pane.setAttribute("data-tab",t.id);
+    t.panels.forEach(function(pid){ var el=document.getElementById(pid); if(el) pane.appendChild(el); });
+    host.appendChild(pane);
+  });
+  var grid=document.querySelector(".grid"); if(grid && !grid.querySelector(".panel")) grid.remove();
+  var bar=document.getElementById("tabbar");
+  bar.innerHTML=TAB_DEFS.map(function(t){
+    return '<button class="tab" data-tab="'+t.id+'" onclick="showTab(\''+t.id+'\')"><span class="ticon">'+t.icon+'</span><span class="tlabel">'+t.label+'</span><span class="tdot" hidden></span></button>';
+  }).join("");
+  var wo=document.getElementById("woPanel"); if(wo){ wo.style.display="none"; wo.style.marginTop="0"; }
+  showTab(localStorage.getItem("wc_tab")||"today");
+  updateTabBadges();
+}
+function showTab(id){
+  if(!document.getElementById("pane-"+id)) id="today";
+  localStorage.setItem("wc_tab",id);
+  [].forEach.call(document.querySelectorAll(".tabpane"),function(p){ p.classList.toggle("on",p.id==="pane-"+id); });
+  [].forEach.call(document.querySelectorAll(".tab"),function(b){ b.classList.toggle("on",b.getAttribute("data-tab")===id); });
+  if(id==="calendar"){ try{ renderCalendar(); }catch(e){} }
+  try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){ window.scrollTo(0,0); }
+}
+function newJobToggle(forceOpen){
+  var wo=document.getElementById("woPanel"); if(!wo) return;
+  showTab("today");
+  var open = forceOpen ? true : (wo.style.display==="none");
+  wo.style.display = open ? "block" : "none";
+  if(open){ wo.scrollIntoView({behavior:"smooth",block:"start"}); var f=document.getElementById("woProp"); if(f) setTimeout(function(){f.focus();},350); }
+}
+function updateTabBadges(){
+  try{
+    var fixes=load(K_FIX,[]).filter(function(f){return !f.resolved;}).length;
+    var d=document.querySelector('.tab[data-tab="money"] .tdot'); if(d) d.hidden=!fixes;
+  }catch(e){}
 }
 
 /* ---- Calendar ---------------------------------------------------------------- */
@@ -1637,9 +1701,9 @@ function renderHint(){
   var host=document.getElementById("hintHost"); if(!host) return;
   if(sessionStorage.getItem("wc_hint_x")==="1"){ host.innerHTML=""; return; }
   var props=loadProps().length, jobs=load(K_JOBS,[]).length, msg;
-  if(!props) msg="👋 Start with a <b>Property card</b> — it's the reusable brain for a customer. Save it once, then pick it on any work order or recurring job.";
-  else if(!jobs) msg="📅 Create your first <b>work order</b> and pick a date — it'll land on the calendar above. Drag it to any day to reschedule.";
-  else msg="💡 Tip: tap any job on the calendar to open its <b>job file</b> — photos, the property profile, and a live timeline from the crew's clock-ins.";
+  if(!props) msg="👋 Start in the <b>Customers</b> tab — save a Property card once (name, address, notes, photos), then pick it on any job. It's the reusable brain for that customer.";
+  else if(!jobs) msg="📅 Tap <b>＋ New job</b> and pick a date — it lands on the <b>Calendar</b> tab, where you can drag it to any day to reschedule.";
+  else msg="💡 Tip: open the <b>Calendar</b> tab and tap any job to see its <b>job file</b> — photos, the property profile, and a live timeline from the crew's clock-ins.";
   host.innerHTML='<div class="hintbar reveal">'+msg+'<button class="hx" title="Dismiss" onclick="sessionStorage.setItem(\'wc_hint_x\',\'1\');this.parentNode.remove();">✕</button></div>';
 }
 function updateGreet(){
@@ -1651,7 +1715,11 @@ function updateGreet(){
 
 /* ---- Wire everything into the existing engine ---- */
 var _origRender=render;
-render=function(){ _origRender.apply(this,arguments); try{ if(!_dragJid){ renderCalendar(); } updateGreet(); renderHint(); }catch(e){} };
+render=function(){ _origRender.apply(this,arguments); try{
+  updateGreet(); renderHint(); updateTabBadges();
+  var cp=document.getElementById("pane-calendar");   // only redraw the calendar when its tab is showing (or before tabs exist)
+  if(!_dragJid && (!cp || cp.classList.contains("on"))) renderCalendar();
+}catch(e){} };
 var _origRenderProps=renderProps;
 renderProps=function(){ _origRenderProps.apply(this,arguments); try{ augmentPropRows(); }catch(e){} };
 function augmentPropRows(){
@@ -1677,10 +1745,11 @@ document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeJobFi
 /* boot the showpiece layer */
 fillServiceSelects();
 applyRole();
+buildTabs();
 setDefaultWoDate();
-renderCalendar();
 updateGreet();
 renderHint();
+updateTabBadges();
 augmentPropRows();
 </script>
 <script src="js/wecare-onboard.js?v=0834"></script>
