@@ -157,6 +157,17 @@
   footer{background:var(--forest-deep);color:rgba(246,243,236,.72);padding:44px var(--mx);
     font-size:.86rem;display:flex;flex-wrap:wrap;gap:12px 26px;justify-content:space-between;align-items:center}
   footer a{color:rgba(246,243,236,.9);text-decoration:none}
+
+  /* flagstone showcase gallery */
+  .showcase{padding:clamp(70px,10vh,130px) var(--mx);background:var(--paper)}
+  .showcase .head{margin-bottom:34px}
+  .sgrid{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:230px;gap:12px}
+  .sgrid figure{margin:0;overflow:hidden;border-radius:3px}
+  .sgrid figure.tall{grid-row:span 2}
+  .sgrid figure.wide{grid-column:span 2}
+  .sgrid img{width:100%;height:100%;object-fit:cover;transition:transform 1.4s cubic-bezier(.2,.7,.2,1)}
+  .sgrid figure:hover img{transform:scale(1.05)}
+  @media(max-width:760px){.sgrid{grid-template-columns:1fr 1fr;grid-auto-rows:160px}.sgrid figure.wide{grid-column:span 2}}
 </style>
 </head><body>
 
@@ -275,6 +286,22 @@
         <div class="rc"><b>Outdoor living spaces</b><span>Patios, terraces, turf and planting built for how you actually live outside.</span></div>
       </figure>
     </div>
+  </div>
+</section>
+
+<!-- FLAGSTONE SHOWCASE — real hardscape gallery -->
+<section class="showcase">
+  <div class="head r">
+    <span class="label">Hardscape gallery</span>
+    <h2>Patios, laid stone by stone.</h2>
+    <p>A sample of recent flagstone patios and stone terraces across Central Arkansas — every joint set by hand.</p>
+  </div>
+  <div class="sgrid r">
+    <figure class="tall"><img src="img/new-patio-lakeside.jpg" loading="lazy" alt="Lakeside flagstone patio built by WeCare"></figure>
+    <figure class="wide"><img src="img/new-patio-golf.jpg" loading="lazy" alt="Large flagstone patio overlooking the golf course"></figure>
+    <figure><img src="img/new-patio-covered.jpg" loading="lazy" alt="Flagstone patio under a covered porch"></figure>
+    <figure><img src="img/new-patio-stucco.jpg" loading="lazy" alt="Curved flagstone patio against a stucco courtyard wall"></figure>
+    <figure><img src="img/new-patio-pillar.jpg" loading="lazy" alt="Flagstone patio wrapped around a brick pillar with plantings"></figure>
   </div>
 </section>
 
