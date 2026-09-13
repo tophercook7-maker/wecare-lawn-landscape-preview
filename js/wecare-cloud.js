@@ -72,6 +72,11 @@ var byKey={}; STORES.forEach(function(s){byKey[s.key]=s;});
 
 var _applyingRemote=false;
 var _shadow={};   // key -> {id: JSONstring} last known, to detect changes
+// key -> {id:1} records THIS client saved this session whose push we haven't yet
+// seen echoed back from the cloud. We refuse to let an incoming pull delete these
+// locally — otherwise a pull that races ahead of (or a push that fails) silently
+// wipes a record the user just saved. Cleared per-id once the cloud confirms it.
+var _sessionWrites={};
 
 var _origSet = localStorage.setItem.bind(localStorage);
 // intercept writes to our keys -> push changed rows to Supabase
@@ -94,6 +99,7 @@ function pushChanges(store, rawValue){
     var js=JSON.stringify(o);
     if(sh[o.id]===js) return;         // unchanged
     sh[o.id]=js;
+    (_sessionWrites[store.key]||(_sessionWrites[store.key]={}))[o.id]=1;  // protect until the cloud confirms it
     upsert(store, store.toRow(o));
   });
 }
@@ -111,16 +117,35 @@ function upsert(store, row){
 
 function applyRemote(store, rows){
   var incoming=rows.map(store.fromRow);
+  var incomingIds={}; incoming.forEach(function(o){ if(o&&o.id) incomingIds[o.id]=1; });
+  // Anything this client saved this session that the cloud has now echoed back is
+  // safely synced — stop protecting it. Whatever's still pending, we keep locally
+  // even though this pull doesn't contain it (its push is in flight or was rejected),
+  // so a fresh save is never wiped out from under the user.
+  var pend=_sessionWrites[store.key]||{};
+  Object.keys(pend).forEach(function(id){ if(incomingIds[id]) delete pend[id]; });
+  var keep=[];
+  if(Object.keys(pend).length){
+    try{
+      var raw=localStorage.getItem(store.key);
+      if(raw){
+        var p=JSON.parse(raw);
+        var localRecs=store.shape==="array" ? (p||[]) : Object.keys(p||{}).map(function(k){return p[k];});
+        keep=localRecs.filter(function(o){ return o&&o.id&&!incomingIds[o.id]&&pend[o.id]; });
+      }
+    }catch(e){}
+  }
+  var merged=incoming.concat(keep);
   var cur;
   if(store.shape==="array"){
-    cur=incoming.sort(function(a,b){return (b.created||"").localeCompare(a.created||"");});
+    cur=merged.sort(function(a,b){return (b.created||"").localeCompare(a.created||"");});
   }else{
-    cur={}; incoming.forEach(function(o){cur[o.id]=o;});
+    cur={}; merged.forEach(function(o){cur[o.id]=o;});
   }
   var newRaw=JSON.stringify(cur);
   if(localStorage.getItem(store.key)===newRaw) return false;
   // refresh shadow so we don't echo these back as "changes"
-  var sh={}; incoming.forEach(function(o){sh[o.id]=JSON.stringify(o);});
+  var sh={}; merged.forEach(function(o){sh[o.id]=JSON.stringify(o);});
   _shadow[store.key]=sh;
   _applyingRemote=true; _origSet(store.key,newRaw); _applyingRemote=false;
   return true;
