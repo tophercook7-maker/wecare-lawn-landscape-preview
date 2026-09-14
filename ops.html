@@ -185,7 +185,7 @@ body.viewer .editor-only{display:none!important}
 <body>
 <div class="top"><div class="wrap">
   <div class="b"><img src="img/mark-trans.png" alt="WeCare Landscapes"> <span style="color:#fff">WeCare Landscapes · Field Ops</span></div>
-  <div class="nav"><a href="pulse.html">🏠 Home</a><a href="estimate.html">Estimator</a><a href="crew.html">Crew app</a><a href="dashboard.html">Leads / CRM</a><a href="index.html">Website</a></div>
+  <div class="nav"><span id="authStatus" style="font-size:.8rem;margin-right:6px"></span><a href="pulse.html">🏠 Home</a><a href="estimate.html">Estimator</a><a href="crew.html">Crew app</a><a href="dashboard.html">Leads / CRM</a><a href="index.html">Website</a></div>
 </div></div>
 
 <div class="wrap" style="padding-bottom:50px">
@@ -1398,6 +1398,26 @@ function quickJobForProp(id){
   toast("Property loaded into a new work order — add the scope &amp; date","ok");
 }
 
+/* ---- Auth guard: owner writes must be signed in, or the app silently saves as a
+   guest (anon key) and the cloud rejects it — the save "sticks" locally then vanishes. ---- */
+function isAuthed(){ return !!(window.WeCareCloud && WeCareCloud.sessionValid && WeCareCloud.sessionValid()); }
+function renderAuthStatus(){
+  var el=document.getElementById("authStatus"); if(!el) return;
+  if(isAuthed()){
+    var s=(WeCareCloud.session&&WeCareCloud.session())||{};
+    el.innerHTML='<span style="color:#bfe6c9" title="'+esc(s.email||"")+'">✓ '+esc((s.email||"signed in").split("@")[0])+'</span>';
+  } else {
+    el.innerHTML='<a href="login.html?next=ops.html" style="color:#ffd479;font-weight:700">⚠️ Not signed in — Sign in</a>';
+  }
+}
+function requireAuth(){
+  if(isAuthed()) return true;
+  toast("You're signed out — sign in so your changes save","warn");
+  renderAuthStatus();
+  setTimeout(function(){ if(confirm("You're signed out, so changes can't save to the cloud.\n\nGo to the sign-in page now?")) location.href="login.html?next="+encodeURIComponent("ops.html"); },120);
+  return false;
+}
+
 /* ---- Tabs: a simple daily home; Calendar / Customers / Team / Money / Setup one tap away ---- */
 var TAB_DEFS=[
  {id:"today",   label:"Today",     icon:"🏠", panels:["stats","newJobBtn","ordersPanel","clockPanel","woPanel"]},
@@ -1806,8 +1826,11 @@ function augmentPropRows(){
     var openBtn=row.querySelector("button"); if(openBtn) openBtn.parentNode.insertBefore(b,openBtn);
   });
 }
+var _origSaveProp=savePropCard;
+savePropCard=function(){ if(!requireAuth()) return; return _origSaveProp.apply(this,arguments); };
 var _origCreateWO=createWO;
 createWO=function(){
+  if(!requireAuth()) return;
   var had=(document.getElementById("woCust").value||"").trim();
   var day=document.getElementById("woDate").value||"today";
   _origCreateWO.apply(this,arguments);
@@ -1818,6 +1841,9 @@ function setDefaultWoDate(){ var d=document.getElementById("woDate"); if(d&&!d.v
 document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeJobFile(); });
 
 /* boot the showpiece layer */
+renderAuthStatus();
+// refresh a near-expired session on load so owner writes don't silently drop to guest
+if(window.WeCareCloud && WeCareCloud.refreshSession){ try{ WeCareCloud.refreshSession().then(renderAuthStatus); }catch(e){} }
 scrubSamples();
 fillServiceSelects();
 applyRole();
