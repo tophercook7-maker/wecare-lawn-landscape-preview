@@ -19,7 +19,7 @@
 <!-- <meta name="google-site-verification" content="PASTE_TOKEN_HERE"> -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="image" href="img/proj-transform-after-1.webp" fetchpriority="high">
+<link rel="preload" as="image" href="img/hero-home.jpg" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="img/mark.png">
 <link rel="stylesheet" href="css/style.css">
@@ -78,6 +78,36 @@
   ]
 }
 </script>
+<style>
+/* ===== Homepage "front door": hero + three journey doors ===== */
+.hero-home{position:relative;background:#0f2419 url('img/hero-home.jpg') center 40%/cover no-repeat;min-height:82vh;display:flex;flex-direction:column;justify-content:flex-end;padding:96px 0 34px;overflow:hidden}
+.hero-home .hh-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,26,18,.50) 0%,rgba(10,26,18,.20) 40%,rgba(10,26,18,.78) 100%);z-index:0}
+.hero-home>.wrap{position:relative;z-index:1;width:100%}
+.hh-top{text-align:center;color:#fff;padding-bottom:30px}
+.hh-top h1{color:#fff;font-size:clamp(2.6rem,6.2vw,4.8rem);line-height:1.02;margin:0 0 14px;text-shadow:0 2px 30px rgba(0,0,0,.45)}
+.hh-tag{font-size:clamp(.95rem,1.7vw,1.3rem);letter-spacing:.22em;text-transform:uppercase;color:var(--leaf-bright);font-weight:600;margin:0}
+.doors{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:820px){.doors{grid-template-columns:1fr}.hero-home{min-height:0}}
+.door{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;min-height:258px;padding:26px 22px;border-radius:16px;overflow:hidden;color:#fff;text-decoration:none;justify-content:flex-end;box-shadow:0 16px 40px rgba(0,0,0,.34);transition:transform .18s ease,box-shadow .18s ease;isolation:isolate}
+.door::before{content:"";position:absolute;inset:0;background-image:var(--img);background-size:cover;background-position:center;z-index:-2;transition:transform .5s ease}
+.door::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,28,20,.12),rgba(12,28,20,.55) 55%,rgba(12,28,20,.86));z-index:-1}
+.door:hover{transform:translateY(-5px);box-shadow:0 24px 56px rgba(0,0,0,.46)}
+.door:hover::before{transform:scale(1.06)}
+.door:focus-visible{outline:3px solid var(--leaf-bright);outline-offset:3px}
+.door-ic{width:60px;height:60px;border-radius:50%;border:2px solid rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;margin-bottom:auto;flex:none}
+.door-ic svg{width:30px;height:30px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.door-h{font-family:var(--serif);font-size:1.55rem;font-weight:600;letter-spacing:.01em;line-height:1.1}
+.door-p{font-size:.94rem;opacity:.93;margin:0 0 10px;max-width:15em}
+.door-btn{display:inline-block;background:#fff;color:var(--green-ink);font-weight:700;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;padding:10px 22px;border-radius:999px;transition:background .15s}
+.door:hover .door-btn{background:var(--leaf-bright)}
+/* stacked before/after proof */
+.ba-stack{display:flex;flex-direction:column;gap:30px}
+.ba-cap{margin:12px 0 0;text-align:center}
+.ba-cap h3{margin:0 0 4px;font-size:1.25rem}
+.ba-cap p{margin:0;color:var(--body)}
+/* closing CTA band already uses .bg-deep */
+.story-lead{font-size:1.12rem;line-height:1.7;color:var(--body)}
+</style>
 </head>
 <body>
 
@@ -87,9 +117,9 @@
   <div class="wrap nav-in">
     <a class="brand" href="index.html"><img src="img/logo.png" alt="WeCare Landscapes"> WeCare Landscapes</a>
     <nav class="nav-links">
-      <a href="design-services.html">Landscapes</a>
-      <a href="sod.html">Sod Farm</a>
-      <a href="commercial-grounds-care.html">Grounds Care</a>
+      <a href="design-services.html">Design + Build</a>
+      <a href="free-zoysia-sod.html">Free Zoysia Sod</a>
+      <a href="property-care.html">Property Care</a>
       <a href="case-studies.html">Our Work</a>
       <a href="about.html">About</a>
     </nav>
@@ -100,256 +130,97 @@
     <button class="hamb" id="hamb">☰</button>
   </div>
   <div id="mobMenu" class="modal"><div class="box" style="text-align:center">
-    <a href="design-services.html" class="btn btn-outline" style="display:block;margin:8px 0">Landscapes</a>
-    <a href="sod.html" class="btn btn-outline" style="display:block;margin:8px 0">Sod Farm</a>
-    <a href="commercial-grounds-care.html" class="btn btn-outline" style="display:block;margin:8px 0">Grounds Care</a>
+    <a href="design-services.html" class="btn btn-outline" style="display:block;margin:8px 0">Design + Build</a>
+    <a href="free-zoysia-sod.html" class="btn btn-outline" style="display:block;margin:8px 0">Free Zoysia Sod</a>
+    <a href="property-care.html" class="btn btn-outline" style="display:block;margin:8px 0">Property Care</a>
     <a href="case-studies.html" class="btn btn-outline" style="display:block;margin:8px 0">Our Work</a>
     <a href="tel:5016274384" class="btn btn-primary" style="display:block;margin:8px 0">Call 501-627-4384</a>
   </div></div>
 </header>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="wrap hero-in">
-    <div class="badges">
-      <span class="badge">Landscape Design-Build &amp; Outdoor Artistry</span>
-      <span class="badge">Based in Hot Springs • Serving Central Arkansas</span>
-    </div>
-    <h1>Outdoor spaces that feel like<br>they've always belonged.</h1>
-    <p class="sub">Your property should be more than beautiful. It should work for the way you want to experience it. We bring thoughtful design and craftsmanship together to solve what isn't working and create a space that feels natural, intentional, and uniquely yours.</p>
-    <div class="hero-cta">
-      <a class="btn btn-leaf" href="case-studies.html">Explore Our Transformations →</a>
-      <a class="btn btn-ghost" href="book.html">Request a Design Consultation</a>
-    </div>
+<!-- HERO + THREE DOORS -->
+<section class="hero-home">
+  <div class="hh-scrim"></div>
+  <div class="wrap hh-top">
+    <h1>Beautiful Spaces.<br>A Better Tomorrow.</h1>
+    <p class="hh-tag">Design · Build · Maintain · Grow</p>
+  </div>
+  <div class="wrap doors">
+    <a class="door" href="design-services.html" style="--img:url('img/proj3-after.jpg')">
+      <span class="door-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20c0-9 7-15 16-15 0 9-6 15-16 15Z"/><path d="M4 20c3-4 7-8 13-11"/></svg></span>
+      <span class="door-h">Design + Build</span>
+      <span class="door-p">Custom Landscapes. Lasting Value.</span>
+      <span class="door-btn">Explore →</span>
+    </a>
+    <a class="door" href="free-zoysia-sod.html" style="--img:url('img/sod-field.jpg')">
+      <span class="door-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21v-9"/><path d="M12 14c-3-1-5-5-4-9 3 1 5 4 4 8"/><path d="M12 13c3-1 5-5 4-9-3 1-5 4-4 8"/></svg></span>
+      <span class="door-h">Free Zoysia Sod</span>
+      <span class="door-p">With Professional Installation</span>
+      <span class="door-btn">Learn More →</span>
+    </a>
+    <a class="door" href="property-care.html" style="--img:url('img/garden-path.jpg')">
+      <span class="door-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.6M12 18.4V21M3 12h2.6M18.4 12H21M5.6 5.6l1.9 1.9M16.5 16.5l1.9 1.9M18.4 5.6l-1.9 1.9M7.5 16.5l-1.9 1.9"/></svg></span>
+      <span class="door-h">Property Care</span>
+      <span class="door-p">Keep It Beautiful. Year-Round.</span>
+      <span class="door-btn">View Options →</span>
+    </a>
   </div>
 </section>
 
-<!-- RECOGNITION: speak to the customer's situation before showing any work -->
-<section class="section" style="padding-bottom:20px">
-  <div class="wrap" style="max-width:820px">
-    <p class="eyebrow">You already know the parts that aren't working</p>
-    <h2 style="margin:2px 0 14px">Most of our projects start with a feeling, not a blueprint</h2>
-    <p class="lead">Maybe it's the corner that floods every time it rains, the patio that's never quite comfortable, or the slope where nothing will grow. Maybe the backyard just doesn't fit how your family actually lives anymore. You can picture how you <em>want</em> to use your property — you just haven't found the right people to get it there.</p>
-    <p class="lead" style="margin-bottom:0">That's where we start. Not with a product to sell you, but with how you want to experience the space. Then we design and build the landscape around that.</p>
+<!-- BEFORE & AFTER PROOF -->
+<section class="section" id="proof">
+  <div class="wrap center">
+    <p class="eyebrow">See what we can do</p>
+    <h2>Real Central Arkansas transformations</h2>
+    <p class="lead center" style="margin-bottom:44px">Same house. Same footprint. An entirely new outdoor space — designed and built by one team.</p>
   </div>
-</section>
-
-<!-- FLAGSHIP PROOF: real before/after, first thing after the hero -->
-<section class="section" id="flagship-proof" style="padding-bottom:34px">
-  <div class="wrap" style="max-width:960px">
-    <div class="ba-proof">
-      <figure><span class="ba-lbl before">Before</span><img src="img/proj-transform-before-1.webp" width="800" height="600" alt="Backyard before — bare, rocky, unlandscaped slope"></figure>
-      <figure><span class="ba-lbl after">After</span><img src="img/proj-transform-after-1.webp" width="800" height="600" alt="Backyard after — manicured lawn, rose beds, river rock and natural stonework"></figure>
-    </div>
-    <div style="margin-top:20px;max-width:720px">
-      <p class="eyebrow">A real WeCare transformation · Hot Springs area</p>
-      <h2 style="margin:2px 0 10px">From a bare, rocky slope to a showpiece backyard</h2>
-      <p class="lead" style="margin-bottom:16px">Same house, same footprint — an entirely new outdoor space. We shaped the grade, solved the runoff, and built a finished environment of lawn, rose beds, river rock, natural-stone edging, and flagstone paths wrapped around the home's deck.</p>
-      <div class="proof-points">
-        <span>🪨 Natural stone &amp; flagstone</span>
-        <span>💧 Drainage handled</span>
-        <span>🌿 Lawn &amp; planting installed</span>
+  <div class="wrap ba-stack" style="max-width:960px">
+    <div class="reveal">
+      <div class="ba-proof">
+        <figure><span class="ba-lbl before">Before</span><img src="img/proj-transform-before-1.webp" width="800" height="600" alt="Backyard before — bare, rocky, unlandscaped slope"></figure>
+        <figure><span class="ba-lbl after">After</span><img src="img/proj-transform-after-1.webp" width="800" height="600" alt="Backyard after — manicured lawn, rose beds, river rock and natural stonework"></figure>
       </div>
-      <a class="btn btn-leaf" style="margin-top:18px" href="case-studies.html">View the Full Project</a>
+      <div class="ba-cap"><h3>From a bare, rocky slope to a showpiece backyard</h3><p>Grade shaped, runoff solved, and a finished landscape of lawn, stone edging and flagstone paths.</p></div>
+    </div>
+    <div class="reveal">
+      <div class="ba-proof">
+        <figure><span class="ba-lbl before">Before</span><img loading="lazy" src="img/proj2-before.jpg" width="800" height="600" alt="Eroded, bare slope before landscaping"></figure>
+        <figure><span class="ba-lbl after">After</span><img loading="lazy" src="img/proj2-after.jpg" width="800" height="600" alt="Dry-creek stone bed and plantings after drainage and landscaping"></figure>
+      </div>
+      <div class="ba-cap"><h3>An erosion problem turned into a feature</h3><p>A natural-stone dry creek that handles the water and looks intentional year-round.</p></div>
+    </div>
+    <div class="reveal">
+      <div class="ba-proof">
+        <figure><span class="ba-lbl before">Before</span><img loading="lazy" src="img/new-brick-after.jpg" width="800" height="600" alt="Muddy, unfinished yard before"></figure>
+        <figure><span class="ba-lbl after">After</span><img loading="lazy" src="img/new-brick-before.jpg" width="800" height="600" alt="Lush, finished landscaped property after"></figure>
+      </div>
+      <div class="ba-cap"><h3>A full property, brought to life</h3><p>From worn and bare to a lush, finished landscape a family is proud to come home to.</p></div>
     </div>
   </div>
+  <div class="wrap center" style="margin-top:34px"><a class="btn btn-leaf" href="case-studies.html">See More of Our Work →</a></div>
 </section>
 
 <!-- TRUST -->
 <div class="bg-sand"><div class="wrap trust">
   <div class="item"><div class="num">1998</div><div class="lbl">Family-owned since</div></div>
-  <div class="item"><div class="num" style="font-size:1.5rem;line-height:2.6rem">Landscapes · Sod<br>Property Care</div><div class="lbl">Three divisions, one call</div></div>
+  <div class="item"><div class="num" style="font-size:1.5rem;line-height:2.6rem">Design · Sod<br>Property Care</div><div class="lbl">Three divisions, one call</div></div>
   <div class="item"><div class="num">Own farm</div><div class="lbl">We grow our own sod</div></div>
   <div class="item"><div class="num">Anytime</div><div class="lbl">Answers anytime with Sage</div></div>
 </div></div>
 
-<!-- PRIMARY JOURNEYS — the three doors -->
-<section class="section" id="services">
-  <div class="wrap center">
-    <p class="eyebrow">What are you looking to do?</p>
-    <h2>Choose your starting point</h2>
-    <p class="lead center" style="margin-bottom:40px">Three ways we help transform a property. Pick the one that fits — from there, everything's built around you.</p>
-  </div>
-
-  <!-- Three primary growth journeys -->
-  <div class="wrap grid grid-3">
-    <a class="card reveal" id="door-transform" href="design-services.html" style="text-decoration:none;color:inherit">
-      <div class="ph"><img loading="lazy" decoding="async" src="img/proj3-after.jpg" width="800" height="600" alt="Lakeside stone terraces, waterfall and putting green — a WeCare transformation"></div>
-      <div class="body">
-        <span class="tag">Landscape Design &amp; Build</span>
-        <h3>Transform My Landscape</h3>
-        <p>Design, stone, drainage, water, lighting and one-of-a-kind carved concrete — planned and built as one complete outdoor space.</p>
-        <span class="link">Explore transformations →</span>
-      </div>
-    </a>
-
-    <a class="card reveal" id="door-commercial" href="commercial-grounds-care.html" style="text-decoration:none;color:inherit">
-      <div class="ph"><img loading="lazy" decoding="async" src="img/proj2-after.jpg" width="800" height="600" alt="Professionally maintained, landscaped property grounds"></div>
-      <div class="body">
-        <span class="tag">Commercial Grounds Care</span>
-        <h3>Commercial Property Care</h3>
-        <p>Dependable, professional grounds care for hotels, communities, offices and retail — a property that always makes the right impression.</p>
-        <span class="link">See commercial care →</span>
-      </div>
-    </a>
-
-    <a class="card reveal" id="door-zoysia" href="#sodcalc" style="text-decoration:none;color:inherit">
-      <div class="ph"><img loading="lazy" decoding="async" src="img/proj-transform-after-1.webp" width="800" height="600" alt="A lush, established Zoysia lawn"></div>
-      <div class="body">
-        <span class="tag">Free Zoysia + Installation</span>
-        <h3>Get My Free Zoysia Lawn</h3>
-        <p>A beautiful new Zoysia lawn — we grow it, prepare your ground, and install it. Free Zoysia with professional installation.</p>
-        <span class="link">Get my free Zoysia →</span>
-      </div>
-    </a>
-  </div>
-
-  <!-- Secondary pathways -->
-  <div class="wrap center" style="margin-top:28px">
-    <p class="lead center" style="font-size:.98rem;color:var(--body);margin:0">
-      Also available:
-      <a href="maintenance.html" style="color:var(--teal-dark);font-weight:600">Residential Property Care</a>
-      &nbsp;·&nbsp;
-      <a href="sod.html" style="color:var(--teal-dark);font-weight:600">Buy Sod by the Pallet</a>
-    </p>
-  </div>
-</section>
-
-<!-- HOW IT WORKS (design-build) -->
-<section class="section" id="how">
-  <div class="wrap center">
-    <p class="eyebrow">How design-build works</p>
-    <h2>We don't arrive with a solution. We develop it.</h2>
-    <p class="lead center" style="margin-bottom:44px">You're not hiring us to install a package. We learn what you want, study the property and its challenges, and then develop the right solution — built by one team, start to finish.</p>
-  </div>
-  <div class="wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px">
-    <div class="card reveal" style="padding:26px 24px"><div style="font-family:var(--ff-d,'Fraunces',serif);font-size:2rem;color:var(--leaf);font-weight:700">1</div><h3>Understand the goal</h3><p>We start by listening — how you want to use the space, what's frustrating you now, and what "finished" looks like to you.</p></div>
-    <div class="card reveal" style="padding:26px 24px"><div style="font-family:var(--ff-d,'Fraunces',serif);font-size:2rem;color:var(--leaf);font-weight:700">2</div><h3>Evaluate the property</h3><p>We walk it and study the grade, drainage, sun, and access — the realities that decide what will actually work here.</p></div>
-    <div class="card reveal" style="padding:26px 24px"><div style="font-family:var(--ff-d,'Fraunces',serif);font-size:2rem;color:var(--leaf);font-weight:700">3</div><h3>Develop the solution</h3><p>Then we design the right plan for your goals and your property — made for this place, not pulled from a catalog.</p></div>
-    <div class="card reveal" style="padding:26px 24px"><div style="font-family:var(--ff-d,'Fraunces',serif);font-size:2rem;color:var(--leaf);font-weight:700">4</div><h3>Bring it to life</h3><p>Our owner-led crew builds it — stone, water, lighting, planting, drainage, and finishing — as one project.</p></div>
-  </div>
-  <div class="wrap center" style="margin-top:30px"><a class="btn btn-leaf" href="book.html">Request a Design Consultation</a></div>
-</section>
-
-<!-- SOD CALCULATOR -->
-<section class="section bg-sand" id="sodcalc">
-  <div class="wrap grid grid-2" style="align-items:center">
-    <div class="reveal">
-      <p class="eyebrow">We grow our own Zoysia</p>
-      <h2 style="margin-bottom:6px">Free Zoysia<span style="display:block;font-size:1.15rem;color:var(--leaf);font-weight:600">with professional installation</span></h2>
-      <p class="lead" style="margin-bottom:10px">We grow it. We cut it. We install it.</p>
-      <p style="font-size:1.05rem;color:var(--body)">When WeCare installs your new Zoysia lawn, <b>the sod is on us</b> — you save <b>$250 per pallet</b>. <span style="color:var(--muted)">(3-pallet minimum.)</span></p>
-      <p style="color:var(--muted);font-size:.95rem">We're a landscape company with our own sod farm — which is how we can include the grass other installers have to buy. One team, from the field to your finished lawn.</p>
-      <button class="btn btn-primary" onclick="Sage.openWith('I want a professionally installed Zoysia lawn — tell me about the Free Zoysia offer')">Get My Free Zoysia Estimate →</button>
-      <p class="mini" style="margin-top:12px">Looking for sod only? <a href="sod.html">Buy sod by the pallet →</a></p>
-    </div>
-    <div class="reveal">
-      <form class="calc" id="sodCalc" onsubmit="return false">
-        <h3 style="margin-top:0">🌱 Size your lawn</h3>
-        <p class="mini" style="margin:-6px 0 10px">See how many pallets you'll need — that's your free-sod count with installation, or your price if you're buying sod only.</p>
-        <div class="field">
-          <label>How do you want to enter your lawn size?</label>
-          <div style="display:flex;gap:18px">
-            <label style="font-weight:500"><input type="radio" name="mode" value="area" checked> Length × Width</label>
-            <label style="font-weight:500"><input type="radio" name="mode" value="sqft"> Total sq ft</label>
-          </div>
-        </div>
-        <div class="row" id="modeArea">
-          <div class="field"><label for="f-len">Length (ft)</label><input id="f-len" name="len" type="number" min="0" placeholder="e.g. 40"></div>
-          <div class="field"><label for="f-wid">Width (ft)</label><input id="f-wid" name="wid" type="number" min="0" placeholder="e.g. 30"></div>
-        </div>
-        <div class="field" id="modeSqft" style="display:none"><label for="f-sqft">Total square feet</label><input id="f-sqft" name="sqft" type="number" min="0" placeholder="e.g. 1200"></div>
-        <div class="calc-out" id="sodOut"></div>
-      </form>
-    </div>
-  </div>
-</section>
-
-<!-- MAINTENANCE PLANS -->
-<section class="section" id="plans">
-  <div class="wrap center">
-    <p class="eyebrow">Lawn maintenance</p>
-    <h2>Pick a plan, and forget about it</h2>
-    <p class="lead center" style="margin-bottom:50px">Set it once — we show up, every time. Cancel or change anytime.</p>
-  </div>
-  <div class="wrap grid grid-3">
-    <div class="plan reveal">
-      <h3>Biweekly</h3>
-      <div class="price">Every 2 weeks</div>
-      <ul><li>Mow, edge &amp; trim</li><li>Blow off walks &amp; drives</li><li>Great for shaded / slow lawns</li></ul>
-      <button class="btn btn-outline" onclick="Sage.openWith('Book biweekly lawn maintenance')">Get my quote</button>
-    </div>
-    <div class="plan pop reveal">
-      <span class="pill">Most popular</span>
-      <h3>Weekly</h3>
-      <div class="price">Every week</div>
-      <ul><li>Everything in Biweekly</li><li>Consistent, always-tidy yard</li><li>Priority scheduling</li><li>Seasonal cleanup add-on</li></ul>
-      <button class="btn btn-primary" onclick="Sage.openWith('Book weekly lawn maintenance')">Get my quote</button>
-    </div>
-    <div class="plan reveal">
-      <h3>One-Time Cleanup</h3>
-      <div class="price">Per visit</div>
-      <ul><li>Spring or fall reset</li><li>Leaf &amp; debris removal</li><li>Overgrowth &amp; edging</li></ul>
-      <button class="btn btn-outline" onclick="Sage.openWith('Book a one-time cleanup')">Request cleanup</button>
-    </div>
-  </div>
-</section>
-
-<!-- PORTFOLIO -->
-<section class="section bg-sand" id="portfolio">
-  <div class="wrap center">
-    <p class="eyebrow">Our work</p>
-    <h2>Real Arkansas projects</h2>
-    <p class="lead center" style="margin-bottom:44px">Stone, water, and green — built by hand, close to home.</p>
-  </div>
-  <div class="wrap gallery">
-    <figure class="big"><img loading="lazy" decoding="async" width="800" height="600" src="img/masonry-hero.webp" alt="Custom flagstone patio and walkway in natural stone"><figcaption>Custom flagstone patio &amp; walkway</figcaption></figure>
-    <figure><img loading="lazy" decoding="async" width="500" height="500" src="img/water-feature.webp" alt="Pondless water feature with natural stone creek"><figcaption>Pondless water feature &amp; stone creek</figcaption></figure>
-    <figure><img loading="lazy" decoding="async" width="500" height="500" src="img/design-aerial.webp" alt="Full landscape design and build, aerial view"><figcaption>Full landscape design &amp; build</figcaption></figure>
-    <figure><img loading="lazy" decoding="async" width="500" height="500" src="img/water-garden.webp" alt="Planted garden with integrated water feature"><figcaption>Planted garden &amp; water garden</figcaption></figure>
-    <figure><img loading="lazy" decoding="async" width="500" height="500" src="img/garden-path.webp" alt="Stone garden path through mature plantings"><figcaption>Stone garden path &amp; plantings</figcaption></figure>
-    <figure><img loading="lazy" decoding="async" width="500" height="500" src="img/sod-field.webp" alt="Farm-grown sod ready to harvest and lay"><figcaption>Our farm-grown sod, ready to lay</figcaption></figure>
-  </div>
-</section>
-
-<!-- AI ASSISTANT BAND -->
-<section class="section bg-deep">
-  <div class="wrap ai-band">
-    <div class="reveal">
-      <p class="eyebrow" style="color:var(--leaf)">Meet Sage</p>
-      <h2>Answers anytime — even after hours</h2>
-      <p style="color:#cfe4d6;font-size:1.1rem">Get answers, calculate your sod needs, share project details, and request a consultation anytime — even outside normal phone hours.</p>
-      <div class="ai-feats">
-        <div class="ai-feat"><div class="ic">💬</div><div><h4>Real answers, 24/7</h4><p>Ask about services, timing, or your project — day or night.</p></div></div>
-        <div class="ai-feat"><div class="ic">🧮</div><div><h4>Instant sod estimate</h4><p>Get your pallet count and price on the spot.</p></div></div>
-        <div class="ai-feat"><div class="ic">📷</div><div><h4>Share your project</h4><p>Tell us your goals and send photos when you're ready.</p></div></div>
-        <div class="ai-feat"><div class="ic">📅</div><div><h4>Request a consultation</h4><p>Pick a time that works and we'll confirm.</p></div></div>
-      </div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:26px">
-        <button class="btn btn-leaf" onclick="Sage.open()">Chat with Sage →</button>
-        <a class="btn btn-ghost" href="book.html">Request a consultation</a>
-      </div>
-    </div>
-    <div class="reveal">
-      <div class="phone-mock">
-        <div class="scr">
-          <div class="mock-hd"><span class="dot"></span> Sage · WeCare Landscapes</div>
-          <div class="mock-body">
-            <div class="bub ai">Hi! I'm Sage 🌱 How can I help?</div>
-            <div class="bub me">Need sod for my backyard, about 40×30</div>
-            <div class="bub ai">That's 1,200 sq ft — about <b>3 pallets</b>, ~$1,050 delivered (plus tax). Want me to book it?</div>
-            <div class="bub me">Yes please</div>
-            <div class="bub ai">Got it! What's your name &amp; number? I'll have the WeCare team confirm today. ✅</div>
-          </div>
-        </div>
-      </div>
-    </div>
+<!-- COMPANY STORY + PHILOSOPHY -->
+<section class="section">
+  <div class="wrap" style="max-width:800px;text-align:center">
+    <p class="eyebrow">Who we are</p>
+    <h2>A family company that treats your property like our own</h2>
+    <p class="story-lead" style="margin-top:16px">We Care Landscapes has been family-owned and operated in Central Arkansas since 1998. What started as lawn care has grown into a full landscape company — design and build, our own sod farm, and dependable property care — but the way we work hasn't changed.</p>
+    <p class="story-lead">We don't arrive with a package to sell. We start with how you want to live on your property, study what's actually going on with it, and build the right solution — by hand, with one owner-led crew, start to finish. Real craftsmanship, honest communication, and work we're proud to put our name on. That's the difference, and it's why our customers stay with us for years.</p>
+    <p style="margin-top:22px"><a class="btn btn-outline" href="about.html">More About We Care →</a></p>
   </div>
 </section>
 
 <!-- REVIEWS -->
-<section class="section">
+<section class="section bg-sand">
   <div class="wrap center"><p class="eyebrow">What neighbors say</p><h2>Real words from real customers</h2></div>
   <div class="wrap grid grid-2" style="margin-top:40px;max-width:820px">
     <div class="review reveal"><div class="stars">★★★★★</div><p>"I received Derrick's name as someone who could prune my Japanese Maple. All I can say is WOW!!! These guys did fantastic, restoring the tree back to its former glory — I'd give 100 stars if I could. I wish I'd known about Derrick years ago. Fantastic work at a fair price. I highly recommend!"</p><div class="who">— Nancy T. · Hot Springs, AR</div></div>
@@ -358,59 +229,15 @@
   <div class="wrap center" style="margin-top:22px"><a class="btn ghost" href="https://www.facebook.com/p/Derrick-Colliers-We-Care-Lawn-Care-LLC-100064053907550/" target="_blank" rel="noopener">See more reviews on Facebook →</a></div>
 </section>
 
-<!-- FAQ (natural-language, matches FAQPage schema — AEO) -->
-<section class="section" id="faq">
-  <div class="wrap center"><p class="eyebrow">Good questions</p><h2>Answers for Central Arkansas</h2>
-    <p class="lead center" style="margin-bottom:36px">The things folks actually ask us.</p></div>
-  <div class="wrap" style="max-width:760px">
-    <div class="card reveal" style="padding:20px 22px;margin-bottom:12px"><h3 style="margin:0 0 6px">Who does custom carved concrete artistry in Hot Springs?</h3><p style="margin:0;color:var(--body)">WeCare Landscapes does — it's our signature. We hand-carve and sculpt concrete into realistic faux rock, tree-stump features, fire &amp; water-feature surrounds, and one-of-a-kind artistic pieces, built right into your landscape.</p></div>
-    <div class="card reveal" style="padding:20px 22px;margin-bottom:12px"><h3 style="margin:0 0 6px">Who installs pondless water features in Hot Springs Village?</h3><p style="margin:0;color:var(--body)">WeCare Landscapes designs and builds pondless water features and waterfalls across Hot Springs Village and Central Arkansas as part of our luxury landscape work.</p></div>
-    <div class="card reveal" style="padding:20px 22px;margin-bottom:12px"><h3 style="margin:0 0 6px">Where can I get sod delivered near Hot Springs?</h3><p style="margin:0;color:var(--body)">We grow our own sod and deliver farm-fresh across Central Arkansas — pickup, delivery, or fully installed. Get an instant estimate with the sod calculator above.</p></div>
-    <div class="card reveal" style="padding:20px 22px;margin-bottom:12px"><h3 style="margin:0 0 6px">Do you fix drainage and erosion problems?</h3><p style="margin:0;color:var(--body)">Yes — drainage correction and erosion solutions across Central Arkansas, often paired with landscape design so the fix looks good and lasts.</p></div>
-    <div class="card reveal" style="padding:20px 22px"><h3 style="margin:0 0 6px">What areas does WeCare Landscapes serve?</h3><p style="margin:0;color:var(--body)">Based in the Hot Springs area, serving Hot Springs, Hot Springs Village, Benton, Bryant, Little Rock, Conway, and Russellville.</p></div>
-  </div>
-</section>
-
-<!-- SERVICE AREA -->
-<section class="section bg-sand">
-  <div class="wrap center">
-    <p class="eyebrow">Where we work</p>
-    <h2>Proudly serving Central Arkansas</h2>
-    <p class="lead center" style="margin-bottom:30px">From the lake to the pines — if you're near Hot Springs, we've got you.</p>
-    <div class="chips">
-      <span class="chip">Hot Springs</span><span class="chip">Hot Springs Village</span><span class="chip">Benton</span>
-      <span class="chip">Bryant</span><span class="chip">Malvern</span><span class="chip">Bismarck</span>
-      <span class="chip">Royal</span><span class="chip">Pearcy</span><span class="chip">Lonsdale</span><span class="chip">Mountain Pine</span>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section class="section" id="contact">
-  <div class="wrap contact-grid">
-    <div class="reveal">
-      <p class="eyebrow">Get started</p>
-      <h2>Tell us about your project</h2>
-      <p class="lead">Tell us what you need and we'll reach out — usually the same day. Or tap the green <b>Ask Sage</b> button and book in under a minute.</p>
-      <p style="font-size:1.2rem;margin-top:24px"><b>📞 <a href="tel:5016274384">501-627-4384</a></b></p>
-      <p style="color:var(--muted)">Serving Hot Springs &amp; Central Arkansas · Family-run since 1998</p>
-      <button class="btn btn-leaf" style="margin-top:10px" onclick="Sage.open()">🌱 Book instantly with Sage</button>
-    </div>
-    <div class="reveal">
-      <form class="calc" data-lead="Website contact form">
-        <h3 style="margin-top:0">Send us a message</h3>
-        <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" required placeholder="Your name"></div>
-        <div class="row">
-          <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" required placeholder="501-000-0000"></div>
-          <div class="field"><label for="f-town">Town</label><input id="f-town" name="address" placeholder="Hot Springs"></div>
-        </div>
-        <div class="field"><label for="f-service">What do you need?</label>
-          <select id="f-service" name="service" required><option value="" selected disabled>Choose a service…</option><option>Landscape Design &amp; Build</option><option>Commercial Property Maintenance</option><option>Sod — Sales, Delivery &amp; Installation</option><option>Residential Property Care</option><option>Drainage &amp; Erosion Solutions</option><option>Hardscape, Patios &amp; Stonework</option><option>Carved Concrete &amp; Custom Artistry</option><option>Pondless Water Features</option><option>Landscape Lighting</option><option>Irrigation</option><option>Not sure yet</option></select>
-        </div>
-        <div class="field"><label for="f-detail">Details</label><textarea id="f-detail" name="detail" rows="3" placeholder="Tell us about your project or property…"></textarea></div>
-        <button class="btn btn-primary" type="submit" style="width:100%">Send my request</button>
-        <p data-ok style="display:none;background:rgba(148,204,79,.18);border:1px solid var(--leaf);border-radius:10px;padding:14px;margin-top:14px;color:var(--green-deep);font-weight:600">✅ Got it! Your request is in — WeCare Landscapes will reach out shortly.</p>
-      </form>
+<!-- CLOSING CTA -->
+<section class="section bg-deep" style="text-align:center">
+  <div class="wrap" style="max-width:720px">
+    <p class="eyebrow" style="color:var(--leaf)">Let's get started</p>
+    <h2 style="color:#fff">Ready to love your property again?</h2>
+    <p style="color:#cfe4d6;font-size:1.12rem">Tell us what you're picturing and we'll help you find the right path — usually the same day.</p>
+    <div class="hero-cta" style="justify-content:center;margin-top:22px">
+      <a class="btn btn-leaf" href="book.html">Request a Consultation →</a>
+      <a class="btn btn-ghost" href="tel:5016274384">Call 501-627-4384</a>
     </div>
   </div>
 </section>
