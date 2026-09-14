@@ -74,14 +74,13 @@
   <div class="ai-note" style="margin-top:24px">
     <div class="ic">🤖</div>
     <div>
-      <b>How this works:</b> When a customer books through <b>Sage</b> (the green assistant on your website) or fills out a form, the job appears here — sorted, timestamped, and ready to follow up. Move a card through <b>New → Contacted → Quoted → Won</b> with one tap. This is a live demo: bookings you make on the <a href="index.html">website</a> show up here instantly.
+      <b>How this works:</b> When a customer books through <b>Sage</b> (the green assistant on your website) or fills out a form, the job appears here — sorted, timestamped, and ready to follow up. Move a card through <b>New → Contacted → Quoted → Won</b> with one tap. Bookings you take on your <a href="index.html">website</a> show up here instantly.
     </div>
   </div>
 
   <div class="toolbar">
     <button class="btn btn-primary btn-sm" onclick="location.href='pulse.html'">🏠 Owner Home</button>
     <button class="btn btn-outline btn-sm" onclick="location.href='index.html'">← Website</button>
-    <button class="btn btn-outline btn-sm" onclick="seedDemo()">Load sample bookings</button>
     <button class="btn btn-outline btn-sm" onclick="clearAll()">Clear all</button>
     <input id="leadSearch" placeholder="🔍 Search leads…" oninput="render()" style="flex:1;min-width:160px;max-width:280px;padding:7px 12px;border:1px solid var(--line);border-radius:8px;font:inherit">
     <span class="spacer"></span>
@@ -173,7 +172,7 @@ function del(id){
   var all=WeCareLeads.load().filter(function(x){return x.id!==id});
   localStorage.setItem(WeCareLeads.KEY,JSON.stringify(all));render();
 }
-function clearAll(){ if(confirm("Clear all bookings from this demo?")){localStorage.removeItem(WeCareLeads.KEY);render();} }
+function clearAll(){ if(confirm("Clear all leads from your CRM? This can't be undone.")){localStorage.removeItem(WeCareLeads.KEY);render();} }
 
 function timeAgo(iso){
   var s=(Date.now()-new Date(iso).getTime())/1000;
@@ -378,20 +377,6 @@ function addConsult(){
   renderConsults();
 }
 
-function seedDemo(){
-  var now=Date.now();
-  var demo=[
-    {name:"Tammy Ledgerwood",phone:"501-555-0142",address:"Ledgerwood Circle, Hot Springs",service:"Lawn maintenance",detail:"Biweekly mow + weed eating",when:"This week",source:"AI Assistant (Sage)",stage:"Won",created:new Date(now-86400000*2).toISOString(),id:"seed1"},
-    {name:"Mark D.",phone:"501-555-0199",address:"Malvern",service:"Sod farm — order/estimate",sqft:1200,when:"Next Saturday",source:"AI Assistant (Sage)",stage:"New",created:new Date(now-3600000*2).toISOString(),id:"seed2"},
-    {name:"Janet Rowe",phone:"501-555-0110",address:"Hot Springs Village",service:"Landscape design & build",detail:"Flagstone patio + water feature",when:"No rush",source:"Website form",stage:"Quoted",created:new Date(now-86400000).toISOString(),id:"seed3"},
-    {name:"Carlos M.",phone:"501-555-0187",address:"Benton",service:"Sod farm — order/estimate",sqft:2400,when:"ASAP",source:"AI Assistant (Sage)",stage:"Contacted",created:new Date(now-3600000*20).toISOString(),id:"seed4"},
-    {name:"Dana P.",phone:"501-555-0133",address:"Bryant",service:"Lawn maintenance",detail:"Weekly mowing, corner lot",when:"Start next week",source:"AI Assistant (Sage)",stage:"New",created:new Date(now-3600000*5).toISOString(),id:"seed5"}
-  ];
-  var existing=WeCareLeads.load();
-  var ids={};existing.forEach(function(l){ids[l.id]=1});
-  demo.forEach(function(d){if(!ids[d.id])existing.push(d)});
-  localStorage.setItem(WeCareLeads.KEY,JSON.stringify(existing));render();
-}
 
 /* ===== Live conversations + owner takeover ===== */
 var _openCv=null;   // which conversation is expanded
@@ -465,8 +450,9 @@ function pingCheck(){
 window.addEventListener("storage",function(e){ if(e.key===WeCareConvos.KEY){renderLive();pingCheck();} else {render();} });
 setInterval(function(){renderLive();pingCheck();},1500);
 
-// auto-seed if empty so the pitch looks alive; refresh when returning to tab
-if(!WeCareLeads.load().length)seedDemo(); else render();
+// scrub any leftover demo/sample leads from earlier builds, then show the real CRM
+(function(){var L=WeCareLeads.load();var real=L.filter(function(l){return !/^seed\d+$/.test(l.id||"");});if(real.length!==L.length)localStorage.setItem(WeCareLeads.KEY,JSON.stringify(real));})();
+render();
 window.addEventListener("focus",function(){render();renderLive();});
 render();renderLive();
 </script>
