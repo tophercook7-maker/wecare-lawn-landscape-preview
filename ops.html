@@ -1423,6 +1423,33 @@ function updateTabBadges(){
   }catch(e){}
 }
 
+// Remove any leftover SAMPLE jobs/recurring/routes from earlier builds — locally
+// AND from the cloud so they can't sync back. Matches only obvious sample tells
+// (the old seed names/ids, "Demo/Example/Test/Sample", and the fictional 555-01xx
+// numbers), so real work is never touched.
+function scrubSamples(){
+  var NAMES=["tammy ledgerwood","janet rowe","carlos m","carlos m.","mark d","mark d.","dana p","dana p.",
+    "weekly mow client","weekly mow","acme offices","acme","john smith","green villa","lakeside hoa",
+    "ridge home","demo patio","tom r","tom r."];
+  function isSample(o){
+    if(!o) return false;
+    var id=(o.id||"")+""; if(/^W[123]$/.test(id)||/^(seed|demo|sample|test)/i.test(id)) return true;
+    var nm=((o.customer||o.name||"")+"").trim().toLowerCase();
+    if(nm){ if(/^(demo|example|test|sample)\b/.test(nm)) return true; if(NAMES.indexOf(nm)>=0) return true; }
+    if(/555[\s\-]?01\d\d/.test((o.phone||"")+"")) return true;
+    return false;
+  }
+  ["wecare_workorders","wecare_recurring","wecare_routes"].forEach(function(key){
+    var arr; try{ arr=JSON.parse(localStorage.getItem(key)||"[]")||[]; }catch(e){ return; }
+    if(!Array.isArray(arr)||!arr.length) return;
+    var removed=arr.filter(isSample), keep=arr.filter(function(o){return !isSample(o);});
+    if(removed.length){
+      save(key,keep);
+      if(window.WeCareCloud&&WeCareCloud.remove) removed.forEach(function(o){ if(o&&o.id) WeCareCloud.remove(key,o.id); });
+    }
+  });
+}
+
 /* ---- Calendar ---------------------------------------------------------------- */
 var CAL={view:"month", cursor:new Date()};
 function noon(d){ var m=new Date(d.getTime?d.getTime():d); m.setHours(12,0,0,0); return m; }
@@ -1763,9 +1790,11 @@ function setDefaultWoDate(){ var d=document.getElementById("woDate"); if(d&&!d.v
 document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeJobFile(); });
 
 /* boot the showpiece layer */
+scrubSamples();
 fillServiceSelects();
 applyRole();
 buildTabs();
+render();
 setDefaultWoDate();
 updateGreet();
 renderHint();

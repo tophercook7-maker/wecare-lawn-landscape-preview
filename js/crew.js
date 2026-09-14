@@ -30,20 +30,9 @@ function CREW_(){ return allEmps().filter(function(e){return e.active!==false;})
 window.WeCareOps={K_PUNCH:K_PUNCH,K_JOBS:K_JOBS,get CREW(){return CREW_();},load:load,save:save};
 
 /* ---- seed a couple of demo work orders so it's not empty ---- */
-function seedJobs(){
-  var j=load(K_JOBS,null);
-  if(j) return j;
-  var today=new Date().toISOString().slice(0,10);
-  j=[
-    {id:"W1",customer:"Tammy Ledgerwood",service:"Lawn maintenance",address:"110 Ledgerwood Circle, Hot Springs",
-     scope:"Biweekly mow, edge, trim, blow off.",sop:"Mowing SOP",assignedTo:["christian","chris"],date:today,status:"assigned",estHours:1.5},
-    {id:"W2",customer:"Janet Rowe",service:"Concrete Artistry",address:"14 Vista Ln, Hot Springs Village",
-     scope:"Carved concrete tree-stump feature + flagstone border. Photos before/during/after.",sop:"Carved Concrete SOP",assignedTo:["jason","hayden","justin"],date:today,status:"assigned",estHours:8},
-    {id:"W3",customer:"Carlos M.",service:"Sod install",address:"22 Oak St, Benton",
-     scope:"Deliver + lay 3 pallets fescue. Prep + roll.",sop:"Sod Installation SOP",assignedTo:["hayden","justin"],date:today,status:"assigned",estHours:4},
-  ];
-  save(K_JOBS,j); return j;
-}
+// Real jobs come from the server (fetchCrewData → team "crew_data"). No sample
+// seeding — the crew only ever sees their actual assigned work.
+function seedJobs(){ return load(K_JOBS,[]); }
 
 var me=null, tickHandle=null, _pin="";   // _pin: this session's verified PIN (memory only, never stored)
 function meObj(){return allEmps().find(function(c){return c.id===me}) || {id:me,name:me,role:""};}
