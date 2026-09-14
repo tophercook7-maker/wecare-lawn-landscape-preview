@@ -435,7 +435,7 @@ body.viewer .editor-only{display:none!important}
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0913"></script>
+<script src="js/wecare-cloud.js?v=0914"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -1655,6 +1655,8 @@ function openJobFile(id){
   var actions=EDIT?('<div class="jf-sec editor-only"><h4>Manage</h4><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
     '<label class="mini" style="font-weight:700">Reschedule <input type="date" value="'+esc(j.date||"")+'" onchange="rescheduleJob(\''+j.id+'\',this.value)" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px"></label>'+
     (st!=="done"?'<button class="btn" onclick="jfMarkDone(\''+j.id+'\')">✓ Mark done</button>':'<a class="btn" href="invoice.html?job='+j.id+'" target="_blank">🧾 Invoice</a>')+
+    '<span style="flex:1"></span>'+
+    '<button class="btn" style="color:var(--red);border-color:var(--red)" onclick="jfDelete(\''+j.id+'\')">🗑 Delete</button>'+
     '</div></div>'):'';
 
   document.getElementById("jobCard").innerHTML=
@@ -1682,6 +1684,24 @@ function jfMarkDone(id){
   var jobs=load(K_JOBS,[]), j=jobs.find(function(x){return x.id===id;}); if(!j) return;
   j.status="done"; save(K_JOBS,jobs); toast("✓ Marked done — you can request a review from Today's board","ok");
   render(); openJobFile(id);
+}
+// Delete a work order for good — with an "are you sure" so an accidental tap can't
+// wipe a job. Removes it from the cloud too, so it won't reappear on the next sync.
+function jfDelete(id){
+  var jobs=load(K_JOBS,[]), j=jobs.find(function(x){return x.id===id;}); if(!j) return;
+  var isRecur=!!j.recurId;
+  var msg=isRecur
+    ? "Delete this visit for \""+(j.customer||"this job")+"\" AND stop the recurring schedule it comes from?\n\nFuture planned visits will stop too. This can't be undone."
+    : "Delete the work order for \""+(j.customer||"this job")+"\"?\n\nThis can't be undone.";
+  if(!confirm(msg)) return;   // the "are you sure" gate
+  save(K_JOBS, jobs.filter(function(x){return x.id!==id;}));
+  if(window.WeCareCloud && WeCareCloud.remove) WeCareCloud.remove("wecare_workorders", id);
+  if(isRecur){
+    save(K_RECUR, load(K_RECUR,[]).filter(function(s){return s.id!==j.recurId;}));
+    if(window.WeCareCloud && WeCareCloud.remove) WeCareCloud.remove("wecare_recurring", j.recurId);
+  }
+  toast("🗑 Deleted"+(isRecur?" — recurring schedule stopped":""),"warn");
+  closeJobFile(); render();
 }
 function jfAddPhotos(id,input){
   var files=[].slice.call(input.files||[]); if(!files.length) return;

@@ -285,7 +285,21 @@ function saveConfirmed(key, obj){
     headers:Object.assign({},authHeaders(),{"Prefer":"resolution=merge-duplicates,return=minimal"}),
     body:JSON.stringify(row)}).then(function(r){return r.ok;}).catch(function(){return false;});
 }
+// Hard-delete a row from the cloud (and stop the sync layer from re-adding it).
+// Owner tools call this so a deletion actually sticks instead of coming back on
+// the next pull. Forget the id from the pending/shadow sets first so it's neither
+// re-pushed nor protected as an unsynced local write.
+function removeRow(key, id){
+  if(_shadow[key]) delete _shadow[key][id];
+  if(_sessionWrites[key]) delete _sessionWrites[key][id];
+  var store=byKey[key];
+  if(!store) return Promise.resolve(false);
+  return fetch(REST+store.table+"?id=eq."+encodeURIComponent(id), {method:"DELETE", headers:authHeaders()})
+    .then(function(r){ return r.ok; }).catch(function(){ return false; });
+}
+
 window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed,
+  remove:removeRow,
   login:login, logout:logout, refreshSession:refreshSession, changePassword:changePassword,
   session:getSession, sessionValid:sessionValid, authHeaders:authHeaders};
 // Only the owner/crew tools (which set window.WECARE_SYNC) poll + pull. Public
