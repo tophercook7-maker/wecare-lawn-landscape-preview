@@ -1459,7 +1459,9 @@ function scrubSamples(){
     "ridge home","demo patio","tom r","tom r."];
   function isSample(o){
     if(!o) return false;
-    var id=(o.id||"")+""; if(/^W[123]$/.test(id)||/^(seed|demo|sample|test)/i.test(id)) return true;
+    var id=(o.id||"")+"";
+    if(/^W[123]$/.test(id)||/^(seed|demo|sample|test)/i.test(id)) return true;
+    if(/^W(derrick|demo)/i.test(id)||/^WR-(RT)?demo/i.test(id)||/^RT?demo/i.test(id)) return true;
     var nm=((o.customer||o.name||"")+"").trim().toLowerCase();
     if(nm){ if(/^(demo|example|test|sample)\b/.test(nm)) return true; if(NAMES.indexOf(nm)>=0) return true; }
     if(/555[\s\-]?01\d\d/.test((o.phone||"")+"")) return true;
