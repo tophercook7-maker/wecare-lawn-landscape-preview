@@ -450,8 +450,25 @@ function pingCheck(){
 window.addEventListener("storage",function(e){ if(e.key===WeCareConvos.KEY){renderLive();pingCheck();} else {render();} });
 setInterval(function(){renderLive();pingCheck();},1500);
 
-// scrub any leftover demo/sample leads from earlier builds, then show the real CRM
-(function(){var L=WeCareLeads.load();var real=L.filter(function(l){return !/^seed\d+$/.test(l.id||"");});if(real.length!==L.length)localStorage.setItem(WeCareLeads.KEY,JSON.stringify(real));})();
+// scrub ALL demo/example data left in the browser from earlier builds — leads,
+// conversations AND consultations — matched by seed/demo ids, "Example"/"Demo"
+// names, or the reserved fictional 555-01xx phone numbers. (The cloud is the real
+// source of truth; this only clears stale sample data cached on the device.)
+(function(){
+  function nameOf(o){return ((o&&o.name)||(o&&o.customer&&o.customer.name)||(o&&typeof o.customer==="string"?o.customer:"")||"")+"";}
+  function phoneOf(o){return ((o&&o.phone)||(o&&o.customer&&o.customer.phone)||"")+"";}
+  function isDemo(o){ if(!o) return false;
+    if(/^(seed|demo)/i.test((o.id||"")+"")) return true;
+    if(/^\s*(example|demo)\b/i.test(nameOf(o))) return true;
+    if(/555[\s\-]?01\d\d/.test(phoneOf(o))) return true;
+    return false; }
+  function scrubArr(key){ try{ var a=JSON.parse(localStorage.getItem(key)||"[]")||[]; var b=a.filter(function(x){return !isDemo(x);}); if(b.length!==a.length) localStorage.setItem(key,JSON.stringify(b)); }catch(e){} }
+  scrubArr("wecare_leads"); scrubArr("wecare_consults");
+  try{ var V=JSON.parse(localStorage.getItem("wecare_convos")||"{}")||{}, out={}, ch=false;
+    Object.keys(V).forEach(function(k){ if(isDemo(V[k])) ch=true; else out[k]=V[k]; });
+    if(ch) localStorage.setItem("wecare_convos",JSON.stringify(out));
+  }catch(e){}
+})();
 render();
 window.addEventListener("focus",function(){render();renderLive();});
 render();renderLive();
