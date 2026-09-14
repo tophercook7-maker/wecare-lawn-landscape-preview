@@ -310,6 +310,25 @@ body.viewer .editor-only{display:none!important}
     <div id="teamList"></div>
   </div>
 
+  <div class="panel" id="syncPanel" style="margin-top:16px">
+    <h2>📆 Sync jobs to your phone &amp; Google Calendar</h2>
+    <p class="mini" style="margin-top:-2px">Subscribe once — every job on your board shows up automatically on your iPhone and in Google Calendar, and refreshes on its own. Reschedule a job here and the calendars update.</p>
+    <div class="field" style="margin-top:10px"><label>Your private calendar link</label>
+      <input id="calSubUrl" readonly onclick="this.select()" value="https://fqqbzsxvxpcfwovbunth.supabase.co/functions/v1/calendar?key=wc_a0eef5f5265867b285e6cb50c870b076" style="font-size:.82rem">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <button class="btn p" onclick="copyCalUrl()">📋 Copy link</button>
+      <a class="btn" href="webcal://fqqbzsxvxpcfwovbunth.supabase.co/functions/v1/calendar?key=wc_a0eef5f5265867b285e6cb50c870b076">📱 Add to iPhone</a>
+    </div>
+    <details style="margin-top:6px"><summary style="cursor:pointer;font-weight:700;color:var(--green-deep);font-size:.9rem">How to add it (iPhone &amp; Google)</summary>
+      <div class="mini" style="margin-top:8px;line-height:1.7">
+        <b>iPhone / iPad:</b> tap <b>📱 Add to iPhone</b> above and confirm — or Settings → Calendar → Accounts → Add Account → Other → <b>Add Subscribed Calendar</b>, then paste the link.<br>
+        <b>Google Calendar</b> (on a computer): left sidebar → <b>Other calendars</b> → <b>＋</b> → <b>From URL</b> → paste the link → Add calendar. It shows on your phone's Google Calendar app too.<br>
+        <span style="color:var(--muted)">Keep this link private — anyone with it can see your job schedule.</span>
+      </div>
+    </details>
+  </div>
+
   <div class="panel" id="recurPanel" style="margin-top:16px">
     <h2>🔁 Recurring maintenance <span class="mini" style="font-weight:400">— set it once, the work orders create themselves on schedule</span></h2>
     <div id="recurList"></div>
@@ -1364,6 +1383,13 @@ function toast(msg,kind){
   setTimeout(function(){ t.classList.add("out"); setTimeout(function(){ t.remove(); },320); }, kind==="warn"?4200:2600);
 }
 function scrollToEl(id){ var e=document.getElementById(id); if(e) e.scrollIntoView({behavior:"smooth",block:"start"}); }
+function copyCalUrl(){
+  var el=document.getElementById("calSubUrl"); if(!el) return;
+  el.select();
+  var done=function(){ toast("✓ Calendar link copied — paste it into iPhone or Google Calendar","ok"); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(el.value).then(done,function(){ try{document.execCommand("copy");}catch(e){} done(); }); }
+  else { try{document.execCommand("copy");}catch(e){} done(); }
+}
 function gotoPanel(pid){ var el=document.getElementById(pid); if(!el) return; var pane=el.closest(".tabpane"); if(pane) showTab(pane.getAttribute("data-tab")); setTimeout(function(){ el.scrollIntoView({behavior:"smooth",block:"start"}); },80); }
 function quickNewJob(){ showTab("today"); newJobToggle(true); }
 function quickJobForProp(id){
@@ -1379,7 +1405,7 @@ var TAB_DEFS=[
  {id:"customers",label:"Customers",icon:"🏡", panels:["propPanel"]},
  {id:"team",    label:"Team",      icon:"👥", panels:["teamPanel"]},
  {id:"money",   label:"Money",     icon:"💵", panels:["payrollPanel","fixPanel","costPanel","dataPanel"]},
- {id:"setup",   label:"Setup",     icon:"⚙️", panels:["recurPanel","routePanel","sopPanel","casePanel"]},
+ {id:"setup",   label:"Setup",     icon:"⚙️", panels:["syncPanel","recurPanel","routePanel","sopPanel","casePanel"]},
 ];
 function buildTabs(){
   var host=document.getElementById("paneHost"); if(!host||host.getAttribute("data-built")) return; host.setAttribute("data-built","1");
