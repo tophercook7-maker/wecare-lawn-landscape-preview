@@ -1474,9 +1474,10 @@ function updateTabBadges(){
 // (the old seed names/ids, "Demo/Example/Test/Sample", and the fictional 555-01xx
 // numbers), so real work is never touched.
 function scrubSamples(){
+  // ONLY the actual seed/sample names — kept tight so a real customer (e.g. a
+  // genuine "John Smith") is never mistaken for a sample.
   var NAMES=["tammy ledgerwood","janet rowe","carlos m","carlos m.","mark d","mark d.","dana p","dana p.",
-    "weekly mow client","weekly mow","acme offices","acme","john smith","green villa","lakeside hoa",
-    "ridge home","demo patio","tom r","tom r."];
+    "weekly mow client","demo patio","tom r","tom r."];
   function isSample(o){
     if(!o) return false;
     var id=(o.id||"")+"";
