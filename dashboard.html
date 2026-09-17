@@ -170,9 +170,21 @@ function setStage(id,stage){
 }
 function del(id){
   var all=WeCareLeads.load().filter(function(x){return x.id!==id});
-  localStorage.setItem(WeCareLeads.KEY,JSON.stringify(all));render();
+  localStorage.setItem(WeCareLeads.KEY,JSON.stringify(all));
+  if(window.WeCareCloud&&WeCareCloud.remove) WeCareCloud.remove("wecare_leads",id); // delete in the cloud too so it can't sync back
+  render();
 }
-function clearAll(){ if(confirm("Clear all leads from your CRM? This can't be undone.")){localStorage.removeItem(WeCareLeads.KEY);render();} }
+// Type-to-confirm so an accidental tap can't wipe the CRM; deletes from the cloud
+// as well as locally, so cleared leads stay gone instead of re-syncing.
+function clearAll(){
+  var leads=WeCareLeads.load();
+  if(!leads.length){ alert("There are no leads to clear."); return; }
+  var ans=prompt("⚠️ This permanently deletes ALL "+leads.length+" lead"+(leads.length===1?"":"s")+" from your CRM. This can't be undone.\n\nType  CLEAR  to confirm:");
+  if(!ans || ans.trim().toUpperCase()!=="CLEAR") return;
+  if(window.WeCareCloud&&WeCareCloud.remove){ leads.forEach(function(l){ if(l&&l.id) WeCareCloud.remove("wecare_leads",l.id); }); }
+  localStorage.removeItem(WeCareLeads.KEY);
+  render();
+}
 
 function timeAgo(iso){
   var s=(Date.now()-new Date(iso).getTime())/1000;
