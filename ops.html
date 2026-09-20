@@ -1415,7 +1415,7 @@ function quickJobForProp(id){
 /* ---- Auth guard: owner writes must be signed in, or the app silently saves as a
    guest (anon key) and the cloud rejects it — the save "sticks" locally then vanishes. ---- */
 function isAuthed(){ return !!(window.WeCareCloud && WeCareCloud.sessionValid && WeCareCloud.sessionValid()); }
-var OPS_VERSION="v0923";  // bump on each ops.html change so we can confirm the live version on any device
+var OPS_VERSION="v0924";  // bump on each ops.html change so we can confirm the live version on any device
 function renderAuthStatus(){
   var el=document.getElementById("authStatus"); if(!el) return;
   var pend=(window.WeCareCloud&&WeCareCloud.pending)?WeCareCloud.pending():0;
@@ -1530,15 +1530,19 @@ function scrubSamples(){
   // next reload. A real job's id is "W"+timestamp and can never match these.
   function isSample(o){
     if(!o) return false;
-    var id=(o.id||"")+"";
-    if(/^W[123]$/.test(id)) return true;                 // W1 / W2 / W3 seeds
-    if(/^(seed|sample)-/i.test(id)) return true;          // seed- / sample- prefixed
-    if(/^W(derrick|demo)/i.test(id)) return true;         // Wdemo… / Wderrick…
-    if(/^WR-?(RT)?demo/i.test(id)) return true;           // recurring/route demo projections
-    if(/^RTdemo/i.test(id)) return true;
+    var id=((o.id||"")+"").toLowerCase();
+    var nm=(((o.customer&&o.customer.name)||o.customer||o.name||o.title||"")+"").trim().toLowerCase();
+    // Sample/seed/demo IDs from old builds + leftover test rows. Real ids are
+    // "W"/"PR"/"C"+timestamp and never contain these tokens, so real work is safe.
+    if(/demo/.test(id)) return true;                                   // Ldemo, Rdemo, spamdemo, WR-Rdemo…
+    if(/(^|[-_.])(seed\d|sample|example|guesttest|livecheck|reverttest|realuitest|reloadtest|fullrow|verify-delete|testbrowser|probe|cwtest|passivetest)/.test(id)) return true;
+    if(/^w[123]$/.test(id)) return true;
+    // Only the very specific seeded NAMES (won't nuke a real job someone types "test" into).
+    if(/^example[\s—-]|^demo patio|^weekly mow client|website visitor|^guest test|^__(diag|save|perm)|^realui|^reloadtest|^zebra\d/.test(nm)) return true;
     return false;
   }
-  ["wecare_workorders","wecare_recurring","wecare_routes"].forEach(function(key){
+  var arrStores=["wecare_workorders","wecare_recurring","wecare_routes","wecare_leads","wecare_consults","wecare_estimates","wecare_casestudies","wecare_punch_fixes"];
+  arrStores.forEach(function(key){
     var arr; try{ arr=JSON.parse(localStorage.getItem(key)||"[]")||[]; }catch(e){ return; }
     if(!Array.isArray(arr)||!arr.length) return;
     var removed=arr.filter(isSample), keep=arr.filter(function(o){return !isSample(o);});
@@ -1547,6 +1551,12 @@ function scrubSamples(){
       if(window.WeCareCloud&&WeCareCloud.remove) removed.forEach(function(o){ if(o&&o.id) WeCareCloud.remove(key,o.id); });
     }
   });
+  // conversations are an object-map keyed by id
+  try{
+    var cv=JSON.parse(localStorage.getItem("wecare_convos")||"{}")||{}, cids=Object.keys(cv), gone=[];
+    cids.forEach(function(id){ if(isSample(cv[id])){ gone.push(id); delete cv[id]; if(window.WeCareCloud&&WeCareCloud.remove) WeCareCloud.remove("wecare_convos",id); } });
+    if(gone.length) save("wecare_convos",cv);
+  }catch(e){}
 }
 
 /* ---- Calendar ---------------------------------------------------------------- */
