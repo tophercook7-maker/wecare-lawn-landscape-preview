@@ -1481,18 +1481,19 @@ function updateTabBadges(){
 // (the old seed names/ids, "Demo/Example/Test/Sample", and the fictional 555-01xx
 // numbers), so real work is never touched.
 function scrubSamples(){
-  // ONLY the actual seed/sample names — kept tight so a real customer (e.g. a
-  // genuine "John Smith") is never mistaken for a sample.
-  var NAMES=["tammy ledgerwood","janet rowe","carlos m","carlos m.","mark d","mark d.","dana p","dana p.",
-    "weekly mow client","demo patio","tom r","tom r."];
+  // Match ONLY the exact legacy seed IDs from earlier demo builds. We deliberately
+  // do NOT match by customer name or phone anymore: the real sample rows were
+  // already cleared from the cloud, and name-matching was DELETING real work —
+  // any job the owner named "Test"/"Demo" while trying it out got wiped on the
+  // next reload. A real job's id is "W"+timestamp and can never match these.
   function isSample(o){
     if(!o) return false;
     var id=(o.id||"")+"";
-    if(/^W[123]$/.test(id)||/^(seed|demo|sample|test)/i.test(id)) return true;
-    if(/^W(derrick|demo)/i.test(id)||/^WR-(RT)?demo/i.test(id)||/^RT?demo/i.test(id)) return true;
-    var nm=((o.customer||o.name||"")+"").trim().toLowerCase();
-    if(nm){ if(/^(demo|example|test|sample)\b/.test(nm)) return true; if(NAMES.indexOf(nm)>=0) return true; }
-    if(/555[\s\-]?01\d\d/.test((o.phone||"")+"")) return true;
+    if(/^W[123]$/.test(id)) return true;                 // W1 / W2 / W3 seeds
+    if(/^(seed|sample)-/i.test(id)) return true;          // seed- / sample- prefixed
+    if(/^W(derrick|demo)/i.test(id)) return true;         // Wdemo… / Wderrick…
+    if(/^WR-?(RT)?demo/i.test(id)) return true;           // recurring/route demo projections
+    if(/^RTdemo/i.test(id)) return true;
     return false;
   }
   ["wecare_workorders","wecare_recurring","wecare_routes"].forEach(function(key){
