@@ -4,57 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-<title>WeCare Phone Test</title>
+<title>WeCare Phone Test 2</title>
 <style>
  body{font-family:-apple-system,Roboto,sans-serif;margin:0;background:#10201a;color:#e8f0ea;padding:16px;line-height:1.5}
  h1{color:#7bd88f;font-size:1.15rem;margin:0 0 10px}
  .row{background:#16281f;border:1px solid #274235;border-radius:10px;padding:9px 11px;margin:7px 0;font-size:.9rem;word-break:break-word}
- .k{color:#9fb3a8;font-size:.72rem;text-transform:uppercase}.v{font-weight:700;font-size:1rem}
+ .k{color:#9fb3a8;font-size:.72rem;text-transform:uppercase}.v{font-weight:700;font-size:1.05rem}
  .ok{color:#7bd88f}.bad{color:#ff8f6b}.warn{color:#ffd479}
  #verdict{font-size:1.05rem;font-weight:800;padding:14px;border-radius:12px;margin-top:12px}
 </style>
 </head>
 <body>
-<h1>WeCare — Phone Test (auto-runs, reports to me)</h1>
+<h1>WeCare — Phone Test 2</h1>
 <div id="out"></div>
-<div id="verdict" class="row">Running… give it 5 seconds.</div>
-<script src="js/wecare-cloud.js?v=0923"></script>
+<div id="verdict" class="row">Running… wait ~12 seconds, then screenshot this whole screen.</div>
 <script>
 var out=document.getElementById("out");
 function add(k,v,c){ out.insertAdjacentHTML("beforeend",'<div class="row"><div class="k">'+k+'</div><div class="v '+(c||"")+'">'+v+'</div></div>'); }
 function verdict(t,c){ var e=document.getElementById("verdict"); e.style.background=c==="bad"?"#3a1d16":(c==="ok"?"#173b2c":"#3a3418"); e.innerHTML='<span class="'+c+'">'+t+'</span>'; }
 var URL_="https://fqqbzsxvxpcfwovbunth.supabase.co";
 var ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxcWJ6c3h2eHBjZndvdmJ1bnRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwNDAwOTIsImV4cCI6MjEwMzYxNjA5Mn0.a62fuRJ19sEGxRN2KtvPkDvS_Ff-NuiYKZAxTZg4Tqg";
+function withTimeout(promise, ms, label){
+  return new Promise(function(resolve){
+    var done=false, t=setTimeout(function(){ if(!done){done=true; resolve({hung:true, label:label});} }, ms);
+    promise.then(function(r){ if(!done){done=true; clearTimeout(t); resolve({res:r});} })
+           .catch(function(e){ if(!done){done=true; clearTimeout(t); resolve({err:String(e)});} });
+  });
+}
 (async function(){
  try{
+  add("Online?", navigator.onLine?"yes":"NO", navigator.onLine?"ok":"bad");
   var s=null; try{ s=JSON.parse(localStorage.getItem("wecare_session")||"null"); }catch(e){}
-  add("Signed in?", s&&s.access_token? ("YES — "+(s.email||"")):"NO", s&&s.access_token?"ok":"bad");
-  add("App code version (cloud.js loaded)", window.WeCareCloud?"loaded":"NOT LOADED", window.WeCareCloud?"ok":"bad");
-  var sv = window.WeCareCloud&&WeCareCloud.sessionValid? WeCareCloud.sessionValid():"?";
-  add("App thinks session valid?", ""+sv, sv===true?"ok":"bad");
-  if(s&&s.expires_at){ var mins=Math.round((s.expires_at*1000-Date.now())/60000); add("Token expires in", mins+" min", mins>0?"ok":"bad"); }
-  // Run the REAL app write path via the localStorage interceptor
-  var id="PHT-"+Date.now();
-  localStorage.setItem("wecare_workorders", JSON.stringify([{id:id,customer:"__phonetest__",service:"test",status:"assigned"}]));
-  await new Promise(r=>setTimeout(r,2500));
-  var stillLocal = (JSON.parse(localStorage.getItem("wecare_workorders")||"[]")).some(function(j){return j.id===id;});
-  add("Still in local storage after 2.5s?", stillLocal?"YES":"NO — WIPED", stillLocal?"ok":"bad");
-  var logLines=(window.WeCareCloud&&WeCareCloud.log)?WeCareCloud.log().slice(-8):[];
-  add("Sync log", logLines.length?logLines.join("<br>"):"(empty)");
-  // did it reach the cloud?
-  var tok=(s&&s.access_token)||ANON;
-  var cloud=await fetch(URL_+"/rest/v1/work_orders?id=eq."+id+"&select=id",{headers:{apikey:ANON,Authorization:"Bearer "+tok}}).then(r=>r.json()).catch(function(e){return "err:"+e;});
-  var reached = Array.isArray(cloud)&&cloud.length>0;
-  add("Reached the cloud?", reached?"YES":"NO", reached?"ok":"bad");
-  // PHONE-HOME the verdict so it can be read remotely (uses the session token that works)
-  var vtext="PHONETEST sv="+sv+" local="+stillLocal+" cloud="+reached+" log="+logLines.join(" | ");
-  try{ await fetch(URL_+"/rest/v1/work_orders?on_conflict=id",{method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+tok,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({id:"PHONEHOME-"+Date.now(),customer:vtext.slice(0,400),service:"phonehome",status:"debug"})}); }catch(e){}
-  // clean the test row
-  try{ await fetch(URL_+"/rest/v1/work_orders?id=eq."+id,{method:"DELETE",headers:{apikey:ANON,Authorization:"Bearer "+tok}}); }catch(e){}
-  if(!s||!s.access_token) verdict("❌ This phone is NOT signed in — sign into the office first, then reopen this.","bad");
-  else if(reached && stillLocal) verdict("✅ This phone CAN save via the app. If jobs still vanish in the office, it's a display/tab issue.","ok");
-  else if(!reached && !stillLocal) verdict("❌ The app's save is being rejected AND wiped locally on this phone. Reported to Claude — check the sync log above.","bad");
-  else verdict("⚠️ Mixed result — reported to Claude. See the rows above.","warn");
+  add("Signed in", s&&s.access_token?(s.email||"yes"):"NO", s&&s.access_token?"ok":"bad");
+  if(!s||!s.access_token){ verdict("❌ Not signed in on this phone.","bad"); return; }
+  var tok=s.access_token;
+
+  // TEST A: direct authenticated READ (GET) with timeout
+  var ra=await withTimeout(fetch(URL_+"/rest/v1/work_orders?select=id&limit=1",{headers:{apikey:ANON,Authorization:"Bearer "+tok}}), 10000, "read");
+  add("READ (GET) result", ra.hung?"HUNG (no response in 10s)":(ra.err?("ERROR "+ra.err):("HTTP "+ra.res.status)), (ra.res&&ra.res.ok)?"ok":"bad");
+
+  // TEST B: direct authenticated WRITE (POST) with timeout — the real question
+  var id="DW-"+Date.now();
+  var body=JSON.stringify({id:id,customer:"__phonewrite__",service:"t",status:"assigned"});
+  var rb=await withTimeout(fetch(URL_+"/rest/v1/work_orders?on_conflict=id",{method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+tok,"Content-Type":"application/json",Prefer:"return=minimal"},body:body}), 10000, "write");
+  var wline = rb.hung?"HUNG (no response in 10s)":(rb.err?("ERROR "+rb.err):("HTTP "+rb.res.status));
+  add("WRITE (POST) result", wline, (rb.res&&rb.res.ok)?"ok":"bad");
+
+  // cleanup if it wrote
+  if(rb.res&&rb.res.ok){ try{ await fetch(URL_+"/rest/v1/work_orders?id=eq."+id,{method:"DELETE",headers:{apikey:ANON,Authorization:"Bearer "+tok}}); }catch(e){} }
+
+  if(rb.res&&rb.res.ok) verdict("✅ Direct WRITE works ("+rb.res.status+"). The office app should save — likely a stale app tab. ","ok");
+  else if(rb.hung) verdict("❌ The WRITE request HANGS on this phone (READ was: "+(ra.hung?"also hung":"ok")+"). Something on this device/network is blocking POSTs to the server.","bad");
+  else verdict("❌ WRITE failed: "+wline+". Reported.","bad");
  }catch(e){ verdict("Error: "+e,"bad"); }
 })();
 </script>
