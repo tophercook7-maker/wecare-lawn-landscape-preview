@@ -454,7 +454,7 @@ body.viewer .editor-only{display:none!important}
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0914"></script>
+<script src="js/wecare-cloud.js?v=0920"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -620,7 +620,8 @@ function createWO(){
     document.getElementById("woHowTo").value=""; document.getElementById("woProp").value="";
     document.querySelectorAll("#woCrew input:checked").forEach(function(i){i.checked=false});
     if(btn){btn.disabled=false;btn.textContent="Create & assign";} if(hs)hs.textContent="";
-    render();
+    render(); renderAuthStatus();
+    if(!isAuthed()) toast("Job saved on this device — sign in so it syncs to the cloud & your crew","warn");
   };
   if(file && window.WeCareCloud && WeCareCloud.uploadPhoto){
     if(file.size>100*1024*1024){ if(hs)hs.textContent="That file's too big (keep it under ~100MB / ~2 min)."; return; }
@@ -1403,13 +1404,19 @@ function quickJobForProp(id){
 function isAuthed(){ return !!(window.WeCareCloud && WeCareCloud.sessionValid && WeCareCloud.sessionValid()); }
 function renderAuthStatus(){
   var el=document.getElementById("authStatus"); if(!el) return;
+  var pend=(window.WeCareCloud&&WeCareCloud.pending)?WeCareCloud.pending():0;
+  var parts=[];
   if(isAuthed()){
     var s=(WeCareCloud.session&&WeCareCloud.session())||{};
-    el.innerHTML='<span style="color:#bfe6c9" title="'+esc(s.email||"")+'">✓ '+esc((s.email||"signed in").split("@")[0])+'</span>';
+    parts.push('<span style="color:#bfe6c9" title="'+esc(s.email||"")+'">✓ '+esc((s.email||"signed in").split("@")[0])+'</span>');
   } else {
-    el.innerHTML='<a href="login.html?next=ops.html" style="color:#ffd479;font-weight:700">⚠️ Not signed in — Sign in</a>';
+    parts.push('<a href="login.html?next=ops.html" style="color:#ffd479;font-weight:700">⚠️ Not signed in — Sign in</a>');
   }
+  // Nothing is ever lost: unsynced changes wait here until they reach the cloud.
+  if(pend>0) parts.push('<span style="color:#ffd479" title="Saved on this device — waiting to reach the cloud. They send automatically once you\'re signed in and online.">⌛ '+pend+' saved, syncing…</span>');
+  el.innerHTML=parts.join(' &nbsp;·&nbsp; ');
 }
+setInterval(renderAuthStatus, 4000);   // keep the sign-in + syncing badge live as the queue drains
 function requireAuth(){
   if(isAuthed()) return true;
   toast("You're signed out — sign in so your changes save","warn");

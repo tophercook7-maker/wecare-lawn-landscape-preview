@@ -18,13 +18,13 @@ function authHeaders(){ return sessionValid() ? {apikey:ANON, Authorization:"Bea
 function _storeSess(d, email){ if(d && d.access_token){ setSession({access_token:d.access_token,refresh_token:d.refresh_token,expires_at:d.expires_at||(Math.floor(Date.now()/1000)+(d.expires_in||3600)),email:(d.user&&d.user.email)||email}); return true; } return false; }
 function login(email,password){
   return fetch(URL_+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:ANON,"Content-Type":"application/json"},body:JSON.stringify({email:email,password:password})})
-    .then(function(r){return r.json();}).then(function(d){ return _storeSess(d,email)?{ok:true}:{ok:false,error:(d&&(d.error_description||d.msg))||"login failed"}; })
+    .then(function(r){return r.json();}).then(function(d){ if(_storeSess(d,email)){ try{flushOutbox();}catch(e){} return {ok:true}; } return {ok:false,error:(d&&(d.error_description||d.msg))||"login failed"}; })
     .catch(function(e){return {ok:false,error:String(e)};});
 }
 function refreshSession(){
   var s=getSession(); if(!s||!s.refresh_token) return Promise.resolve(false);
   return fetch(URL_+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:ANON,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})})
-    .then(function(r){return r.json();}).then(function(d){ if(_storeSess(d,s.email)) return true; setSession(null); return false; }).catch(function(){return false;});
+    .then(function(r){return r.json();}).then(function(d){ if(_storeSess(d,s.email)){ try{flushOutbox();}catch(e){} return true; } setSession(null); return false; }).catch(function(){return false;});
 }
 function changePassword(newPw){ if(!sessionValid()) return Promise.resolve({ok:false}); return fetch(URL_+"/auth/v1/user",{method:"PUT",headers:authHeaders(),body:JSON.stringify({password:newPw})}).then(function(r){return {ok:r.ok};}).catch(function(){return {ok:false};}); }
 function logout(){ setSession(null); }
@@ -69,6 +69,7 @@ var STORES=[
   fromRow:function(r){return {id:r.id,customer:r.customer,service:r.service,lineItems:r.line_items||[],laborHours:r.labor_hours,laborRate:r.labor_rate,markup:r.markup,subtotal:r.subtotal,total:r.total,notes:r.notes,status:r.status,leadId:r.lead_id,created:r.created};}},
 ];
 var byKey={}; STORES.forEach(function(s){byKey[s.key]=s;});
+var byTable={}; STORES.forEach(function(s){byTable[s.table]=s;});
 
 var _applyingRemote=false;
 var _shadow={};   // key -> {id: JSONstring} last known, to detect changes
@@ -77,6 +78,26 @@ var _shadow={};   // key -> {id: JSONstring} last known, to detect changes
 // locally — otherwise a pull that races ahead of (or a push that fails) silently
 // wipes a record the user just saved. Cleared per-id once the cloud confirms it.
 var _sessionWrites={};
+
+// DURABLE outbox: rows whose cloud write hasn't been confirmed yet, persisted to
+// localStorage so an unsynced save survives a reload/restart instead of being
+// wiped by the next pull. Retried whenever a valid session is available. This is
+// what stops "job cards deleting" — a card the owner created is never removed
+// locally until the cloud has actually stored it.
+var OUTBOX_KEY="wecare_outbox";
+function loadOutbox(){ try{ return JSON.parse(localStorage.getItem(OUTBOX_KEY))||{}; }catch(e){ return {}; } }
+function saveOutbox(o){ try{ localStorage.setItem(OUTBOX_KEY, JSON.stringify(o)); }catch(e){} }
+function outboxAdd(table,row){ if(!row||!row.id) return; var o=loadOutbox(); (o[table]||(o[table]={}))[row.id]=row; saveOutbox(o); }
+function outboxClear(table,id){ var o=loadOutbox(); if(o[table]){ delete o[table][id]; if(!Object.keys(o[table]).length) delete o[table]; saveOutbox(o); } }
+function outboxIds(table){ var o=loadOutbox(); return o[table]||{}; }
+function outboxCount(){ var o=loadOutbox(),n=0; for(var t in o){ if(o.hasOwnProperty(t)) n+=Object.keys(o[t]).length; } return n; }
+var _flushing=false;
+function flushOutbox(){
+  if(_flushing) return; var o=loadOutbox(); var tables=Object.keys(o); if(!tables.length) return;
+  _flushing=true;
+  try{ tables.forEach(function(t){ var st=byTable[t]; if(!st) return; var ids=o[t]; Object.keys(ids).forEach(function(id){ upsert(st, ids[id]); }); }); }
+  finally{ _flushing=false; }
+}
 
 var _origSet = localStorage.setItem.bind(localStorage);
 // intercept writes to our keys -> push changed rows to Supabase
@@ -107,12 +128,24 @@ function pushChanges(store, rawValue){
 // public_write function (so the anon key never needs direct write access to them).
 var PUBLIC_TABLES={leads:1,consultations:1,conversations:1};
 function upsert(store, row){
-  if(!sessionValid() && PUBLIC_TABLES[store.table]){ team("public_write",{table:store.table,row:row}); return; }
+  if(!row||!row.id) return;
+  // Not a logged-in owner:
+  if(!sessionValid()){
+    if(PUBLIC_TABLES[store.table]){                 // customer forms → service-role gate
+      team("public_write",{table:store.table,row:row})
+        .then(function(res){ if(res&&res.ok) outboxClear(store.table,row.id); else outboxAdd(store.table,row); })
+        .catch(function(){ outboxAdd(store.table,row); });
+    } else {
+      outboxAdd(store.table,row);                    // owner table w/o a session → queue; flushes after sign-in/refresh
+    }
+    return;
+  }
   fetch(REST+store.table+"?on_conflict=id", {
     method:"POST",
     headers:Object.assign({}, authHeaders(), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
     body:JSON.stringify(row)
-  }).catch(function(){});
+  }).then(function(r){ if(r && r.ok) outboxClear(store.table,row.id); else outboxAdd(store.table,row); })   // 4xx/5xx are NOT caught by .catch — must check r.ok
+   .catch(function(){ outboxAdd(store.table,row); });                                                        // network failure → queue + retry
 }
 
 function applyRemote(store, rows){
@@ -123,15 +156,19 @@ function applyRemote(store, rows){
   // even though this pull doesn't contain it (its push is in flight or was rejected),
   // so a fresh save is never wiped out from under the user.
   var pend=_sessionWrites[store.key]||{};
-  Object.keys(pend).forEach(function(id){ if(incomingIds[id]) delete pend[id]; });
+  var ob=outboxIds(store.table);
+  // protected = in-flight this session (memory) + durable unsynced outbox (survives reload)
+  var prot={}; Object.keys(pend).forEach(function(id){prot[id]=1;}); Object.keys(ob).forEach(function(id){prot[id]=1;});
+  // anything the cloud has now echoed back is truly synced → stop protecting + clear the outbox
+  Object.keys(prot).forEach(function(id){ if(incomingIds[id]){ delete pend[id]; outboxClear(store.table,id); delete prot[id]; } });
   var keep=[];
-  if(Object.keys(pend).length){
+  if(Object.keys(prot).length){
     try{
       var raw=localStorage.getItem(store.key);
       if(raw){
         var p=JSON.parse(raw);
         var localRecs=store.shape==="array" ? (p||[]) : Object.keys(p||{}).map(function(k){return p[k];});
-        keep=localRecs.filter(function(o){ return o&&o.id&&!incomingIds[o.id]&&pend[o.id]; });
+        keep=localRecs.filter(function(o){ return o&&o.id&&!incomingIds[o.id]&&prot[o.id]; });
       }
     }catch(e){}
   }
@@ -222,15 +259,24 @@ function scheduleReconnect(){
   _rtRetry=setTimeout(function(){ _rtRetry=null; if(window.WECARE_SYNC && document.visibilityState!=="hidden") startRealtime(); }, 5000);
 }
 // on load: push any local-only data up first, then pull, then poll
+function refreshIfNeeded(){
+  var s=getSession();
+  if(s && s.refresh_token && (!s.access_token || !s.expires_at || s.expires_at*1000 < Date.now()+120000)) return refreshSession();
+  return Promise.resolve(sessionValid());
+}
 function initialSync(){
-  // seed shadow + push existing local rows (so demo/local data lands in cloud once)
-  STORES.forEach(function(store){
-    var raw=localStorage.getItem(store.key);
-    if(raw){ try{ pushChanges(store, raw); }catch(e){} }
+  // Refresh a stale-but-renewable session FIRST, so owner writes go up authenticated
+  // instead of silently failing as a guest (the root of vanishing job cards).
+  refreshIfNeeded().then(function(){
+    STORES.forEach(function(store){
+      var raw=localStorage.getItem(store.key);
+      if(raw){ try{ pushChanges(store, raw); }catch(e){} }
+    });
+    flushOutbox();   // retry anything queued from a previous session
+    pullAll();
+    startRealtime();
   });
-  pullAll();
-  startRealtime();
-  setInterval(function(){ if(document.visibilityState!=="hidden") pullAll(); }, 20000);  // slow fallback; realtime carries the fast path
+  setInterval(function(){ if(document.visibilityState!=="hidden"){ flushOutbox(); pullAll(); } }, 20000);  // slow fallback; realtime carries the fast path
 }
 // upload a job photo to Supabase Storage → returns the public URL.
 // Preferred path: a PIN-verified, single-use SIGNED upload URL minted by the team
@@ -294,12 +340,13 @@ function removeRow(key, id){
   if(_sessionWrites[key]) delete _sessionWrites[key][id];
   var store=byKey[key];
   if(!store) return Promise.resolve(false);
+  outboxClear(store.table, id);   // cancel any queued write for this id so it can't come back
   return fetch(REST+store.table+"?id=eq."+encodeURIComponent(id), {method:"DELETE", headers:authHeaders()})
     .then(function(r){ return r.ok; }).catch(function(){ return false; });
 }
 
 window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed,
-  remove:removeRow,
+  remove:removeRow, flush:flushOutbox, pending:outboxCount,
   login:login, logout:logout, refreshSession:refreshSession, changePassword:changePassword,
   session:getSession, sessionValid:sessionValid, authHeaders:authHeaders};
 // Only the owner/crew tools (which set window.WECARE_SYNC) poll + pull. Public
@@ -309,7 +356,7 @@ window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, 
 function maybeSync(){ if(window.WECARE_SYNC) initialSync(); }
 document.addEventListener("visibilitychange",function(){
   if(!window.WECARE_SYNC) return;
-  if(document.visibilityState==="visible"){ pullAll(); startRealtime(); }   // catch up + resubscribe if the socket dropped while hidden
+  if(document.visibilityState==="visible"){ refreshIfNeeded().then(function(){ flushOutbox(); pullAll(); startRealtime(); }); }   // catch up + retry queue + resubscribe
 });
 if(document.readyState!=="loading") maybeSync();
 else document.addEventListener("DOMContentLoaded", maybeSync);
