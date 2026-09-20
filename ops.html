@@ -193,7 +193,7 @@ body.viewer .editor-only{display:none!important}
     <input id="opPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;font:inherit;padding:12px 14px;border:1px solid #e0e4e0;border-radius:10px;margin:6px 0;box-sizing:border-box">
     <div id="opErr" style="color:#c1512f;font-size:.86rem;min-height:1.1em;margin:6px 0"></div>
     <button id="opGo" onclick="opAuthSubmit()" style="width:100%;font:inherit;font-weight:700;font-size:1rem;padding:13px;border:0;border-radius:11px;cursor:pointer;background:linear-gradient(135deg,#1f5d3d,#2b6b78);color:#fff;margin-top:4px">Sign in</button>
-    <button onclick="opAuthClose()" style="background:none;border:0;color:#586b64;font:600 .82rem inherit;cursor:pointer;margin-top:12px;text-decoration:underline">Not now</button>
+    <p style="font-size:.76rem;color:#8a9a92;margin:14px 0 0">You must be signed in for jobs to save &amp; sync to your crew.</p>
   </div>
 </div>
 <div class="top"><div class="wrap">
@@ -467,7 +467,7 @@ body.viewer .editor-only{display:none!important}
 <script src="js/wecare-auth.js?v=0831"></script>
 <script>WeCareAuth.guard();/* no-op until login is switched on */</script>
 <script>window.WECARE_SYNC=true;</script>
-<script src="js/wecare-cloud.js?v=0921"></script>
+<script src="js/wecare-cloud.js?v=0922"></script>
 <script>
 var DEFAULT_CREW=[
   {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
@@ -1415,10 +1415,11 @@ function quickJobForProp(id){
 /* ---- Auth guard: owner writes must be signed in, or the app silently saves as a
    guest (anon key) and the cloud rejects it — the save "sticks" locally then vanishes. ---- */
 function isAuthed(){ return !!(window.WeCareCloud && WeCareCloud.sessionValid && WeCareCloud.sessionValid()); }
+var OPS_VERSION="v0922";  // bump on each ops.html change so we can confirm the live version on any device
 function renderAuthStatus(){
   var el=document.getElementById("authStatus"); if(!el) return;
   var pend=(window.WeCareCloud&&WeCareCloud.pending)?WeCareCloud.pending():0;
-  var parts=[];
+  var parts=['<span style="color:#7c8f86" title="app version — tells us your device has the latest code">'+OPS_VERSION+'</span>'];
   if(isAuthed()){
     var s=(WeCareCloud.session&&WeCareCloud.session())||{};
     parts.push('<span style="color:#bfe6c9" title="'+esc(s.email||"")+'">✓ '+esc((s.email||"signed in").split("@")[0])+'</span>');
