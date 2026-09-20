@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<script>(function(){try{var s=JSON.parse(localStorage.getItem("wecare_session")||"null");if(!(s&&s.access_token&&s.expires_at&&s.expires_at*1000>Date.now())){location.replace("login.html?next="+encodeURIComponent((location.pathname.split("/").pop())||"pulse.html"));}}catch(e){}})();</script>
+<!-- Office sign-in happens INLINE on this page (see #authOverlay) — no bouncing off to another URL. -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WeCare Landscapes — Field Ops</title>
 <meta name="robots" content="noindex,nofollow">
@@ -183,6 +183,19 @@ body.viewer .editor-only{display:none!important}
 </style>
 </head>
 <body>
+<!-- Inline office sign-in — appears on this page when you're not signed in, no redirect -->
+<div id="authOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#173b2c,#2c6d7b);place-items:center;padding:24px">
+  <div style="background:#fff;border-radius:18px;max-width:380px;width:100%;padding:28px 26px;box-shadow:0 24px 60px rgba(20,48,42,.35);text-align:center;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:#33443f">
+    <img src="img/logo.png" alt="WeCare" style="height:48px;margin-bottom:6px">
+    <h2 style="color:#153a2a;margin:4px 0 2px;font-size:1.3rem">Sign in to your office</h2>
+    <p style="color:#586b64;font-size:.9rem;margin:0 0 16px">So your jobs save and sync to your crew.</p>
+    <input id="opEmail" type="email" autocomplete="username" placeholder="Email" style="width:100%;font:inherit;padding:12px 14px;border:1px solid #e0e4e0;border-radius:10px;margin:6px 0;box-sizing:border-box">
+    <input id="opPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;font:inherit;padding:12px 14px;border:1px solid #e0e4e0;border-radius:10px;margin:6px 0;box-sizing:border-box">
+    <div id="opErr" style="color:#c1512f;font-size:.86rem;min-height:1.1em;margin:6px 0"></div>
+    <button id="opGo" onclick="opAuthSubmit()" style="width:100%;font:inherit;font-weight:700;font-size:1rem;padding:13px;border:0;border-radius:11px;cursor:pointer;background:linear-gradient(135deg,#1f5d3d,#2b6b78);color:#fff;margin-top:4px">Sign in</button>
+    <button onclick="opAuthClose()" style="background:none;border:0;color:#586b64;font:600 .82rem inherit;cursor:pointer;margin-top:12px;text-decoration:underline">Not now</button>
+  </div>
+</div>
 <div class="top"><div class="wrap">
   <div class="b"><img src="img/mark-trans.png" alt="WeCare Landscapes"> <span style="color:#fff">WeCare Landscapes · Field Ops</span></div>
   <div class="nav"><span id="authStatus" style="font-size:.8rem;margin-right:6px"></span><a href="pulse.html">🏠 Home</a><a href="estimate.html">Estimator</a><a href="crew.html">Crew app</a><a href="dashboard.html">Leads / CRM</a><a href="index.html">Website</a></div>
@@ -1146,7 +1159,7 @@ function loadTeam(){
     else { _ownerLoaded=false; renderTeam(); }
   });
 }
-function signOut(){ try{if(window.WeCareCloud&&WeCareCloud.logout)WeCareCloud.logout();}catch(e){} save(K_EMP,[]); location.replace("login.html"); }
+function signOut(){ try{if(window.WeCareCloud&&WeCareCloud.logout)WeCareCloud.logout();}catch(e){} save(K_EMP,[]); renderAuthStatus(); opAuthOpen(); }
 function renderTeam(){
   var box=document.getElementById("teamList"); if(!box) return;
   if(!_ownerLoaded){
@@ -1410,7 +1423,7 @@ function renderAuthStatus(){
     var s=(WeCareCloud.session&&WeCareCloud.session())||{};
     parts.push('<span style="color:#bfe6c9" title="'+esc(s.email||"")+'">✓ '+esc((s.email||"signed in").split("@")[0])+'</span>');
   } else {
-    parts.push('<a href="login.html?next=ops.html" style="color:#ffd479;font-weight:700">⚠️ Not signed in — Sign in</a>');
+    parts.push('<a href="#" onclick="opAuthOpen();return false" style="color:#ffd479;font-weight:700">⚠️ Not signed in — Sign in</a>');
   }
   // Nothing is ever lost: unsynced changes wait here until they reach the cloud.
   if(pend>0) parts.push('<span style="color:#ffd479" title="Saved on this device — waiting to reach the cloud. They send automatically once you\'re signed in and online.">⌛ '+pend+' saved, syncing…</span>');
@@ -1419,10 +1432,38 @@ function renderAuthStatus(){
 setInterval(renderAuthStatus, 4000);   // keep the sign-in + syncing badge live as the queue drains
 function requireAuth(){
   if(isAuthed()) return true;
-  toast("You're signed out — sign in so your changes save","warn");
   renderAuthStatus();
-  setTimeout(function(){ if(confirm("You're signed out, so changes can't save to the cloud.\n\nGo to the sign-in page now?")) location.href="login.html?next="+encodeURIComponent("ops.html"); },120);
+  opAuthOpen();     // sign in right here on the office page — no redirect
   return false;
+}
+/* ---- Inline office sign-in (no separate login page) ---- */
+function opAuthOpen(){
+  var o=document.getElementById("authOverlay"); if(!o) return;
+  o.style.display="grid";
+  var sess=(window.WeCareCloud&&WeCareCloud.session&&WeCareCloud.session())||{};
+  var e=document.getElementById("opEmail"); if(e){ if(sess.email&&!e.value) e.value=sess.email; setTimeout(function(){ (e.value?document.getElementById("opPw"):e).focus(); },60); }
+  var pw=document.getElementById("opPw"); if(pw) pw.onkeyup=function(ev){ if(ev.key==="Enter") opAuthSubmit(); };
+}
+function opAuthClose(){ var o=document.getElementById("authOverlay"); if(o) o.style.display="none"; }
+function opAuthSubmit(){
+  var em=(document.getElementById("opEmail").value||"").trim().toLowerCase();
+  var pw=document.getElementById("opPw").value||"";
+  var err=document.getElementById("opErr"), go=document.getElementById("opGo");
+  if(!em||!pw){ err.textContent="Enter your email and password."; return; }
+  if(!(window.WeCareCloud&&WeCareCloud.login)){ err.textContent="Sign-in unavailable — reload the page."; return; }
+  go.disabled=true; go.textContent="Signing in…"; err.textContent="";
+  WeCareCloud.login(em,pw).then(function(r){
+    go.disabled=false; go.textContent="Sign in";
+    if(r&&r.ok){
+      document.getElementById("opPw").value="";
+      opAuthClose();
+      try{ if(WeCareCloud.pull) WeCareCloud.pull(); }catch(e){}
+      renderAuthStatus(); render();
+      toast("✓ Signed in — your changes will save & sync","ok");
+    } else {
+      err.textContent=(r&&/password|invalid|credential/i.test(r.error||"")) ? "That email or password isn't right." : "Couldn't sign in — try again.";
+    }
+  });
 }
 
 /* ---- Tabs: a simple daily home; Calendar / Customers / Team / Money / Setup one tap away ---- */
@@ -1851,8 +1892,12 @@ document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeJobFi
 
 /* boot the showpiece layer */
 renderAuthStatus();
-// refresh a near-expired session on load so owner writes don't silently drop to guest
-if(window.WeCareCloud && WeCareCloud.refreshSession){ try{ WeCareCloud.refreshSession().then(renderAuthStatus); }catch(e){} }
+// refresh a near-expired session on load; if still not signed in, show the inline
+// sign-in right here (never redirect off the office page)
+if(window.WeCareCloud && WeCareCloud.refreshSession){
+  try{ WeCareCloud.refreshSession().then(function(){ renderAuthStatus(); if(!isAuthed()) opAuthOpen(); }); }
+  catch(e){ if(!isAuthed()) opAuthOpen(); }
+} else if(!isAuthed()){ opAuthOpen(); }
 scrubSamples();
 fillServiceSelects();
 applyRole();
