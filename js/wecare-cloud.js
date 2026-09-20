@@ -111,6 +111,9 @@ function recordsOf(store, parsed){
   if(store.shape==="array") return parsed||[];
   return Object.keys(parsed||{}).map(function(id){return parsed[id];});
 }
+// lightweight in-page event log for on-device debugging (shown by ops ?debug=1)
+var _log=[];
+function logEv(s){ try{ _log.push(new Date().toTimeString().slice(0,8)+" "+s); if(_log.length>40)_log.shift(); window.dispatchEvent(new Event("wecare-log")); }catch(e){} }
 function pushChanges(store, rawValue){
   var parsed; try{parsed=JSON.parse(rawValue);}catch(e){return;}
   var recs=recordsOf(store,parsed);
@@ -135,15 +138,15 @@ function upsert(store, row){
     if(PUBLIC_TABLES[store.table]){                 // customer forms → service-role gate
       team("public_write",{table:store.table,row:row})
         .then(function(res){ if(res&&res.ok) outboxClear(store.table,row.id); }).catch(function(){});
-    }
+    } else { logEv("upsert "+store.table+" "+row.id+" -> QUEUED (not signed in)"); }
     return;                                          // owner table w/o a session → stays pending, flushes after sign-in
   }
   fetch(REST+store.table+"?on_conflict=id", {
     method:"POST",
     headers:Object.assign({}, authHeaders(), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
     body:JSON.stringify(row)
-  }).then(function(r){ if(r && r.ok) outboxClear(store.table,row.id); })   // 4xx/5xx NOT caught by .catch — must check r.ok; failure = stays pending + retried
-   .catch(function(){});                                                    // network failure → stays pending + retried
+  }).then(function(r){ logEv("upsert "+store.table+" "+row.id+" -> "+r.status); if(r && r.ok) outboxClear(store.table,row.id); })   // 4xx/5xx NOT caught by .catch — must check r.ok; failure = stays pending + retried
+   .catch(function(e){ logEv("upsert "+store.table+" "+row.id+" -> NETERR "+e); });                                                 // network failure → stays pending + retried
 }
 
 function applyRemote(store, rows){
@@ -176,6 +179,11 @@ function applyRemote(store, rows){
   }
   var newRaw=JSON.stringify(cur);
   if(localStorage.getItem(store.key)===newRaw) return false;
+  // debug: report any local rows this pull is REMOVING (mirror-delete)
+  try{ var pj=JSON.parse(localStorage.getItem(store.key)||"[]"); var prevArr=store.shape==="array"?(pj||[]):Object.keys(pj||{}).map(function(k){return pj[k];});
+    var mids={}; merged.forEach(function(o){if(o&&o.id)mids[o.id]=1;});
+    var drop=prevArr.filter(function(o){return o&&o.id&&!mids[o.id];}).map(function(o){return o.id;});
+    if(drop.length) logEv("PULL "+store.table+" REMOVED local: "+drop.join(",")); }catch(e){}
   // refresh shadow so we don't echo these back as "changes"
   var sh={}; merged.forEach(function(o){sh[o.id]=JSON.stringify(o);});
   _shadow[store.key]=sh;
@@ -334,13 +342,14 @@ function removeRow(key, id){
   if(_shadow[key]) delete _shadow[key][id];
   var store=byKey[key];
   if(!store) return Promise.resolve(false);
+  logEv("REMOVE called "+store.table+" "+id);
   outboxClear(store.table, id);   // cancel any queued write for this id so it can't come back
   return fetch(REST+store.table+"?id=eq."+encodeURIComponent(id), {method:"DELETE", headers:authHeaders()})
     .then(function(r){ return r.ok; }).catch(function(){ return false; });
 }
 
 window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed,
-  remove:removeRow, flush:flushOutbox, pending:outboxCount,
+  remove:removeRow, flush:flushOutbox, pending:outboxCount, log:function(){return _log.slice();},
   login:login, logout:logout, refreshSession:refreshSession, changePassword:changePassword,
   session:getSession, sessionValid:sessionValid, authHeaders:authHeaders};
 // Only the owner/crew tools (which set window.WECARE_SYNC) poll + pull. Public
