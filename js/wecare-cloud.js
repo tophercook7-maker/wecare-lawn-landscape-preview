@@ -120,8 +120,7 @@ function pushChanges(store, rawValue){
     var js=JSON.stringify(o);
     if(sh[o.id]===js) return;         // unchanged
     sh[o.id]=js;
-    (_sessionWrites[store.key]||(_sessionWrites[store.key]={}))[o.id]=1;  // protect until the cloud confirms it
-    upsert(store, store.toRow(o));
+    upsert(store, store.toRow(o));    // upsert marks it pending in the outbox until the cloud confirms it
   });
 }
 // customer-facing tables: when NOT a logged-in owner, writes go through the service-role
@@ -129,50 +128,46 @@ function pushChanges(store, rawValue){
 var PUBLIC_TABLES={leads:1,consultations:1,conversations:1};
 function upsert(store, row){
   if(!row||!row.id) return;
-  // Not a logged-in owner:
+  outboxAdd(store.table,row);   // mark PENDING immediately (durable + synchronous): the local copy
+                                // is protected from being overwritten by a pull until this write is
+                                // CONFIRMED. Cleared only on r.ok below — never by a pull echo.
   if(!sessionValid()){
     if(PUBLIC_TABLES[store.table]){                 // customer forms → service-role gate
       team("public_write",{table:store.table,row:row})
-        .then(function(res){ if(res&&res.ok) outboxClear(store.table,row.id); else outboxAdd(store.table,row); })
-        .catch(function(){ outboxAdd(store.table,row); });
-    } else {
-      outboxAdd(store.table,row);                    // owner table w/o a session → queue; flushes after sign-in/refresh
+        .then(function(res){ if(res&&res.ok) outboxClear(store.table,row.id); }).catch(function(){});
     }
-    return;
+    return;                                          // owner table w/o a session → stays pending, flushes after sign-in
   }
   fetch(REST+store.table+"?on_conflict=id", {
     method:"POST",
     headers:Object.assign({}, authHeaders(), {"Prefer":"resolution=merge-duplicates,return=minimal"}),
     body:JSON.stringify(row)
-  }).then(function(r){ if(r && r.ok) outboxClear(store.table,row.id); else outboxAdd(store.table,row); })   // 4xx/5xx are NOT caught by .catch — must check r.ok
-   .catch(function(){ outboxAdd(store.table,row); });                                                        // network failure → queue + retry
+  }).then(function(r){ if(r && r.ok) outboxClear(store.table,row.id); })   // 4xx/5xx NOT caught by .catch — must check r.ok; failure = stays pending + retried
+   .catch(function(){});                                                    // network failure → stays pending + retried
 }
 
 function applyRemote(store, rows){
   var incoming=rows.map(store.fromRow);
-  var incomingIds={}; incoming.forEach(function(o){ if(o&&o.id) incomingIds[o.id]=1; });
-  // Anything this client saved this session that the cloud has now echoed back is
-  // safely synced — stop protecting it. Whatever's still pending, we keep locally
-  // even though this pull doesn't contain it (its push is in flight or was rejected),
-  // so a fresh save is never wiped out from under the user.
-  var pend=_sessionWrites[store.key]||{};
-  var ob=outboxIds(store.table);
-  // protected = in-flight this session (memory) + durable unsynced outbox (survives reload)
-  var prot={}; Object.keys(pend).forEach(function(id){prot[id]=1;}); Object.keys(ob).forEach(function(id){prot[id]=1;});
-  // anything the cloud has now echoed back is truly synced → stop protecting + clear the outbox
-  Object.keys(prot).forEach(function(id){ if(incomingIds[id]){ delete pend[id]; outboxClear(store.table,id); delete prot[id]; } });
+  // Records with a still-pending (unconfirmed) cloud write. For every one of them we
+  // keep OUR local copy and DROP the incoming copy — because the cloud copy may be the
+  // STALE pre-edit version (our write hasn't landed yet). This is what stops a just-made
+  // card from vanishing AND a just-made edit (e.g. a clock-out) from reverting. These
+  // clear only when their write is confirmed (see upsert) or the row is deleted.
+  var prot=outboxIds(store.table);
+  var hasProt=Object.keys(prot).length>0;
   var keep=[];
-  if(Object.keys(prot).length){
+  if(hasProt){
     try{
       var raw=localStorage.getItem(store.key);
       if(raw){
         var p=JSON.parse(raw);
         var localRecs=store.shape==="array" ? (p||[]) : Object.keys(p||{}).map(function(k){return p[k];});
-        keep=localRecs.filter(function(o){ return o&&o.id&&!incomingIds[o.id]&&prot[o.id]; });
+        keep=localRecs.filter(function(o){ return o&&o.id&&prot[o.id]; });
       }
     }catch(e){}
   }
-  var merged=incoming.concat(keep);
+  var base=hasProt ? incoming.filter(function(o){ return o&&o.id&&!prot[o.id]; }) : incoming;
+  var merged=base.concat(keep);
   var cur;
   if(store.shape==="array"){
     cur=merged.sort(function(a,b){return (b.created||"").localeCompare(a.created||"");});
@@ -337,7 +332,6 @@ function saveConfirmed(key, obj){
 // re-pushed nor protected as an unsynced local write.
 function removeRow(key, id){
   if(_shadow[key]) delete _shadow[key][id];
-  if(_sessionWrites[key]) delete _sessionWrites[key][id];
   var store=byKey[key];
   if(!store) return Promise.resolve(false);
   outboxClear(store.table, id);   // cancel any queued write for this id so it can't come back
