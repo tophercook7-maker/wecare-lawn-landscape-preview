@@ -528,7 +528,7 @@ function render(){
   }).join("");
   document.getElementById("hours").innerHTML = rows ?
     '<table><tr><th>Employee</th><th class="num">Reg</th><th class="num">OT</th><th class="num">Hrs</th><th class="num">Pay</th></tr>'+rows+
-    '<tr style="border-top:2px solid var(--line);font-weight:700"><td>Total payroll</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">$'+totPay.toFixed(2)+'</td></tr></table>'
+    '<tr style="border-bottom:2px solid var(--line);font-weight:700"><td>Total payroll</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">$'+totPay.toFixed(2)+'</td></tr></table>'
     : '<div class="empty">No hours logged this week yet.</div>';
 
   // orders
@@ -816,7 +816,7 @@ function renderCosting(){
       '<td class="num"><input type="number" value="'+price+'" placeholder="0" '+inp+' onchange="setJobCost(\''+j.id+'\',\'price\',this.value)"></td>'+
       '<td class="num" style="color:'+profCol+';font-weight:700">'+profTxt+'</td></tr>';
   }).join("");
-  var totRow='<tr style="border-top:2px solid var(--line);font-weight:700"><td>Total</td><td class="num"></td><td class="num">'+'$'+totLab.toFixed(0)+'</td><td class="num">$'+totMat.toFixed(0)+'</td><td class="num">$'+totRev.toFixed(0)+'</td><td class="num" style="color:'+(totProfit>=0?'var(--green)':'var(--red)')+'">'+(anyProfit?'$'+totProfit.toFixed(0):'—')+'</td></tr>';
+  var totRow='<tr style="border-bottom:2px solid var(--line);font-weight:700"><td>Total</td><td class="num"></td><td class="num">'+'$'+totLab.toFixed(0)+'</td><td class="num">$'+totMat.toFixed(0)+'</td><td class="num">$'+totRev.toFixed(0)+'</td><td class="num" style="color:'+(totProfit>=0?'var(--green)':'var(--red)')+'">'+(anyProfit?'$'+totProfit.toFixed(0):'—')+'</td></tr>';
   el.innerHTML='<div style="overflow-x:auto"><table><tr><th>Job</th><th class="num">Hrs a/e</th><th class="num">Labor</th><th class="num">Mat’ls</th><th class="num">Charged</th><th class="num">Profit</th></tr>'+rows+totRow+'</table></div>';
 }
 function setJobCost(id,field,val){
@@ -1921,7 +1921,7 @@ augmentPropRows();
 // On-device sync debug panel — add ?debug=1 to the URL to see live sync events
 if(location.search.indexOf("debug=1")>=0){
   var dbg=document.createElement("div");
-  dbg.style.cssText="position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;pointer-events:none;background:#0b1a13;color:#8fe6a6;font:11px/1.45 ui-monospace,Menlo,monospace;padding:8px;z-index:99999;border-top:2px solid #2b6b78;white-space:pre-wrap";
+  dbg.style.cssText="position:fixed;left:0;right:0;top:0;max-height:30vh;overflow:auto;pointer-events:none;background:#0b1a13;color:#8fe6a6;font:11px/1.45 ui-monospace,Menlo,monospace;padding:8px;z-index:99999;border-bottom:2px solid #2b6b78;white-space:pre-wrap";
   document.body.appendChild(dbg);
   var paintDbg=function(){ try{ var L=(window.WeCareCloud&&WeCareCloud.log)?WeCareCloud.log():[]; dbg.textContent="SYNC LOG · "+OPS_VERSION+" · "+(isAuthed()?"signed in":"GUEST")+"\n"+(L.length?L.join("\n"):"(nothing yet — make a job)"); dbg.scrollTop=dbg.scrollHeight; }catch(e){} };
   window.addEventListener("wecare-log", paintDbg); setInterval(paintDbg,1000); paintDbg();
