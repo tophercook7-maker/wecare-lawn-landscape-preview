@@ -1,0 +1,1932 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Office sign-in happens INLINE on this page (see #authOverlay) — no bouncing off to another URL. -->
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WeCare Landscapes — Field Ops</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="img/mark.png">
+<link rel="manifest" href="owner-manifest.json">
+<meta name="theme-color" content="#1f5d3d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="WeCare Landscapes Owner">
+<link rel="apple-touch-icon" href="img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#3d8b9a;--teal-deep:#2b6b78;--green:#2f8055;--green-deep:#1f5d3d;--green-ink:#153a2a;--leaf:#7bb03e;
+  --ink:#16302a;--body:#33443f;--muted:#6d7d77;--paper:#eef1ee;--surface:#fff;--sand:#f0eee4;--sand2:#e7e4d7;--line:#e0e4e0;
+  --ok:#2f8055;--amber:#b5751f;--red:#c1512f;--ff-d:"Fraunces",Georgia,serif;--ff:"Figtree",-apple-system,sans-serif;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--body);font-family:var(--ff);line-height:1.5}
+.top{background:linear-gradient(135deg,#173b2c,#2c6d7b);color:#fff;padding:18px 0}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.top .b{display:flex;align-items:center;gap:11px;font-family:var(--ff-d);font-size:1.1rem}
+.top .b img{height:36px}
+.top .nav a{color:#cfe4d6;font-size:.85rem;text-decoration:none;margin-left:14px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 22px}
+h2{font-family:var(--ff-d);color:var(--green-ink);margin:0 0 4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:22px 0}
+@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 18px;box-shadow:0 2px 12px rgba(20,48,42,.05)}
+.stat .n{font-family:var(--ff-d);font-size:2rem;color:var(--green-deep);line-height:1;font-variant-numeric:tabular-nums}
+.stat .l{font-size:.76rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-top:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(20,48,42,.05);margin-bottom:16px}
+.panel h2{font-size:1.1rem;display:flex;justify-content:space-between;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:8px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.on{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--green)}
+.on .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(47,128,85,.2)}
+.wo{border:1px solid var(--line);border-radius:11px;padding:12px;margin-bottom:9px}
+.wo .h{display:flex;justify-content:space-between;gap:8px}
+.wo .cust{font-weight:700;color:var(--ink)}
+.wo .crew{font-size:.82rem;color:var(--muted);margin-top:4px}
+.pill{display:inline-block;font-size:.7rem;font-weight:700;border-radius:999px;padding:2px 9px}
+.st-assigned{background:#eef1ee;color:var(--muted)}.st-enroute{background:rgba(64,143,158,.15);color:var(--teal-deep)}
+.st-arrived{background:rgba(181,117,31,.15);color:var(--amber)}.st-started{background:rgba(148,204,79,.2);color:var(--green-deep)}
+.st-done{background:rgba(47,128,85,.2);color:var(--green)}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 13px;font-weight:600;font-size:.85rem;cursor:pointer;color:var(--green-deep)}
+.btn.p{background:var(--teal);color:#fff;border-color:var(--teal)}
+.field{margin-bottom:9px}.field label{display:block;font-size:.8rem;font-weight:600;color:var(--green-deep);margin-bottom:3px}
+.field input,.field select,.field textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;font-family:var(--ff);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips label{font-size:.82rem;background:var(--sand);border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer}
+.chips input{margin-right:4px}
+.mini{font-size:.82rem;color:var(--muted)}
+.export{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--green-deep)}
+.fix{background:#fdf6ea;border:1px solid #e6cd97;border-radius:9px;padding:10px 13px;margin-bottom:8px;font-size:.88rem}
+.empty{color:var(--muted);font-style:italic;font-size:.86rem;padding:8px 0}
+.wophotos{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wophotos a{display:block;width:60px;height:60px;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.wophotos img,.wophotos video{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ---------- showpiece layer: command bar, calendar, job file, toasts, roles, motion ---------- */
+.cmdbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:20px 0 4px}
+.cmdbar .greet{font-family:var(--ff-d);color:var(--green-ink);font-size:1.15rem;margin-right:auto}
+.cmdbar .greet small{display:block;font-family:var(--ff);font-size:.8rem;color:var(--muted);font-weight:400;margin-top:1px}
+.qbtn{border:1.5px solid var(--line);background:var(--surface);border-radius:11px;padding:9px 14px;font-weight:700;font-size:.86rem;cursor:pointer;color:var(--green-deep);display:inline-flex;align-items:center;gap:6px;transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease}
+.qbtn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(20,48,42,.10);border-color:var(--teal)}
+.qbtn.p{background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#fff;border-color:transparent}
+.rolebadge{font-size:.7rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:4px 10px;background:rgba(47,128,85,.14);color:var(--green-deep)}
+.rolebadge.view{background:rgba(109,125,119,.16);color:var(--muted)}
+
+.calpanel{padding:0;overflow:hidden}
+.cal-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:15px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--sand),var(--surface))}
+.cal-title{font-family:var(--ff-d);color:var(--green-ink);font-size:1.28rem;min-width:190px}
+.cal-nav{display:flex;gap:6px;align-items:center}
+.cal-nav button{border:1px solid var(--line);background:var(--surface);border-radius:9px;width:34px;height:34px;font-size:1rem;cursor:pointer;color:var(--green-deep);transition:background .12s}
+.cal-nav button:hover{background:var(--sand)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:7px 14px;font-weight:700;font-size:.82rem;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--teal);color:#fff}
+.cal-filter{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.cal-filter select{padding:7px 9px;border:1.5px solid var(--line);border-radius:9px;font:inherit;font-size:.82rem;color:var(--green-deep);background:var(--surface)}
+
+.cal-dows{display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface)}
+.cal-dows div{padding:8px 6px;text-align:center;font-size:.68rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:minmax(96px,1fr)}
+.cal-cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 6px 7px;min-height:96px;position:relative;cursor:pointer;transition:background .12s;overflow:hidden}
+.cal-cell:nth-child(7n){border-right:0}
+.cal-cell:hover{background:var(--sand)}
+.cal-cell.oth{background:repeating-linear-gradient(-45deg,transparent,transparent 6px,rgba(0,0,0,.012) 6px,rgba(0,0,0,.012) 12px);color:var(--muted)}
+.cal-cell.today{background:rgba(61,139,154,.07);box-shadow:inset 0 0 0 2px var(--teal)}
+.cal-cell.dragover{background:rgba(123,176,62,.16);box-shadow:inset 0 0 0 2px var(--leaf)}
+.cal-daynum{font-size:.82rem;font-weight:700;color:var(--body);display:flex;justify-content:space-between;align-items:center}
+.cal-cell.today .cal-daynum b{background:var(--teal);color:#fff;border-radius:999px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:.76rem}
+.cal-cell.oth .cal-daynum{color:var(--muted);opacity:.7}
+.cal-chip{display:flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;line-height:1.15;border-radius:6px;padding:3px 6px;margin-top:3px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:transform .1s,filter .1s}
+.cal-chip:hover{transform:translateX(1px);filter:brightness(1.06)}
+.cal-chip .ci{font-size:.78rem}
+.cal-chip.planned{color:var(--body);background:var(--surface)!important;border:1px dashed currentColor;box-shadow:inset 3px 0 0 0}
+.cal-chip.done{opacity:.72}
+.cal-chip.done .ct{text-decoration:line-through}
+.cal-more{font-size:.68rem;font-weight:800;color:var(--muted);margin-top:3px;padding-left:2px}
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);min-height:340px}
+.cal-week .wk-col{border-right:1px solid var(--line);padding:0}
+.cal-week .wk-col:nth-child(7n){border-right:0}
+.wk-head{padding:8px 8px 6px;text-align:center;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}
+.wk-head .wd{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.wk-head .wn{font-family:var(--ff-d);font-size:1.15rem;color:var(--green-ink)}
+.wk-head.today .wn{color:var(--teal-deep)}
+.wk-col .cal-chip{margin:4px 6px;white-space:normal}
+.cal-day{padding:6px 4px 12px}
+.dayrow{display:flex;gap:11px;align-items:flex-start;padding:11px 12px;border-radius:12px;border:1px solid var(--line);margin:9px 6px;background:var(--surface);cursor:pointer;transition:box-shadow .12s,transform .12s}
+.dayrow:hover{box-shadow:0 4px 16px rgba(20,48,42,.09);transform:translateY(-1px)}
+.dayrow .swatch{width:5px;align-self:stretch;border-radius:4px;flex:none}
+.dayrow .meta{flex:1;min-width:0}
+.dayrow .r-cust{font-weight:800;color:var(--ink)}
+.dayrow .r-sub{font-size:.82rem;color:var(--muted);margin-top:2px}
+
+/* toasts */
+#toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:3000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{pointer-events:auto;background:var(--green-ink);color:#fff;border-radius:12px;padding:11px 16px;font-size:.88rem;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.30);display:flex;align-items:center;gap:9px;animation:tin .28s cubic-bezier(.2,.9,.3,1.2)}
+.toast.out{animation:tout .3s ease forwards}
+.toast.ok{background:linear-gradient(135deg,#256c46,#1f5d3d)}
+.toast.warn{background:linear-gradient(135deg,#a5691c,#7c4f16)}
+@keyframes tin{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(10px) scale(.97)}}
+
+/* job file modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(16,32,26,.58);z-index:2000;align-items:flex-start;justify-content:center;padding:26px 14px;overflow:auto;backdrop-filter:blur(2px)}
+.modal-bg.open{display:flex;animation:mbg .2s ease}
+@keyframes mbg{from{opacity:0}to{opacity:1}}
+.modal-card{background:var(--surface);border-radius:18px;max-width:640px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.42);animation:mcard .28s cubic-bezier(.2,.9,.3,1.15);overflow:hidden}
+@keyframes mcard{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.jf-hd{padding:18px 20px;color:#fff;position:relative}
+.jf-hd h3{font-family:var(--ff-d);font-size:1.4rem;margin:0 0 3px}
+.jf-hd .sub{font-size:.86rem;opacity:.92}
+.jf-x{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.2);border:0;color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.1rem;cursor:pointer}
+.jf-body{padding:18px 20px;max-height:64vh;overflow:auto}
+.jf-sec{margin-bottom:16px}
+.jf-sec h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 7px;font-weight:800}
+.kv{display:flex;flex-wrap:wrap;gap:6px 20px}
+.kv div{font-size:.88rem}.kv .k{color:var(--muted);font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.tl{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+.tl .ev{position:relative;padding:4px 0;font-size:.86rem}
+.tl .ev::before{content:"";position:absolute;left:-20px;top:9px;width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 3px var(--surface)}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:7px}
+.gallery a{display:block;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.gallery img,.gallery video{width:100%;height:100%;object-fit:cover;display:block}
+.gallery .add{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:2px dashed var(--line);border-radius:10px;aspect-ratio:1;color:var(--teal-deep);font-weight:800;font-size:.72rem;cursor:pointer;text-align:center}
+.gallery .add:hover{background:var(--sand);border-color:var(--teal)}
+.hintbar{display:flex;gap:8px;align-items:flex-start;background:linear-gradient(135deg,rgba(61,139,154,.09),rgba(123,176,62,.09));border:1px solid rgba(61,139,154,.25);border-radius:11px;padding:10px 13px;font-size:.85rem;color:var(--green-deep);margin:12px 0}
+.hintbar .hx{margin-left:auto;background:none;border:0;color:var(--muted);cursor:pointer;font-size:.95rem;flex:none}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:11px 18px;border-top:1px solid var(--line);background:var(--sand)}
+.legend span{display:inline-flex;align-items:center;gap:5px;font-size:.74rem;font-weight:700;color:var(--body)}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+
+/* tabbed shell — a simple daily home; power tools one tap away */
+.tabbar{display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:10px 0 4px;padding:5px;position:sticky;top:0;z-index:50;background:var(--paper);scrollbar-width:none;border-radius:12px}
+.tabbar::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:0;background:transparent;padding:10px 15px;border-radius:10px;font-weight:700;font-size:.9rem;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;position:relative;transition:background .14s,color .14s,transform .1s}
+.tab:hover{background:var(--sand)}
+.tab:active{transform:scale(.97)}
+.tab.on{background:linear-gradient(135deg,var(--teal),var(--teal-deep));color:#fff;box-shadow:0 4px 14px rgba(43,107,120,.28)}
+.tab .tlabel{}
+.tab .tdot{position:absolute;top:5px;right:8px;width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px var(--paper)}
+.tabpane{display:none}
+.tabpane.on{display:block;animation:rvl .32s ease both}
+#newJobBtn{margin:2px 0 8px}
+@media(max-width:560px){.tab .tlabel{display:none}.tab{padding:11px 14px;font-size:1.05rem}}
+
+/* role gating: hide edit-only controls for viewers */
+body.viewer .editor-only{display:none!important}
+.reveal{animation:rvl .5s ease both}
+@keyframes rvl{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+@media(max-width:600px){.cal-grid{grid-auto-rows:minmax(74px,1fr)}.cal-chip .ct{display:none}.cal-title{font-size:1.1rem;min-width:150px}}
+</style>
+</head>
+<body>
+<!-- Inline office sign-in — appears on this page when you're not signed in, no redirect -->
+<div id="authOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#173b2c,#2c6d7b);place-items:center;padding:24px">
+  <div style="background:#fff;border-radius:18px;max-width:380px;width:100%;padding:28px 26px;box-shadow:0 24px 60px rgba(20,48,42,.35);text-align:center;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;color:#33443f">
+    <img src="img/logo.png" alt="WeCare" style="height:48px;margin-bottom:6px">
+    <h2 style="color:#153a2a;margin:4px 0 2px;font-size:1.3rem">Sign in to your office</h2>
+    <p style="color:#586b64;font-size:.9rem;margin:0 0 16px">So your jobs save and sync to your crew.</p>
+    <input id="opEmail" type="email" autocomplete="username" placeholder="Email" style="width:100%;font:inherit;padding:12px 14px;border:1px solid #e0e4e0;border-radius:10px;margin:6px 0;box-sizing:border-box">
+    <input id="opPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;font:inherit;padding:12px 14px;border:1px solid #e0e4e0;border-radius:10px;margin:6px 0;box-sizing:border-box">
+    <div id="opErr" style="color:#c1512f;font-size:.86rem;min-height:1.1em;margin:6px 0"></div>
+    <button id="opGo" onclick="opAuthSubmit()" style="width:100%;font:inherit;font-weight:700;font-size:1rem;padding:13px;border:0;border-radius:11px;cursor:pointer;background:linear-gradient(135deg,#1f5d3d,#2b6b78);color:#fff;margin-top:4px">Sign in</button>
+    <p style="font-size:.76rem;color:#8a9a92;margin:14px 0 0">You must be signed in for jobs to save &amp; sync to your crew.</p>
+  </div>
+</div>
+<div class="top"><div class="wrap">
+  <div class="b"><img src="img/mark-trans.png" alt="WeCare Landscapes"> <span style="color:#fff">WeCare Landscapes · Field Ops</span></div>
+  <div class="nav"><span id="authStatus" style="font-size:.8rem;margin-right:6px"></span><a href="pulse.html">🏠 Home</a><a href="estimate.html">Estimator</a><a href="crew.html">Crew app</a><a href="dashboard.html">Leads / CRM</a><a href="index.html">Website</a></div>
+</div></div>
+
+<div class="wrap" style="padding-bottom:50px">
+
+  <div class="cmdbar">
+    <div class="greet" id="greet">Welcome back<small>Let's get the crew moving.</small></div>
+    <span class="rolebadge" id="roleBadge">Editor</span>
+  </div>
+  <nav class="tabbar" id="tabbar"></nav>
+  <div id="hintHost"></div>
+  <div id="paneHost"></div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="panel calpanel" id="calPanel">
+    <div class="cal-top">
+      <div class="cal-title" id="calTitle">—</div>
+      <div class="cal-nav">
+        <button onclick="calStep(-1)" title="Previous">‹</button>
+        <button onclick="calToday()" title="Jump to today" style="width:auto;padding:0 12px;font-size:.82rem;font-weight:700">Today</button>
+        <button onclick="calStep(1)" title="Next">›</button>
+      </div>
+      <div class="seg" id="calViews">
+        <button data-v="month" onclick="calSetView('month')">Month</button>
+        <button data-v="week" onclick="calSetView('week')">Week</button>
+        <button data-v="day" onclick="calSetView('day')">Day</button>
+      </div>
+      <div class="cal-filter">
+        <select id="calCrew" onchange="renderCalendar()"><option value="">All crew</option></select>
+        <select id="calSvc" onchange="renderCalendar()"><option value="">All services</option></select>
+      </div>
+    </div>
+    <div id="calBody"></div>
+    <div class="legend" id="calLegend"></div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="panel" id="clockPanel">
+        <h2>🟢 On the clock now</h2>
+        <div id="onclock"></div>
+      </div>
+      <div class="panel" id="payrollPanel">
+        <h2>Weekly payroll hours <button class="export" onclick="exportCSV()">⬇ CSV</button></h2>
+        <p class="mini" style="margin-top:-2px">Week to date · overtime after <input id="otAfter" type="number" value="40" style="width:52px;padding:2px 6px;border:1px solid var(--line);border-radius:6px"> hrs</p>
+        <div id="hours"></div>
+      </div>
+      <div class="panel" id="fixPanel">
+        <h2>✏️ Punch-fix requests</h2>
+        <div id="fixes"></div>
+      </div>
+    </div>
+    <div>
+      <div class="panel" id="ordersPanel">
+        <h2>Today's work orders</h2>
+        <div id="orders"></div>
+      </div>
+      <div class="panel" id="woPanel">
+        <h2>➕ New work order</h2>
+        <div class="field"><label>🏡 Property <span class="mini">(pick a saved property — customer, phone &amp; address fill in for you)</span></label><select id="woProp" onchange="woPropPick()"><option value="">— new / one-off customer —</option></select></div>
+        <div class="mini" id="woPropNote" style="margin:-4px 0 10px;color:var(--muted)">Reusing a customer? Pick their property above and the details drop in — you only add what's specific to this job. New one-off? Just fill the fields below.</div>
+        <div class="field"><label>Customer</label><input id="woCust" placeholder="Name"></div>
+        <div class="field"><label>Phone <span class="mini">(for review/confirmation texts)</span></label><input id="woPhone" placeholder="(501) 555-0123"></div>
+        <div class="field"><label>Address</label><input id="woAddr" placeholder="Street, town"></div>
+        <div class="field"><label>📅 Schedule for <span class="mini">(the day this job lands on the calendar)</span></label><input id="woDate" type="date"></div>
+        <div class="field"><label>Service</label><select id="woSvc"><option>Lawn maintenance</option><option>Landscape design/build</option><option>Tree &amp; shrub planting</option><option>Concrete Artistry</option><option>Artificial turf</option><option>Landscape lighting</option><option>Sod install</option><option>Drainage</option><option>Irrigation</option><option>Water feature</option><option>Hardscape/patio</option></select></div>
+        <div class="field"><label>Scope of work <span class="mini">(what's being done this visit)</span></label><textarea id="woScope" rows="2" placeholder="What's being done…"></textarea></div>
+        <div class="field"><label>Assign crew</label><div class="chips" id="woCrew"></div></div>
+        <div class="field"><label>Est. labor hours</label><input id="woHrs" type="number" step="0.5" placeholder="e.g. 4"></div>
+        <div class="field"><label>📹 How-to video / photo <span class="mini">(optional — the crew sees this on the job)</span></label><input id="woHowTo" type="file" accept="image/*,video/*"></div>
+        <div class="mini" id="woHowToStatus" style="margin:-4px 0 8px;color:var(--muted)"></div>
+        <button class="btn p" id="woCreateBtn" onclick="createWO()" style="width:100%">Create &amp; assign</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="propPanel" style="margin-top:16px">
+    <h2>🏡 Property cards <span class="mini" style="font-weight:400">— a living profile for each property, attachable to any work order</span></h2>
+    <p class="mini" style="margin-top:-2px">Everything the crew needs to service a property — even a tech who's never been there. Build it up over time with notes and photos, then attach the card to a work order and it rides along.</p>
+    <div id="propList"></div>
+    <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">
+      <h3 style="margin:0 0 10px;font-family:var(--ff-d);font-size:1.05rem;color:var(--green-ink)" id="propFormTitle">Add a property card</h3>
+      <input type="hidden" id="prId">
+      <div class="field"><label>Card name</label><input id="prName" placeholder="e.g. Smith Residence — Hot Springs Village"></div>
+      <div class="field"><label>Customer</label><input id="prCust" placeholder="Name"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="field" style="flex:1;min-width:130px"><label>Phone</label><input id="prPhone" placeholder="(501) 555-0123"></div>
+        <div class="field" style="flex:1;min-width:130px"><label>Email</label><input id="prEmail" placeholder="name@email.com"></div>
+      </div>
+      <div class="field"><label>Address</label><input id="prAddr" placeholder="Street, town"></div>
+      <div class="field"><label>Areas we maintain</label><textarea id="prAreas" rows="2" placeholder="Front beds, back lawn, side hill, etc."></textarea></div>
+      <div class="field"><label>Turf &amp; plant information</label><textarea id="prTurf" rows="2" placeholder="Zoysia lawn, boxwoods along the walk, roses in the front bed…"></textarea></div>
+      <div class="field"><label>Irrigation details</label><textarea id="prIrr" rows="2" placeholder="Controller in the garage, 6 zones, drip in the beds…"></textarea></div>
+      <div class="field"><label>Gate / access instructions</label><textarea id="prAccess" rows="2" placeholder="Gate code 1234, dog is friendly, park in the drive…"></textarea></div>
+      <div class="field"><label>Customer preferences</label><textarea id="prPref" rows="2" placeholder="Bag clippings, edge every visit, text before arriving…"></textarea></div>
+      <div class="field"><label>Recurring problem areas</label><textarea id="prProb" rows="2" placeholder="Low spot by the patio floods, shade under the oak stays thin…"></textarea></div>
+      <div class="field"><label>Special instructions</label><textarea id="prSpecial" rows="2" placeholder="Anything else the crew must know."></textarea></div>
+      <div class="field"><label>Photos <span class="mini">(the property, problem areas, reference shots)</span></label>
+        <input id="prPhoto" type="file" accept="image/*" multiple onchange="uploadPropPhotos(this)">
+        <div class="mini" id="prPhotoStatus" style="color:var(--muted)"></div>
+        <div id="prPhotos" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
+      </div>
+      <div class="field"><label>Notes &amp; history</label>
+        <div id="prNotes" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
+        <div style="display:flex;gap:6px"><input id="prNoteNew" placeholder="Add a dated note…" style="flex:1"><button class="btn" onclick="addPropNote()">Add note</button></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn p" onclick="savePropCard()">Save card</button>
+        <button class="btn" onclick="resetPropForm()">Clear / new</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="teamPanel" style="margin-top:16px">
+    <h2>👥 Team <span class="mini" style="font-weight:400">— your crew, their info, and each person's clock-in PIN</span></h2>
+    <p class="mini" style="margin-top:-2px">Each person taps <b>Set up your account</b> in the crew app (or the link below) to enter their info and pick a 4-digit clock-in PIN. You can view, edit, print, or reset anyone here. 🔒 = PIN set; ⚠️ = needs setup.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px">
+      <button class="btn p" onclick="openEmpEdit('')">＋ Add a team member</button>
+      <a class="btn" href="crew-signup.html" target="_blank">🔗 Open the sign-up form</a>
+      <button class="btn" onclick="printRoster()">🖨️ Print roster</button>
+    </div>
+    <div id="teamList"></div>
+  </div>
+
+  <div class="panel" id="syncPanel" style="margin-top:16px">
+    <h2>📆 Sync jobs to your phone &amp; Google Calendar</h2>
+    <p class="mini" style="margin-top:-2px">Subscribe once — every job on your board shows up automatically on your iPhone and in Google Calendar, and refreshes on its own. Reschedule a job here and the calendars update.</p>
+    <div class="field" style="margin-top:10px"><label>Your private calendar link</label>
+      <input id="calSubUrl" readonly onclick="this.select()" value="https://fqqbzsxvxpcfwovbunth.supabase.co/functions/v1/calendar?key=wc_a0eef5f5265867b285e6cb50c870b076" style="font-size:.82rem">
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+      <button class="btn p" onclick="copyCalUrl()">📋 Copy link</button>
+      <a class="btn" href="webcal://fqqbzsxvxpcfwovbunth.supabase.co/functions/v1/calendar?key=wc_a0eef5f5265867b285e6cb50c870b076">📱 Add to iPhone</a>
+    </div>
+    <details style="margin-top:6px"><summary style="cursor:pointer;font-weight:700;color:var(--green-deep);font-size:.9rem">How to add it (iPhone &amp; Google)</summary>
+      <div class="mini" style="margin-top:8px;line-height:1.7">
+        <b>iPhone / iPad:</b> tap <b>📱 Add to iPhone</b> above and confirm — or Settings → Calendar → Accounts → Add Account → Other → <b>Add Subscribed Calendar</b>, then paste the link.<br>
+        <b>Google Calendar</b> (on a computer): left sidebar → <b>Other calendars</b> → <b>＋</b> → <b>From URL</b> → paste the link → Add calendar. It shows on your phone's Google Calendar app too.<br>
+        <span style="color:var(--muted)">Keep this link private — anyone with it can see your job schedule.</span>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel" id="recurPanel" style="margin-top:16px">
+    <h2>🔁 Recurring maintenance <span class="mini" style="font-weight:400">— set it once, the work orders create themselves on schedule</span></h2>
+    <div id="recurList"></div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700;color:var(--green-deep);font-size:.9rem">➕ Add a recurring job</summary>
+      <div style="margin-top:10px;display:grid;gap:8px">
+        <div class="field" style="margin:0"><label>🏡 Property <span class="mini">(pick a saved property — customer, phone &amp; address fill in for you)</span></label><select id="rcProp" onchange="rcPropPick()"><option value="">— new / one-off customer —</option></select></div>
+        <input id="rcCust" placeholder="Customer name">
+        <input id="rcPhone" placeholder="Phone (optional)">
+        <select id="rcSvc"><option>Lawn maintenance</option><option>Landscape design/build</option><option>Concrete Artistry</option><option>Sod install</option><option>Drainage</option><option>Irrigation</option><option>Water feature</option><option>Hardscape/patio</option></select>
+        <input id="rcAddr" placeholder="Address">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="rcFreq" style="flex:1"><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every 4 weeks</option><option value="monthly_date">Same date each month</option></select>
+          <select id="rcDow" style="flex:1"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select>
+        </div>
+        <div class="field" style="margin:0"><label>Assign crew</label><div class="chips" id="rcCrew"></div></div>
+        <input id="rcHrs" type="number" step="0.5" placeholder="Est. labor hours (e.g. 1.5)">
+        <button class="btn p" onclick="addRecurring()">Schedule it</button>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel" id="routePanel" style="margin-top:16px">
+    <h2>🗺️ Maintenance routes <span class="mini" style="font-weight:400">— a day's properties in service order, auto-created each cycle</span></h2>
+    <div id="routeList"></div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700;color:var(--green-deep);font-size:.9rem">➕ New route</summary>
+      <div style="margin-top:10px;display:grid;gap:8px">
+        <input id="rtName" placeholder="Route name (e.g. Monday Route)">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="rtDow" style="flex:1"><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select>
+          <select id="rtFreq" style="flex:1"><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option></select>
+        </div>
+        <div class="field" style="margin:0"><label>Assign crew</label><div class="chips" id="rtCrew"></div></div>
+        <button class="btn p" onclick="addRoute()">Create route</button>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel" id="costPanel" style="margin-top:16px">
+    <h2>💵 Job costing <span class="mini" style="font-weight:400">— real labor hours per job, straight from the clock-ins</span></h2>
+    <p class="mini" style="margin-top:-2px">Labor cost uses each person's real rate (set in the roster). Fallback rate for anyone without one: $<input id="laborRate" type="number" min="0" step="1" placeholder="—" style="width:56px;padding:2px 6px;border:1px solid var(--line);border-radius:6px">/hr.</p>
+    <div id="costing"></div>
+  </div>
+
+  <div class="panel" id="dataPanel" style="margin-top:16px">
+    <h2>📦 Your data <span class="mini" style="font-weight:400">— you own all of it, export anytime, no lock-in</span></h2>
+    <p class="mini" style="margin-top:-2px">Every lead, job, hour, booking, and estimate belongs to WeCare Landscapes. Download a full backup or any single list whenever you want.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="btn p" onclick="exportAllJSON()">⬇ Full backup (JSON)</button>
+      <button class="btn" onclick="exportOne('wecare_leads','leads')">Leads</button>
+      <button class="btn" onclick="exportOne('wecare_workorders','work-orders')">Work orders</button>
+      <button class="btn" onclick="exportOne('wecare_punches','time-clock')">Time clock</button>
+      <button class="btn" onclick="exportOne('wecare_consults','consultations')">Consultations</button>
+      <button class="btn" onclick="exportOne('wecare_estimates','estimates')">Estimates</button>
+      <button class="btn" onclick="exportOne('wecare_sops','sops')">SOPs</button>
+    </div>
+  </div>
+
+  <div class="panel" id="casePanel" style="margin-top:16px">
+    <h2>★ Case studies <span class="mini" style="font-weight:400">— turn a finished job into a portfolio piece for the website</span></h2>
+    <p class="mini" style="margin-top:-2px">On a completed job above, tap “★ Make case study” to start one from its photos. Add a short story, then publish it to <a href="case-studies.html" target="_blank">Our Work</a>.</p>
+    <div id="caseList"></div>
+  </div>
+
+  <div class="panel" id="sopPanel" style="margin-top:16px">
+    <h2>📋 SOP Library <span class="mini" style="font-weight:400">— you write them, the crew opens them right on the job</span></h2>
+    <div id="sopList"></div>
+    <div style="border-top:1px solid var(--line);margin-top:14px;padding-top:14px">
+      <h3 style="margin:0 0 10px;font-family:var(--ff-d);font-size:1.05rem;color:var(--green-ink)" id="sopFormTitle">Add an SOP</h3>
+      <input type="hidden" id="sopId">
+      <div class="field"><label>Title</label><input id="sopTitle" placeholder="e.g. Mowing SOP"></div>
+      <div class="field"><label>For service</label><select id="sopSvc"><option value="">Any / general</option><option>Lawn maintenance</option><option>Landscape design/build</option><option>Concrete Artistry</option><option>Sod install</option><option>Drainage</option><option>Irrigation</option><option>Water feature</option><option>Hardscape/patio</option></select></div>
+      <div class="field"><label>Steps <span class="mini">(one per line — crew checks them off on the job)</span></label><textarea id="sopSteps" rows="5" placeholder="Confirm gate is closed behind you&#10;Mow at the correct height for the season&#10;Edge all borders and walkways&#10;Blow off drives, walks, and patio&#10;Photo the finished yard"></textarea></div>
+      <div class="field"><label>Notes <span class="mini">(optional — safety, reminders)</span></label><textarea id="sopNotes" rows="2" placeholder="Anything the crew should know…"></textarea></div>
+      <button class="btn p" onclick="saveSOP()">Save SOP</button>
+      <button class="btn" onclick="resetSOPForm()" id="sopCancel" style="display:none;margin-left:6px">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Team member editor -->
+<div id="empModal" style="display:none;position:fixed;inset:0;background:rgba(16,32,26,.55);z-index:1000;align-items:flex-start;justify-content:center;padding:30px 16px;overflow:auto">
+  <div style="background:var(--surface,#fff);border-radius:16px;max-width:460px;width:100%;padding:22px;box-shadow:0 24px 60px rgba(0,0,0,.35)">
+    <h3 style="font-family:var(--ff-d);color:var(--green-ink);margin:0 0 12px" id="empModalTitle">Team member</h3>
+    <input type="hidden" id="eId">
+    <div class="field"><label>Full name</label><input id="eName" placeholder="First and last"></div>
+    <div class="field"><label>Role / title</label><input id="eRole" placeholder="e.g. Maintenance Technician"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:140px"><label>Cell phone</label><input id="ePhone" placeholder="(501) 555-0123"></div>
+      <div class="field" style="flex:1;min-width:140px"><label>Email</label><input id="eEmail" placeholder="you@email.com"></div>
+    </div>
+    <div class="field"><label>Home address</label><input id="eAddr" placeholder="Street, city, ST ZIP"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:140px"><label>Emergency contact</label><input id="eEcn" placeholder="Name"></div>
+      <div class="field" style="flex:1;min-width:140px"><label>Emergency phone</label><input id="eEcp" placeholder="(501) 555-0100"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div class="field" style="flex:1;min-width:120px"><label>Pay — $ / hour</label><input id="eRate" type="number" min="0" step="0.25" placeholder="e.g. 20"></div>
+      <div class="field" style="flex:1;min-width:120px"><label>or $ / day <span class="mini">(optional)</span></label><input id="eDay" type="number" min="0" step="1" placeholder="e.g. 150"></div>
+      <div class="field" style="flex:1;min-width:120px"><label>Start date</label><input id="eStart" type="date"></div>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:6px 0 4px">
+      <label style="font-weight:600;font-size:.9rem"><input type="checkbox" id="eActive" checked> Active</label>
+      <label style="font-weight:600;font-size:.9rem"><input type="checkbox" id="eAdmin"> Admin (office access)</label>
+      <span class="mini" id="ePinState"></span>
+    </div>
+    <div class="field"><label>Notes <span class="mini">(optional)</span></label><textarea id="eNotes" rows="2" placeholder="Anything to remember about setup…"></textarea></div>
+    <div style="background:var(--sand,#f0eee4);border-radius:10px;padding:10px 12px;margin:6px 0 12px;font-size:.82rem;color:var(--muted,#6d7d77)">
+      🔒 <b>Clock-in PIN:</b> normally each person sets their own on the sign-up form. <a href="#" onclick="resetEmpPin();return false;" style="color:var(--teal-deep,#2b6b78);font-weight:600">Set / reset PIN</a> if you need to.
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn p" onclick="saveEmp()">Save</button>
+      <button class="btn" onclick="printEmp(document.getElementById('eId').value)">🖨️ Print profile</button>
+      <button class="btn" onclick="closeEmpEdit()">Cancel</button>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="delEmp()" style="color:#c1512f">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="jobModal" class="modal-bg" onclick="if(event.target===this)closeJobFile()"><div class="modal-card" id="jobCard"></div></div>
+<div id="toasts"></div>
+
+<script src="js/wecare-auth.js?v=0831"></script>
+<script>WeCareAuth.guard();/* no-op until login is switched on */</script>
+<script>window.WECARE_SYNC=true;</script>
+<script src="js/wecare-cloud.js?v=0923"></script>
+<script>
+var DEFAULT_CREW=[
+  {id:"derrick",name:"Derrick Collier",role:"Owner & Operations Director",admin:true,rate:25},
+  {id:"jason",name:"Jason Kennedy",role:"Landscape Production Manager",rate:25},
+  {id:"hayden",name:"Hayden Collier",role:"Landscape Installation Tech",rate:15},
+  {id:"justin",name:"Justin Cavenza",role:"Landscape Installation Tech",rate:15},
+  {id:"christian",name:"Christian Benton",role:"Maintenance Technician",rate:23},
+  {id:"chris",name:"Chris Crain",role:"Maintenance Technician",rate:18.75,dayRate:150},
+];
+var K_PUNCH="wecare_punches",K_JOBS="wecare_workorders",K_FIX="wecare_punch_fixes",K_SOPS="wecare_sops",K_EMP="wecare_employees",K_PROPS="wecare_properties";
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+/* employee directory is the source of truth (falls back to defaults until it loads) */
+function allEmps(){var s=load(K_EMP,null);return (s&&s.length)?s:DEFAULT_CREW;}
+var CREW=allEmps();  // refreshed at the top of render()
+function empRate(id){var c=CREW.find(function(x){return x.id===id;});return (c&&c.rate!=null)?c.rate:(parseFloat(localStorage.getItem("wecare_labor_rate"))||0);}
+function nm(id){var c=CREW.find(function(x){return x.id===id});return c?c.name:id}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+// only allow http(s) image URLs (blocks javascript:/data: and attribute-breakout XSS from anon-writable photo fields)
+function safeUrl(u){u=String(u==null?"":u);return /^https?:\/\//i.test(u)?esc(u):"";}
+function isVideo(u){return /\.(mp4|mov|webm|m4v|ogg|ogv)(\?|$)/i.test(String(u==null?"":u));}
+function woThumb(u){var s=safeUrl(u);if(!s)return "";return isVideo(u)?'<a href="'+s+'" target="_blank" rel="noopener" title="video"><video src="'+s+'" preload="metadata" muted></video></a>':'<a href="'+s+'" target="_blank" rel="noopener"><img src="'+s+'" loading="lazy" alt="job photo"></a>';}
+function fmtDur(ms){var s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h+":"+String(m).padStart(2,"0")}
+function weekStart(){var d=new Date();var day=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-day);return d.getTime()}
+// day-rate is paid per CENTRAL calendar day worked (the business runs on Central). Using
+// UTC here double-counted an evening shift that rolled past midnight UTC.
+function centralDay(iso){try{return new Date(iso).toLocaleDateString("en-CA",{timeZone:"America/Chicago"})}catch(e){return String(iso).slice(0,10)}}
+
+function render(){
+  CREW=allEmps();  // keep roster/rates current with the cloud employee directory
+  renderCrewChecks();
+  var punches=load(K_PUNCH,[]),jobs=load(K_JOBS,[]),fixes=load(K_FIX,[]);
+  // on the clock
+  var open=punches.filter(function(p){return !p.out});
+  document.getElementById("onclock").innerHTML = open.length ? open.map(function(p){
+    var job=jobs.find(function(j){return j.id===p.jobId});
+    var elapsed=Date.now()-new Date(p.in).getTime();
+    var stale=elapsed>12*3600000;   // open >12h = probably a forgotten clock-out
+    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)'+(stale?';background:rgba(181,117,31,.08)':'')+'">'+
+      '<span class="on"><span class="dot"></span>'+esc(p.empName)+(stale?' <span class="mini" style="color:#b5751f;font-weight:700">⚠️ forgot to clock out?</span>':'')+'</span>'+
+      '<span class="mini" style="display:flex;align-items:center;gap:8px">'+(job?esc(job.customer):'—')+' · '+fmtDur(elapsed)+(p.inGeo?' · 📍':'')+
+      ' <button class="btn" style="padding:3px 9px" onclick="closePunch(\''+p.id+'\')">✎ Set clock-out</button></span></div>';
+  }).join("") : '<div class="empty">Nobody clocked in right now.</div>';
+
+  // weekly hours + pay (per-person rates; Chris Crain = $150/workday)
+  var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={},days={},review={};
+  punches.forEach(function(p){ if(!p.out)return; var t0=new Date(p.in).getTime(); if(t0<ws)return;
+    tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000;
+    (days[p.empId]||(days[p.empId]={}))[centralDay(p.in)]=1;
+    if(p.needs_review||p.needsReview) review[p.empId]=true; });   // auto-capped forgotten clock-out → owner should verify
+  var totPay=0;
+  var rows=CREW.filter(function(c){return tot[c.id]}).map(function(c){
+    var h=tot[c.id],reg=Math.min(h,ot),o=Math.max(0,h-ot);
+    var pay = c.dayRate ? c.dayRate*Object.keys(days[c.id]||{}).length : (reg*(c.rate||0)+o*(c.rate||0)*1.5);
+    totPay+=pay;
+    var flag = review[c.id] ? ' <span class="mini" style="color:#b5751f;font-weight:700" title="A shift was auto-capped after a forgotten clock-out — verify the real hours">⚠️ review</span>' : '';
+    return '<tr><td>'+esc(c.name)+(c.dayRate?' <span class="mini">($'+c.dayRate+'/day)</span>':'')+flag+'</td><td class="num">'+reg.toFixed(1)+'</td><td class="num">'+(o>0?o.toFixed(1):'—')+'</td><td class="num">'+h.toFixed(1)+'</td><td class="num"><b>$'+pay.toFixed(2)+'</b></td></tr>';
+  }).join("");
+  document.getElementById("hours").innerHTML = rows ?
+    '<table><tr><th>Employee</th><th class="num">Reg</th><th class="num">OT</th><th class="num">Hrs</th><th class="num">Pay</th></tr>'+rows+
+    '<tr style="border-bottom:2px solid var(--line);font-weight:700"><td>Total payroll</td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num">$'+totPay.toFixed(2)+'</td></tr></table>'
+    : '<div class="empty">No hours logged this week yet.</div>';
+
+  // orders
+  var today=new Date().toISOString().slice(0,10);
+  var td=jobs.filter(function(j){return j.date===today});
+  document.getElementById("orders").innerHTML = td.length ? td.map(function(j){
+    return '<div class="wo"><div class="h"><span class="cust">'+esc(j.customer)+'</span><span class="pill st-'+(j.status||'assigned')+'">'+(j.status||'assigned')+'</span></div>'+
+      '<div class="mini">'+esc(j.service)+' · '+esc(j.address)+'</div>'+
+      '<div class="crew">👷 '+(j.assignedTo||[]).map(nm).join(", ")+(j.estHours?' · est '+j.estHours+'h':'')+'</div>'+
+      (j.howTo&&safeUrl(j.howTo)?'<div class="mini" style="margin-top:6px;color:var(--green-deep);font-weight:600"><a href="'+safeUrl(j.howTo)+'" target="_blank" rel="noopener">📹 How-to '+(isVideo(j.howTo)?'video':'photo')+' attached →</a></div>':'')+
+      ((j.photos&&j.photos.length)?'<div class="wophotos">'+j.photos.map(woThumb).join("")+'</div>':'')+
+      (j.status==="done"?'<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn" style="padding:5px 10px" onclick="makeCaseStudy(\''+j.id+'\')">★ Make case study</button><a class="btn" style="padding:5px 10px" href="invoice.html?job='+j.id+'" target="_blank">🧾 Invoice</a></div>':'')+
+      reviewControls(j)+'</div>';
+  }).join("") : '<div class="empty">No work orders today. Create one →</div>';
+
+  // fixes
+  var pend=fixes.filter(function(f){return !f.resolved});
+  document.getElementById("fixes").innerHTML = pend.length ? pend.map(function(f){
+    return '<div class="fix"><b>'+esc(f.empName)+':</b> '+esc(f.note)+'<br><button class="btn" style="margin-top:6px;padding:4px 10px" onclick="resolveFix(\''+f.id+'\')">Mark handled</button></div>';
+  }).join("") : '<div class="empty">No pending punch-fix requests.</div>';
+
+  // stats
+  document.getElementById("stats").innerHTML=
+    stat(open.length,"On the clock")+
+    stat(td.length,"Jobs today")+
+    stat(td.filter(function(j){return j.status==='done'}).length,"Jobs done")+
+    stat(Object.values(tot).reduce(function(a,b){return a+b},0).toFixed(0),"Crew hrs this wk");
+}
+function stat(n,l){return '<div class="stat"><div class="n">'+n+'</div><div class="l">'+l+'</div></div>'}
+
+function reviewControls(j){
+  if((j.status||"")!=="done") return "";   // only completed jobs
+  var bar='<div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)">';
+  if(!j.paid){
+    return bar+'<button class="btn" onclick="markPaid(\''+j.id+'\')">💵 Mark paid → request review</button></div>';
+  }
+  var rs=j.reviewStatus||"requested";
+  if(rs==="hold") return bar+'<span class="pill" style="background:rgba(193,81,47,.14);color:var(--red)">⏸ Review on hold (issue)</span> <button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'requested\')">▶ Release request</button></div>';
+  if(rs==="done") return bar+'<span class="pill st-done">⭐ Reviewed ✓</span></div>';
+  // requested
+  var out=bar+'<span class="pill st-started">⭐ Review requested</span> '+
+    '<button class="btn" style="padding:5px 10px" onclick="reviewDraft(\''+j.id+'\')">✍️ Draft &amp; copy request</button> '+
+    '<button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'hold\')">⏸ Hold (issue)</button> '+
+    '<button class="btn" style="padding:5px 10px" onclick="setReview(\''+j.id+'\',\'done\')">✓ Got the review</button>';
+  if(_draftFor===j.id){
+    out+='<div style="margin-top:9px;background:var(--card2,#f7f5ee);border:1px solid var(--line);border-radius:8px;padding:10px">'+
+      '<textarea id="dft-'+j.id+'" style="width:100%;min-height:96px;font:inherit;border:1px solid var(--line);border-radius:6px;padding:8px;resize:vertical">'+esc(reviewMsg(j))+'</textarea>'+
+      '<div style="display:flex;gap:8px;margin-top:7px;flex-wrap:wrap;align-items:center">'+
+        (j.phone?'<button class="btn p" style="padding:5px 10px" onclick="textReview(\''+j.id+'\')">📱 Text it</button>':'')+
+        '<button class="btn" style="padding:5px 10px" onclick="copyDraft(\''+j.id+'\')">📋 Copy</button>'+
+        '<button class="btn" style="padding:5px 10px" onclick="setReviewLink()">🔗 Set review link</button>'+
+        '<span id="cpd-'+j.id+'" style="font-size:.82rem;color:var(--muted)">'+(j.phone?'Tap Text to send from your phone, or Copy.':'Copy this, then send by text or email. (Add a phone to the job for one-tap texting.)')+'</span>'+
+      '</div></div>';
+  }
+  return out+'</div>';
+}
+var _draftFor=null;
+function reviewLink(){return localStorage.getItem("wecare_review_link")||"";}
+function reviewMsg(j){
+  var name=(j.customer||"there").split(" ")[0];
+  var svc=(j.service||"project").toLowerCase();
+  var link=reviewLink()||"[paste your Google review link — tap “Set review link”]";
+  return "Hi "+name+", it's Derrick with WeCare Landscapes — it was a real pleasure getting your "+svc+" done. "+
+    "If you were happy with how it turned out, a quick review would mean the world to us and helps other neighbors find us:\n"+
+    link+"\n\nThank you! — WeCare Landscapes · 501-627-4384";
+}
+function reviewDraft(id){ _draftFor=(_draftFor===id?null:id); render(); }
+function copyDraft(id){
+  var t=document.getElementById("dft-"+id); if(!t)return;
+  t.select();
+  var ok=false; try{ok=document.execCommand("copy");}catch(e){}
+  if(navigator.clipboard){ navigator.clipboard.writeText(t.value).catch(function(){}); ok=true; }
+  var s=document.getElementById("cpd-"+id); if(s){s.textContent=ok?"✓ Copied — paste into a text or email to the customer.":"Select the text and copy it.";}
+}
+function smsLink(phone,body){var p=String(phone||"").replace(/[^\d+]/g,"");return "sms:"+p+"?&body="+encodeURIComponent(body);}
+function textReview(id){
+  var j=load(K_JOBS,[]).find(function(x){return x.id===id}); if(!j)return;
+  if(!j.phone){alert("No phone on this work order — add one to text the customer.");return;}
+  var t=document.getElementById("dft-"+id); var msg=t?t.value:reviewMsg(j);
+  window.location.href=smsLink(j.phone,msg);
+}
+function setReviewLink(){
+  var cur=reviewLink();
+  var v=prompt("Paste Your Google review link (customers tap it to leave a review):", cur);
+  if(v!==null){ localStorage.setItem("wecare_review_link", v.trim()); render(); }
+}
+function markPaid(id){var j=load(K_JOBS,[]);var x=j.find(function(y){return y.id===id});if(x){x.paid=true;x.reviewStatus="requested";}save(K_JOBS,j);render();}
+function setReview(id,st){var j=load(K_JOBS,[]);var x=j.find(function(y){return y.id===id});if(x)x.reviewStatus=st;_draftFor=null;save(K_JOBS,j);render();}
+function createWO(){
+  var cust=document.getElementById("woCust").value.trim(); if(!cust){alert("Customer name?");return;}
+  var crew=[].slice.call(document.querySelectorAll("#woCrew input:checked")).map(function(i){return i.value});
+  var svc=document.getElementById("woSvc").value;
+  var wo={id:"W"+Date.now().toString(36),customer:cust,phone:document.getElementById("woPhone").value.trim(),service:svc,
+    address:document.getElementById("woAddr").value.trim(),scope:document.getElementById("woScope").value.trim(),
+    sop:svc+" SOP",assignedTo:crew,date:(document.getElementById("woDate").value||new Date().toISOString().slice(0,10)),
+    status:"assigned",estHours:parseFloat(document.getElementById("woHrs").value)||null,howTo:"",propertyId:document.getElementById("woProp").value||""};
+  var file=(document.getElementById("woHowTo").files||[])[0];
+  var btn=document.getElementById("woCreateBtn"), hs=document.getElementById("woHowToStatus");
+  var finish=function(){
+    var jobs=load(K_JOBS,[]); jobs.push(wo); save(K_JOBS,jobs);
+    ["woCust","woPhone","woAddr","woScope","woHrs"].forEach(function(id){document.getElementById(id).value=""});
+    document.getElementById("woHowTo").value=""; document.getElementById("woProp").value="";
+    document.querySelectorAll("#woCrew input:checked").forEach(function(i){i.checked=false});
+    if(btn){btn.disabled=false;btn.textContent="Create & assign";} if(hs)hs.textContent="";
+    render(); renderAuthStatus();
+    if(!isAuthed()) toast("Job saved on this device — sign in so it syncs to the cloud & your crew","warn");
+  };
+  if(file && window.WeCareCloud && WeCareCloud.uploadPhoto){
+    if(file.size>100*1024*1024){ if(hs)hs.textContent="That file's too big (keep it under ~100MB / ~2 min)."; return; }
+    if(btn){btn.disabled=true;btn.textContent="Uploading video…";} if(hs)hs.textContent="Uploading the how-to — this can take a moment…";
+    WeCareCloud.uploadPhoto(file,wo.id).then(function(url){ wo.howTo=url||""; finish(); })
+      .catch(function(){ if(hs)hs.textContent="Video upload failed — creating the job without it."; finish(); });
+    return;
+  }
+  finish();
+}
+/* ---------- Property cards: a living profile per property, attachable to a work order ---------- */
+var _prNotes=[], _prPhotos=[];
+function loadProps(){return load(K_PROPS,[]);}
+function propLabel(p){return (p.name||p.customer||"Property")+(p.address?" · "+p.address:"");}
+function newPrId(){return "PR"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function renderProps(){
+  var list=document.getElementById("propList"); if(!list) return;
+  var props=loadProps().sort(function(a,b){return (a.name||a.customer||"").localeCompare(b.name||b.customer||"");});
+  list.innerHTML = props.length ? props.map(function(p){
+    var n=(p.notes||[]).length, ph=(p.photos||[]).length;
+    return '<div id="prow-'+esc(p.id)+'" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;margin:0 -10px;border-bottom:1px solid var(--line);border-radius:8px;transition:background .3s">'+
+      '<span><b>'+esc(p.name||p.customer||"Property")+'</b>'+(p.address?' <span class="mini">'+esc(p.address)+'</span>':'')+
+      ' <span class="mini" style="color:var(--muted)">· '+ph+' photo'+(ph===1?'':'s')+' · '+n+' note'+(n===1?'':'s')+'</span></span>'+
+      '<button class="btn" style="padding:3px 9px" onclick="editProp(\''+p.id+'\')">Open / edit</button></div>';
+  }).join("") : '<p class="mini" style="color:var(--muted)">No property cards yet — add one below.</p>';
+  populatePropSelect();
+}
+function populatePropSelect(){
+  var props=loadProps().sort(function(a,b){return (a.name||a.customer||"").localeCompare(b.name||b.customer||"");});
+  var opts=props.map(function(p){return '<option value="'+esc(p.id)+'">'+esc(propLabel(p))+'</option>';}).join("");
+  [["woProp","— new / one-off customer —"],["rcProp","— new / one-off customer —"]].forEach(function(pair){
+    var sel=document.getElementById(pair[0]); if(!sel) return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">'+pair[1]+'</option>'+opts;
+    sel.value=cur;
+  });
+}
+// pick a property → its customer/phone/address flow into the work-order fields.
+// Overwrites what's there so the card is always the source of truth; "— new —" clears.
+function woPropPick(){
+  var id=document.getElementById("woProp").value;
+  var note=document.getElementById("woPropNote");
+  if(!id){ if(note){note.textContent="Reusing a customer? Pick their property above and the details drop in — you only add what's specific to this job. New one-off? Just fill the fields below.";note.style.color="var(--muted)";} return; }
+  var p=loadProps().find(function(x){return x.id===id;}); if(!p) return;
+  document.getElementById("woCust").value=p.customer||p.name||"";
+  document.getElementById("woPhone").value=p.phone||"";
+  document.getElementById("woAddr").value=p.address||"";
+  if(note){ var extra=(p.notes||[]).length, ph=(p.photos||[]).length;
+    note.innerHTML='✓ Filled from <b>'+esc(p.name||p.customer)+'</b>'+(ph?' · '+ph+' photo'+(ph===1?'':'s'):'')+(extra?' · '+extra+' note'+(extra===1?'':'s'):'')+' — the crew sees the full profile. Just add the scope &amp; hours for this visit.';
+    note.style.color="var(--green-deep)"; }
+}
+// same idea for the recurring form
+function rcPropPick(){
+  var id=document.getElementById("rcProp").value; if(!id) return;
+  var p=loadProps().find(function(x){return x.id===id;}); if(!p) return;
+  document.getElementById("rcCust").value=p.customer||p.name||"";
+  document.getElementById("rcPhone").value=p.phone||"";
+  document.getElementById("rcAddr").value=p.address||"";
+}
+function resetPropForm(){
+  document.getElementById("prId").value=newPrId();
+  ["prName","prCust","prPhone","prEmail","prAddr","prAreas","prTurf","prIrr","prAccess","prPref","prProb","prSpecial","prNoteNew"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});
+  _prNotes=[]; _prPhotos=[]; renderPrNotes(); renderPrPhotos();
+  var t=document.getElementById("propFormTitle"); if(t)t.textContent="Add a property card";
+  var s=document.getElementById("prPhotoStatus"); if(s)s.textContent="";
+}
+function editProp(id){
+  var p=loadProps().find(function(x){return x.id===id;}); if(!p) return;
+  document.getElementById("prId").value=p.id;
+  document.getElementById("prName").value=p.name||""; document.getElementById("prCust").value=p.customer||"";
+  document.getElementById("prPhone").value=p.phone||""; document.getElementById("prEmail").value=p.email||"";
+  document.getElementById("prAddr").value=p.address||""; document.getElementById("prAreas").value=p.areas||"";
+  document.getElementById("prTurf").value=p.turfPlants||""; document.getElementById("prIrr").value=p.irrigation||"";
+  document.getElementById("prAccess").value=p.access||""; document.getElementById("prPref").value=p.preferences||"";
+  document.getElementById("prProb").value=p.problemAreas||""; document.getElementById("prSpecial").value=p.special||"";
+  _prNotes=(p.notes||[]).slice(); _prPhotos=(p.photos||[]).slice();
+  renderPrNotes(); renderPrPhotos();
+  var t=document.getElementById("propFormTitle"); if(t)t.textContent="Edit property card";
+  document.getElementById("propPanel").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function renderPrNotes(){
+  var box=document.getElementById("prNotes"); if(!box) return;
+  box.innerHTML=_prNotes.length?_prNotes.slice().reverse().map(function(n,i){
+    var real=_prNotes.length-1-i;
+    return '<div style="background:var(--bg,#f6f4ee);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:.86rem;display:flex;justify-content:space-between;gap:8px">'+
+      '<span><span class="mini" style="color:var(--muted)">'+esc(n.t||"")+(n.by?' · '+esc(n.by):'')+'</span><br>'+esc(n.text||"")+'</span>'+
+      '<button class="btn" style="padding:1px 7px" onclick="delPropNote('+real+')">✕</button></div>';
+  }).join(""):'<p class="mini" style="color:var(--muted);margin:0">No notes yet.</p>';
+}
+function addPropNote(){
+  var inp=document.getElementById("prNoteNew"); var t=inp.value.trim(); if(!t) return;
+  _prNotes.push({t:new Date().toLocaleDateString(),by:"office",text:t}); inp.value=""; renderPrNotes();
+}
+function delPropNote(i){ _prNotes.splice(i,1); renderPrNotes(); }
+function renderPrPhotos(){
+  var box=document.getElementById("prPhotos"); if(!box) return;
+  box.innerHTML=_prPhotos.map(function(u,i){
+    return '<div style="position:relative"><a href="'+esc(u)+'" target="_blank" rel="noopener"><img src="'+esc(u)+'" style="width:74px;height:74px;object-fit:cover;border-radius:8px;border:1px solid var(--line)"></a>'+
+      '<button class="btn" style="position:absolute;top:-6px;right:-6px;padding:0 6px;border-radius:50%" onclick="delPropPhoto('+i+')">✕</button></div>';
+  }).join("");
+}
+function delPropPhoto(i){ _prPhotos.splice(i,1); renderPrPhotos(); }
+function uploadPropPhotos(input){
+  var files=[].slice.call(input.files||[]); if(!files.length) return;
+  if(!(window.WeCareCloud&&WeCareCloud.uploadPhoto)){ return; }
+  var pid=document.getElementById("prId").value||newPrId(); document.getElementById("prId").value=pid;
+  var st=document.getElementById("prPhotoStatus"); if(st)st.textContent="Uploading "+files.length+" photo"+(files.length>1?"s":"")+"…";
+  Promise.all(files.map(function(f){return WeCareCloud.uploadPhoto(f,pid,null,null,"property");}))
+    .then(function(urls){ (urls||[]).filter(Boolean).forEach(function(u){_prPhotos.push(u);}); renderPrPhotos(); if(st)st.textContent=""; input.value=""; })
+    .catch(function(){ if(st)st.textContent="Upload failed — try again."; });
+}
+function savePropCard(){
+  var id=document.getElementById("prId").value||newPrId();
+  var name=document.getElementById("prName").value.trim(), cust=document.getElementById("prCust").value.trim();
+  if(!name && !cust){ alert("Give the card a name or a customer."); return; }
+  var props=loadProps(); var ex=props.find(function(x){return x.id===id;});
+  var card={id:id,name:name,customer:cust,
+    phone:document.getElementById("prPhone").value.trim(),email:document.getElementById("prEmail").value.trim(),
+    address:document.getElementById("prAddr").value.trim(),leadId:(ex&&ex.leadId)||"",
+    areas:document.getElementById("prAreas").value.trim(),turfPlants:document.getElementById("prTurf").value.trim(),
+    irrigation:document.getElementById("prIrr").value.trim(),access:document.getElementById("prAccess").value.trim(),
+    preferences:document.getElementById("prPref").value.trim(),problemAreas:document.getElementById("prProb").value.trim(),
+    special:document.getElementById("prSpecial").value.trim(),notes:_prNotes.slice(),photos:_prPhotos.slice(),
+    created:(ex&&ex.created)||new Date().toISOString(),updated:new Date().toISOString()};
+  if(ex){ props=props.map(function(x){return x.id===id?card:x;}); } else { props.push(card); }
+  save(K_PROPS,props); renderProps(); resetPropForm();
+  // Make the save impossible to miss: name it, scroll to it in the list, and flash the row.
+  // (Derrick hit Save and couldn't tell it worked because the card lands in the list ABOVE the form.)
+  var s=document.getElementById("prPhotoStatus");
+  if(s){ s.innerHTML='✓ Saved <b>'+esc(card.name||card.customer)+'</b> — it\'s in your list above and now shows up in the 🏡 Property dropdowns on work orders &amp; recurring jobs.'; s.style.color="var(--green-deep)"; setTimeout(function(){s.textContent="";s.style.color="";},6000); }
+  var row=document.getElementById("prow-"+id);
+  if(row){ row.scrollIntoView({behavior:"smooth",block:"center"});
+    row.style.background="rgba(200,167,92,.28)"; setTimeout(function(){row.style.background="";},2400); }
+}
+function resolveFix(id){var f=load(K_FIX,[]);var x=f.find(function(y){return y.id===id});if(x)x.resolved=true;save(K_FIX,f);render();}
+// owner fixes a forgotten clock-out so the shift's pay isn't lost (keeps an audit note)
+function closePunch(id){
+  var all=load(K_PUNCH,[]); var p=all.find(function(x){return x.id===id;}); if(!p||p.out){ render(); return; }
+  var inD=new Date(p.in);
+  var suggest=new Date(inD.getTime()+8*3600000);
+  var sh=String(suggest.getHours()).padStart(2,"0")+":"+String(suggest.getMinutes()).padStart(2,"0");
+  var v=prompt("Set "+p.empName+"'s clock-out time (24-hour, e.g. 15:30) for "+inD.toLocaleDateString()+":", sh);
+  if(v===null) return;
+  var m=v.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if(!m || +m[1]>23 || +m[2]>59){ alert("Please enter a time like 15:30."); return; }
+  var out=new Date(inD); out.setHours(+m[1],+m[2],0,0);
+  if(out.getTime()<=inD.getTime()) out.setDate(out.getDate()+1);   // worked past midnight
+  p.out=out.toISOString();
+  (p.edits||(p.edits=[])).push({by:"owner",at:new Date().toISOString(),action:"set clock-out "+v.trim()});
+  save(K_PUNCH,all); render(); renderCosting();
+}
+
+/* ---- Job costing: actual labor hours per job from the clock-ins ---- */
+function renderCosting(){
+  var el=document.getElementById("costing"); if(!el) return;
+  var jobs=load(K_JOBS,[]), punches=load(K_PUNCH,[]);
+  var actual={}, labor={};   // jobId -> hours / labor$ (per-person rates)
+  punches.forEach(function(p){
+    if(!p.out) return; var h=(new Date(p.out).getTime()-new Date(p.in).getTime())/3600000;
+    if(h>0 && p.jobId){ actual[p.jobId]=(actual[p.jobId]||0)+h; labor[p.jobId]=(labor[p.jobId]||0)+h*empRate(p.empId); }
+  });
+  var list=jobs.filter(function(j){return actual[j.id] || j.estHours;})
+    .sort(function(a,b){return (b.date||"").localeCompare(a.date||"");});
+  if(!list.length){ el.innerHTML='<div class="empty">No labor logged against jobs yet. Once the crew clocks into work orders, hours and costs show up here.</div>'; return; }
+  var totLab=0,totMat=0,totRev=0,totProfit=0,anyProfit=false;
+  var rows=list.map(function(j){
+    var act=actual[j.id]||0, est=j.estHours||0, lab=labor[j.id]||0; totLab+=lab;
+    var mat=(j.materials!=null?j.materials:""), price=(j.price!=null?j.price:"");
+    var matN=parseFloat(mat)||0, priceN=parseFloat(price)||0; totMat+=matN; totRev+=priceN;
+    var profit=priceN-lab-matN;
+    if(price!==""){ anyProfit=true; totProfit+=profit; }
+    var profTxt=price===""?'—':('$'+profit.toFixed(0));
+    var profCol=price===""?'var(--muted)':(profit>=0?'var(--green)':'var(--red)');
+    var inp='style="width:66px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;text-align:right;font:inherit"';
+    return '<tr><td>'+esc(j.customer)+'<div class="mini">'+esc(j.service)+'</div></td>'+
+      '<td class="num">'+act.toFixed(1)+(est?'<span class="mini">/'+est.toFixed(1)+'</span>':'')+'</td>'+
+      '<td class="num">$'+lab.toFixed(0)+'</td>'+
+      '<td class="num"><input type="number" value="'+mat+'" placeholder="0" '+inp+' onchange="setJobCost(\''+j.id+'\',\'materials\',this.value)"></td>'+
+      '<td class="num"><input type="number" value="'+price+'" placeholder="0" '+inp+' onchange="setJobCost(\''+j.id+'\',\'price\',this.value)"></td>'+
+      '<td class="num" style="color:'+profCol+';font-weight:700">'+profTxt+'</td></tr>';
+  }).join("");
+  var totRow='<tr style="border-bottom:2px solid var(--line);font-weight:700"><td>Total</td><td class="num"></td><td class="num">'+'$'+totLab.toFixed(0)+'</td><td class="num">$'+totMat.toFixed(0)+'</td><td class="num">$'+totRev.toFixed(0)+'</td><td class="num" style="color:'+(totProfit>=0?'var(--green)':'var(--red)')+'">'+(anyProfit?'$'+totProfit.toFixed(0):'—')+'</td></tr>';
+  el.innerHTML='<div style="overflow-x:auto"><table><tr><th>Job</th><th class="num">Hrs a/e</th><th class="num">Labor</th><th class="num">Mat’ls</th><th class="num">Charged</th><th class="num">Profit</th></tr>'+rows+totRow+'</table></div>';
+}
+function setJobCost(id,field,val){
+  var jobs=load(K_JOBS,[]),j=jobs.find(function(x){return x.id===id});
+  if(j){ j[field]=(val===""?null:parseFloat(val)); save(K_JOBS,jobs); renderCosting(); }
+}
+
+/* ---- Data export: Derrick owns everything, no lock-in (§25) ---- */
+var EXPORT_KEYS=["wecare_leads","wecare_workorders","wecare_punches","wecare_punch_fixes","wecare_consults","wecare_estimates","wecare_sops","wecare_convos"];
+function _dl(name,content,mime){var b=new Blob([content],{type:mime||"text/plain"}),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(u);},120);}
+function _today(){return new Date().toISOString().slice(0,10);}
+function exportAllJSON(){
+  var out={business:"WeCare Landscapes",exported:new Date().toISOString()};
+  EXPORT_KEYS.forEach(function(k){ try{out[k]=JSON.parse(localStorage.getItem(k))||null;}catch(e){out[k]=null;} });
+  _dl("wecare-backup-"+_today()+".json", JSON.stringify(out,null,2), "application/json");
+}
+function _toCSV(arr){
+  if(!arr||!arr.length) return "";
+  var cols={}; arr.forEach(function(o){Object.keys(o||{}).forEach(function(k){cols[k]=1;});});
+  var keys=Object.keys(cols);
+  var cell=function(v){ if(v==null)return ""; if(typeof v==="object")v=JSON.stringify(v); v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  return keys.join(",")+"\n"+arr.map(function(o){return keys.map(function(k){return cell(o?o[k]:"");}).join(",");}).join("\n");
+}
+function exportOne(key,label){
+  var raw; try{raw=JSON.parse(localStorage.getItem(key));}catch(e){raw=null;}
+  var arr=Array.isArray(raw)?raw:(raw?Object.keys(raw).map(function(id){return raw[id];}):[]);
+  if(!arr.length){alert("No "+label.replace(/-/g," ")+" to export yet.");return;}
+  _dl("wecare-"+label+"-"+_today()+".csv", _toCSV(arr), "text/csv");
+}
+
+/* ---- Recurring maintenance: auto-generate work orders on schedule ---- */
+var K_RECUR="wecare_recurring";
+var DOWN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function ymd(d){return d.toISOString().slice(0,10);}
+function nextDOW(dow){var d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+((dow-d.getDay()+7)%7));return d;}
+function stepDays(f){return f==="biweekly"?14:f==="monthly"?28:7;}
+function freqLabel(f){return f==="biweekly"?"Every 2 weeks":f==="monthly"?"Every 4 weeks":f==="monthly_date"?"Same date each month":"Every week";}
+// add n calendar months, keeping the day-of-month (clamped for short months: Jan 31 → Feb 28/29)
+function addMonthsClamped(base,n){
+  var d=new Date(base.getFullYear(),base.getMonth()+n,1,12,0,0,0);
+  var lastDay=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  d.setDate(Math.min(base.getDate(),lastDay));
+  return d;
+}
+function recurNextDue(s){
+  var anchor=s.anchor?new Date(s.anchor+"T12:00:00"):nextDOW(s.dow||1);
+  var today=new Date();today.setHours(0,0,0,0);
+  if(s.freq==="monthly_date"){
+    // same calendar date each month — always derive from the ORIGINAL anchor so the
+    // day-of-month stays stable (a 31st schedule doesn't drift to the 28th permanently)
+    var diff=(today.getFullYear()-anchor.getFullYear())*12+(today.getMonth()-anchor.getMonth());
+    var d=addMonthsClamped(anchor,Math.max(0,diff));
+    if(d.getTime()<today.getTime()) d=addMonthsClamped(anchor,Math.max(0,diff)+1);
+    return ymd(d);
+  }
+  var step=stepDays(s.freq),d2=new Date(anchor); while(d2.getTime()<today.getTime()) d2.setDate(d2.getDate()+step);
+  return ymd(d2);
+}
+function generateRecurring(){
+  var recur=load(K_RECUR,[]).filter(function(s){return s.active!==false;});
+  if(!recur.length) return;
+  var jobs=load(K_JOBS,[]),changed=false;
+  recur.forEach(function(s){
+    var d=recurNextDue(s);
+    if(!jobs.some(function(j){return j.recurId===s.id&&j.date===d;})){
+      // deterministic id: two devices generating the same recurring job/date produce the
+      // SAME id, so the cloud on-conflict merge converges them instead of duplicating
+      jobs.push({id:"WR-"+s.id+"-"+d,customer:s.customer,phone:s.phone||"",service:s.service,address:s.address||"",scope:"Recurring "+(s.service||"maintenance").toLowerCase(),sop:(s.service||"")+" SOP",assignedTo:s.crew||[],date:d,status:"assigned",estHours:s.estHours||null,recurId:s.id,propertyId:s.propertyId||""});
+      changed=true;
+    }
+  });
+  if(changed) save(K_JOBS,jobs);
+}
+function renderRecur(){
+  var el=document.getElementById("recurList"); if(!el) return;
+  var recur=load(K_RECUR,[]);
+  if(!recur.length){ el.innerHTML='<div class="empty">No recurring jobs yet. Add one below — great for weekly/biweekly mowing.</div>'; return; }
+  el.innerHTML=recur.map(function(s){
+    var due=recurNextDue(s);
+    return '<div style="border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:8px'+(s.active===false?';opacity:.55':'')+'">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><b style="color:var(--green-ink)">'+esc(s.customer)+'</b>'+
+        '<span class="mini">'+freqLabel(s.freq)+' · '+DOWN[s.dow||1]+'</span></div>'+
+      '<div class="mini">'+esc(s.service)+(s.address?' · '+esc(s.address):'')+' · 👷 '+(s.crew||[]).map(nm).join(", ")+'</div>'+
+      '<div class="mini">Next: '+(s.active===false?'(paused)':new Date(due+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}))+'</div>'+
+      '<div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn" style="padding:4px 10px" onclick="toggleRecur(\''+s.id+'\')">'+(s.active===false?'▶ Resume':'⏸ Pause')+'</button>'+
+        '<button class="btn" style="padding:4px 10px" onclick="delRecur(\''+s.id+'\')">Delete</button>'+
+      '</div></div>';
+  }).join("");
+}
+function addRecurring(){
+  var cust=document.getElementById("rcCust").value.trim(); if(!cust){alert("Customer name?");return;}
+  var dow=parseInt(document.getElementById("rcDow").value,10)||1;
+  var crew=[].slice.call(document.querySelectorAll("#rcCrew input:checked")).map(function(i){return i.value;});
+  var recur=load(K_RECUR,[]);
+  recur.push({id:"R"+Date.now().toString(36),customer:cust,phone:document.getElementById("rcPhone").value.trim(),
+    service:document.getElementById("rcSvc").value,address:document.getElementById("rcAddr").value.trim(),
+    propertyId:document.getElementById("rcProp").value||"",
+    crew:crew,freq:document.getElementById("rcFreq").value,dow:dow,estHours:parseFloat(document.getElementById("rcHrs").value)||null,
+    anchor:ymd(nextDOW(dow)),active:true,created:new Date().toISOString()});
+  save(K_RECUR,recur);
+  ["rcCust","rcPhone","rcAddr","rcHrs"].forEach(function(i){document.getElementById(i).value="";});
+  var rp=document.getElementById("rcProp"); if(rp)rp.value="";
+  document.querySelectorAll("#rcCrew input:checked").forEach(function(i){i.checked=false;});
+  generateRecurring(); renderRecur(); render();
+  alert("Recurring job set — first work order created for its next date.");
+}
+function toggleRecur(id){var r=load(K_RECUR,[]),x=r.find(function(y){return y.id===id;});if(x)x.active=x.active===false;save(K_RECUR,r);renderRecur();}
+function delRecur(id){if(!confirm("Delete this recurring schedule? (Existing work orders stay.)"))return;save(K_RECUR,load(K_RECUR,[]).filter(function(s){return s.id!==id;}));renderRecur();}
+
+/* ---- Maintenance routes: an ordered list of stops that auto-creates a day's work orders ---- */
+var K_ROUTES="wecare_routes";
+function routeNextDue(rt){
+  var anchor=rt.anchor?new Date(rt.anchor+"T12:00:00"):nextDOW(rt.dow||1);
+  var step=rt.freq==="biweekly"?14:7,today=new Date();today.setHours(0,0,0,0);
+  var d=new Date(anchor); while(d.getTime()<today.getTime()) d.setDate(d.getDate()+step);
+  return ymd(d);
+}
+function generateRoutes(){
+  var routes=load(K_ROUTES,[]).filter(function(r){return r.active!==false && (r.stops||[]).length;});
+  if(!routes.length) return;
+  var jobs=load(K_JOBS,[]),changed=false;
+  routes.forEach(function(rt){
+    var d=routeNextDue(rt);
+    (rt.stops||[]).forEach(function(st,i){
+      // id tied to the STOP (stable sid), NOT its position — so reordering never duplicates jobs
+      var wid="WR-"+rt.id+"-"+st.sid+"-"+d;
+      var existing=jobs.find(function(j){return j.id===wid && j.date===d;});
+      if(existing){
+        if(existing.seq!==i || existing.routeName!==rt.name){ existing.seq=i; existing.routeName=rt.name; changed=true; }  // keep display order fresh when owner reorders
+      }else{
+        jobs.push({id:wid,customer:st.customer,phone:st.phone||"",service:st.service||"Lawn maintenance",address:st.address||"",
+          scope:"Route stop · "+rt.name,sop:(st.service||"Lawn maintenance")+" SOP",assignedTo:rt.crew||[],date:d,status:"assigned",
+          estHours:st.estHours||null,routeId:rt.id,routeName:rt.name,seq:i});
+        changed=true;
+      }
+    });
+  });
+  if(changed) save(K_JOBS,jobs);
+}
+function renderRoutes(){
+  var el=document.getElementById("routeList"); if(!el) return;
+  var routes=load(K_ROUTES,[]);
+  if(!routes.length){ el.innerHTML='<div class="empty">No routes yet. Create one below — e.g. a Monday route with your maintenance stops in order.</div>'; return; }
+  el.innerHTML=routes.map(function(rt){
+    var due=routeNextDue(rt), stops=rt.stops||[];
+    var rows=stops.map(function(st,i){
+      return '<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)">'+
+        '<span style="font-family:var(--ff-d);font-weight:700;color:var(--green-deep);min-width:20px">'+(i+1)+'</span>'+
+        '<div style="flex:1;min-width:0"><b style="color:var(--green-ink)">'+esc(st.customer||"(unnamed)")+'</b>'+
+          '<div class="mini">'+esc(st.service||"Lawn maintenance")+(st.address?' · '+esc(st.address):'')+(st.estHours?' · ~'+st.estHours+'h':'')+'</div></div>'+
+        '<button class="btn" style="padding:2px 7px" title="Move up" onclick="moveStop(\''+rt.id+'\','+i+',-1)"'+(i===0?' disabled':'')+'>▲</button>'+
+        '<button class="btn" style="padding:2px 7px" title="Move down" onclick="moveStop(\''+rt.id+'\','+i+',1)"'+(i===stops.length-1?' disabled':'')+'>▼</button>'+
+        '<button class="btn" style="padding:2px 7px" title="Move to another route" onclick="moveStopToRoute(\''+rt.id+'\','+i+')">⟳</button>'+
+        '<button class="btn" style="padding:2px 7px" title="Remove" onclick="removeStop(\''+rt.id+'\','+i+')">✕</button>'+
+      '</div>';
+    }).join("");
+    return '<div style="border:1px solid var(--line);border-radius:9px;padding:12px 13px;margin-bottom:10px'+(rt.active===false?';opacity:.55':'')+'">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline">'+
+        '<b style="color:var(--green-ink);font-family:var(--ff-d);font-size:1.02rem">🗺️ '+esc(rt.name||"Route")+'</b>'+
+        '<span class="mini">'+(rt.freq==="biweekly"?"Every 2 weeks":"Every week")+' · '+DOWN[rt.dow||1]+' · 👷 '+(rt.crew||[]).map(nm).join(", ")+'</span></div>'+
+      '<div class="mini" style="margin:2px 0 8px">Next: '+(rt.active===false?'(paused)':new Date(due+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}))+' · '+stops.length+' stop'+(stops.length===1?'':'s')+'</div>'+
+      (rows||'<div class="mini" style="padding:4px 0">No stops yet — add properties below.</div>')+
+      '<div style="margin-top:9px;display:grid;gap:6px">'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<input id="st-c-'+rt.id+'" placeholder="Property / customer" style="flex:2;min-width:120px">'+
+          '<input id="st-a-'+rt.id+'" placeholder="Address" style="flex:2;min-width:120px">'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<input id="st-s-'+rt.id+'" placeholder="Service (e.g. Mow + edge)" style="flex:2;min-width:120px">'+
+          '<input id="st-h-'+rt.id+'" type="number" step="0.5" placeholder="Hrs" style="flex:1;min-width:60px">'+
+          '<button class="btn p" style="padding:5px 12px" onclick="addStop(\''+rt.id+'\')">＋ Add stop</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn" style="padding:4px 10px" onclick="toggleRoute(\''+rt.id+'\')">'+(rt.active===false?'▶ Resume':'⏸ Pause')+'</button>'+
+        '<button class="btn" style="padding:4px 10px" onclick="delRoute(\''+rt.id+'\')">Delete route</button>'+
+      '</div></div>';
+  }).join("");
+}
+function addRoute(){
+  var name=document.getElementById("rtName").value.trim(); if(!name){alert("Give the route a name.");return;}
+  var dow=parseInt(document.getElementById("rtDow").value,10)||1;
+  var crew=[].slice.call(document.querySelectorAll("#rtCrew input:checked")).map(function(i){return i.value;});
+  var routes=load(K_ROUTES,[]);
+  routes.push({id:"RT"+Date.now().toString(36),name:name,dow:dow,freq:document.getElementById("rtFreq").value,
+    crew:crew,stops:[],anchor:ymd(nextDOW(dow)),active:true,created:new Date().toISOString()});
+  save(K_ROUTES,routes);
+  document.getElementById("rtName").value="";
+  document.querySelectorAll("#rtCrew input:checked").forEach(function(i){i.checked=false;});
+  renderRoutes();
+}
+function _route(id){return load(K_ROUTES,[]).find(function(r){return r.id===id;});}
+function addStop(rtId){
+  var routes=load(K_ROUTES,[]),rt=routes.find(function(r){return r.id===rtId;}); if(!rt)return;
+  var c=document.getElementById("st-c-"+rtId).value.trim(); if(!c){alert("Property / customer name?");return;}
+  rt.stops=rt.stops||[];
+  rt.stops.push({sid:"S"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),customer:c,
+    address:document.getElementById("st-a-"+rtId).value.trim(),service:document.getElementById("st-s-"+rtId).value.trim()||"Lawn maintenance",
+    estHours:parseFloat(document.getElementById("st-h-"+rtId).value)||null});
+  save(K_ROUTES,routes); generateRoutes(); renderRoutes(); render();
+}
+function removeStop(rtId,idx){
+  var routes=load(K_ROUTES,[]),rt=routes.find(function(r){return r.id===rtId;}); if(!rt||!rt.stops[idx])return;
+  if(!confirm("Remove "+(rt.stops[idx].customer||"this stop")+" from "+rt.name+"?"))return;
+  rt.stops.splice(idx,1); save(K_ROUTES,routes); renderRoutes(); render();
+}
+function moveStop(rtId,idx,dir){
+  var routes=load(K_ROUTES,[]),rt=routes.find(function(r){return r.id===rtId;}); if(!rt)return;
+  var j=idx+dir; if(j<0||j>=rt.stops.length)return;
+  var t=rt.stops[idx]; rt.stops[idx]=rt.stops[j]; rt.stops[j]=t;
+  save(K_ROUTES,routes); generateRoutes(); renderRoutes(); render();
+}
+function moveStopToRoute(rtId,idx){
+  var routes=load(K_ROUTES,[]),rt=routes.find(function(r){return r.id===rtId;}); if(!rt||!rt.stops[idx])return;
+  var others=routes.filter(function(r){return r.id!==rtId;});
+  if(!others.length){alert("Make another route first, then you can move a stop to it.");return;}
+  var msg="Move \""+(rt.stops[idx].customer||"this stop")+"\" to which route?\n"+others.map(function(r,i){return (i+1)+") "+r.name;}).join("\n");
+  var pick=prompt(msg); if(!pick)return;
+  var n=parseInt(pick,10); if(!(n>=1&&n<=others.length)){alert("Enter a number from the list.");return;}
+  var dest=others[n-1]; dest.stops=dest.stops||[]; dest.stops.push(rt.stops[idx]); rt.stops.splice(idx,1);
+  save(K_ROUTES,routes); generateRoutes(); renderRoutes(); render();
+}
+function toggleRoute(id){var r=load(K_ROUTES,[]),x=r.find(function(y){return y.id===id;});if(x)x.active=x.active===false;save(K_ROUTES,r);renderRoutes();}
+function delRoute(id){if(!confirm("Delete this route? (Work orders already created stay on the board.)"))return;save(K_ROUTES,load(K_ROUTES,[]).filter(function(r){return r.id!==id;}));renderRoutes();}
+
+/* ---- Case studies: finished job → portfolio piece ---- */
+var K_CASES="wecare_casestudies";
+function cityFromAddr(a){ if(!a)return ""; var p=a.split(","); return (p.length>1?p[p.length-1]:p[0]).trim(); }
+function makeCaseStudy(jobId){
+  var j=load(K_JOBS,[]).find(function(x){return x.id===jobId;}); if(!j)return;
+  var cases=load(K_CASES,[]);
+  if(cases.some(function(c){return c.jobId===jobId;})){ alert("Already started a case study for this job — see the Case studies panel below."); return; }
+  var city=cityFromAddr(j.address);
+  cases.push({id:"CS"+Date.now().toString(36),title:(j.service||"Project")+(city?" in "+city:""),service:j.service||"",location:city,summary:"",photos:(j.photos||[]).slice(),published:false,jobId:jobId,created:new Date().toISOString()});
+  save(K_CASES,cases); renderCases();
+  alert("Draft case study created in the Case studies panel below — add a short story and publish it.");
+}
+function renderCases(){
+  var el=document.getElementById("caseList"); if(!el) return;
+  var cases=load(K_CASES,[]).sort(function(a,b){return (b.created||"").localeCompare(a.created||"");});
+  if(!cases.length){ el.innerHTML='<div class="empty">No case studies yet. On a completed job above, tap “★ Make case study.”</div>'; return; }
+  el.innerHTML=cases.map(function(c){
+    var thumbs=(c.photos||[]).map(function(u){var s=safeUrl(u);return s?'<img src="'+s+'" style="width:46px;height:46px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">':'';}).join("");
+    return '<div style="border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:8px">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><b style="color:var(--green-ink);font-family:var(--ff-d)">'+esc(c.title)+'</b>'+
+        '<span class="pill '+(c.published?'st-done':'st-assigned')+'">'+(c.published?'Published':'Draft')+'</span></div>'+
+      '<div class="mini">'+esc(c.service)+(c.location?' · '+esc(c.location):'')+'</div>'+
+      (thumbs?'<div style="display:flex;gap:4px;flex-wrap:wrap;margin:7px 0">'+thumbs+'</div>':'<div class="mini" style="margin:6px 0">No photos on this job — add some from the crew app first.</div>')+
+      '<textarea id="cs-'+c.id+'" rows="2" placeholder="Short story: what they wanted and what you built…" style="width:100%;font:inherit;border:1px solid var(--line);border-radius:6px;padding:7px">'+esc(c.summary)+'</textarea>'+
+      '<div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">'+
+        '<button class="btn" style="padding:4px 10px" onclick="saveCaseSummary(\''+c.id+'\')">Save</button>'+
+        '<button class="btn '+(c.published?'':'p')+'" style="padding:4px 10px" onclick="toggleCasePub(\''+c.id+'\')">'+(c.published?'Unpublish':'Publish to site')+'</button>'+
+        '<button class="btn" style="padding:4px 10px" onclick="delCase(\''+c.id+'\')">Delete</button>'+
+      '</div></div>';
+  }).join("");
+}
+function _csSyncSummary(id){var t=document.getElementById("cs-"+id);return t?t.value:null;}
+function saveCaseSummary(id){var c=load(K_CASES,[]),x=c.find(function(y){return y.id===id});if(x){var s=_csSyncSummary(id);if(s!==null)x.summary=s;}save(K_CASES,c);renderCases();}
+function toggleCasePub(id){var c=load(K_CASES,[]),x=c.find(function(y){return y.id===id});if(x){var s=_csSyncSummary(id);if(s!==null)x.summary=s;x.published=!x.published;}save(K_CASES,c);renderCases();}
+function delCase(id){if(!confirm("Delete this case study?"))return;save(K_CASES,load(K_CASES,[]).filter(function(c){return c.id!==id;}));renderCases();}
+
+/* ---- SOP Library (management-editable; crew opens on the job) ---- */
+function seedSOPs(){
+  if(load(K_SOPS,null)!==null) return;  // only seed once
+  var t=new Date().toISOString();
+  save(K_SOPS,[
+    {id:"sop-mow",title:"Bi-Weekly Maintenance SOP",service:"Lawn maintenance",updated:t,notes:"Goal: leave every property clean, cared for, and better than we found it. The work order comes first — property-specific instructions override this SOP. Shrub trimming is separate seasonal passes (2-3x/year) unless the work order says otherwise. The crew leader owns the finished result — don't rush the final check.",
+     steps:["Read the work order + all property notes (these override this SOP)","Load & check gear: fuel, trimmer line, blower, mower, hand tools, spray (if needed), door hangers","Walk the property before starting; plan today's work from the work order","Take BEFORE photos — one front, one back (if applicable)","Note any pre-existing damage/problems (photo + note)","Do any special pre-mow task listed on the work order","Weedeat/trim: cut level with the lawn at beds; do NOT scalp around trees","Edge clean, defined lines where grass meets drives, walks, patios, hard surfaces","Mow at the correct height for the grass type; alternate the pattern from last visit","Blow all hard surfaces clean: drives, walks, patios, decks","Lightly blow leaves/debris from beds — do NOT blow mulch out of the beds","Weed control ONLY if on the work order — spot spray, mind the wind, no drift onto plants","WET TURF: if too wet to mow safely (ruts/tearing), skip the mow, do the rest, note 'Lawn too wet to mow' in the app + door hanger","Don't blow debris onto neighbors, the street, or vehicles; watch for irrigation, lighting, pets, gates, furniture","Crew leader final check: walk the property, re-check the work order — every required task done","Take AFTER photos from the same spots as the before photos","Complete & leave the We Care door hanger (check work done, use 'We Noticed' if needed, add your initials)","All tools & equipment back on the trailer/truck; leave gates and property as found"]},
+    {id:"sop-sod",title:"Sod Installation SOP",service:"Sod install",updated:t,notes:"Water within 30 minutes of laying.",
+     steps:["Confirm pallet count matches the work order","Kill/scrape existing grass and weeds","Grade and level the soil, remove rocks","Lay sod in a brick-stagger pattern, tight seams","Roll the sod to press out air pockets","Water thoroughly right away","Leave watering instructions with the customer"]},
+    {id:"sop-concrete",title:"Carved Concrete SOP",service:"Concrete Artistry",updated:t,notes:"This is our signature work — photograph every stage.",
+     steps:["Review the design/sketch with the customer","Photo the site BEFORE starting","Build the form and armature","Pour and rough-shape the base","Hand-carve the detail while workable","Apply color/stain per the design","Seal the finished piece","Photo the finished work from 3 angles"]},
+    {id:"sop-planting",title:"Tree & Shrub Planting SOP",service:"Tree & shrub planting",updated:t,notes:"Goal: plant every tree/shrub at the correct depth, protect the roots, water in correctly, and leave the site clean. THE ROOT FLARE MUST NEVER BE BURIED. Follow the work order for plant location, species, quantities, and special instructions. When in doubt: protect the root flare, protect the roots, and make sure water can drain — a plant set too high can be fixed; one buried too deep can decline for years.",
+     steps:["Read the work order — confirm plant, exact location, species, quantity, and any special instructions","Check above & below for obstacles/utilities — do NOT dig where utilities aren't cleared or the location is uncertain","Gather tools + the We Care compost-mulch blend; stakes & soft ties if staking is needed","Set the plant in place; view it from more than one direction before digging","Find the ROOT FLARE (where the trunk widens) — it must stay visible at/slightly above finished grade, NEVER buried (don't trust the nursery soil line)","Dig the hole 2-3x WIDER than the root ball, NO deeper than the ball; sides rough not glazed; ball sits on firm, undisturbed soil","Container plants: ease out (never lift by the trunk); loosen or cleanly cut circling/matted roots so they grow outward","B&B plants: move by the root ball (not the trunk); position first, then remove twine, wire basket & upper burlap — never leave wire/burlap against the trunk","Test-fit & re-check the root-flare height before backfilling; set the plant straight, best side out","Backfill with mostly native soil (break clods, remove debris); amend with compost only if needed, blended in — no soft 'pot'; firm gently by hand, don't stomp; NO fertilizer unless the work order says","Don't plant in waterlogged soil — fix the drainage or plant slightly high in heavy/wet soil","Water in immediately, slow & deep — soil moist not soupy; fix any settling without burying the flare; leave a watering plan","Apply the compost-mulch blend as the job requires — keep it OFF the trunk, no mulch volcano, root flare still visible","Stake only when needed (~6 ft+ or top-heavy/windy): 2-3 stakes outside the ball, wide soft ties, allow slight movement, don't girdle the trunk","Final check: plant straight, root flare visible, nothing rubbing the trunk, mulch off the trunk, watered in, stakes correct","Clean up — rake, blow hard surfaces, remove all pots/wire/burlap/twine/debris; take completion photos & update the work order"]},
+  ]);
+}
+function renderSOPs(){
+  var el=document.getElementById("sopList"); if(!el) return;
+  var sops=load(K_SOPS,[]);
+  el.innerHTML = sops.length ? sops.map(function(s){
+    return '<div style="border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:8px">'+
+      '<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap">'+
+        '<b style="color:var(--green-ink);font-family:var(--ff-d)">'+esc(s.title)+'</b>'+
+        '<span class="mini">'+(s.service?esc(s.service)+' · ':'')+(s.steps||[]).length+' steps</span></div>'+
+      ((s.steps||[]).length?'<ol style="margin:8px 0 0;padding-left:20px;font-size:.85rem;color:var(--body)">'+s.steps.map(function(st){return '<li>'+esc(st)+'</li>';}).join('')+'</ol>':'')+
+      (s.notes?'<div class="mini" style="margin-top:6px">📝 '+esc(s.notes)+'</div>':'')+
+      '<div style="margin-top:8px"><button class="btn" style="padding:4px 10px" onclick="editSOP(\''+s.id+'\')">Edit</button> '+
+        '<button class="btn" style="padding:4px 10px" onclick="deleteSOP(\''+s.id+'\')">Delete</button></div>'+
+    '</div>';
+  }).join("") : '<div class="empty">No SOPs yet. Add your first one below — the crew will see it on any matching job.</div>';
+}
+function saveSOP(){
+  var title=document.getElementById("sopTitle").value.trim();
+  if(!title){alert("Give the SOP a title.");return;}
+  var steps=document.getElementById("sopSteps").value.split("\n").map(function(x){return x.trim();}).filter(Boolean);
+  var sops=load(K_SOPS,[]);
+  var id=document.getElementById("sopId").value;
+  var rec={id:id||("sop-"+Date.now().toString(36)),title:title,service:document.getElementById("sopSvc").value,
+    steps:steps,notes:document.getElementById("sopNotes").value.trim(),updated:new Date().toISOString()};
+  if(id){var i=sops.findIndex(function(s){return s.id===id});if(i>=0)sops[i]=rec;else sops.push(rec);}
+  else sops.push(rec);
+  save(K_SOPS,sops); resetSOPForm(); renderSOPs();
+}
+function editSOP(id){
+  var s=load(K_SOPS,[]).find(function(x){return x.id===id}); if(!s)return;
+  document.getElementById("sopId").value=s.id;
+  document.getElementById("sopTitle").value=s.title;
+  document.getElementById("sopSvc").value=s.service||"";
+  document.getElementById("sopSteps").value=(s.steps||[]).join("\n");
+  document.getElementById("sopNotes").value=s.notes||"";
+  document.getElementById("sopFormTitle").textContent="Edit SOP";
+  document.getElementById("sopCancel").style.display="";
+  document.getElementById("sopTitle").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function deleteSOP(id){
+  if(!confirm("Delete this SOP?"))return;
+  save(K_SOPS,load(K_SOPS,[]).filter(function(s){return s.id!==id}));
+  renderSOPs();
+}
+function resetSOPForm(){
+  ["sopId","sopTitle","sopSteps","sopNotes"].forEach(function(i){document.getElementById(i).value="";});
+  document.getElementById("sopSvc").value="";
+  document.getElementById("sopFormTitle").textContent="Add an SOP";
+  document.getElementById("sopCancel").style.display="none";
+}
+/* ===================== TEAM / EMPLOYEE DIRECTORY ===================== */
+function empList(){var s=load(K_EMP,null); return (s&&s.length)?s:DEFAULT_CREW.map(function(c){return Object.assign({},c);});}
+function saveEmps(list){save(K_EMP,list);}
+function slugId(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,24)||("emp"+Date.now().toString(36));}
+function payLabel(e){ if(e.dayRate) return "$"+e.dayRate+"/day"; if(e.rate!=null&&e.rate!=="") return "$"+e.rate+"/hr"; return "—"; }
+/* office code gates the team's personal info; stored only in THIS browser */
+function officeCode(){try{return localStorage.getItem("wecare_office_code")||"";}catch(e){return "";}}
+var _ownerLoaded=false;
+function loadTeam(){
+  if(!window.WeCareCloud || !WeCareCloud.team){ renderTeam(); return; }
+  // logged-in owner: the session JWT authorizes the team read (no office code needed)
+  WeCareCloud.team("list",{code:officeCode()}).then(function(res){
+    if(res && res.owner && res.employees){ save(K_EMP,res.employees); _ownerLoaded=true; CREW=allEmps(); renderTeam(); render(); renderCosting(); }
+    else { _ownerLoaded=false; renderTeam(); }
+  });
+}
+function signOut(){ try{if(window.WeCareCloud&&WeCareCloud.logout)WeCareCloud.logout();}catch(e){} save(K_EMP,[]); renderAuthStatus(); opAuthOpen(); }
+function renderTeam(){
+  var box=document.getElementById("teamList"); if(!box) return;
+  if(!_ownerLoaded){
+    box.innerHTML='<div style="background:var(--sand);border:1px solid var(--line);border-radius:11px;padding:16px;text-align:center">'+
+      '<div style="font-size:1.6rem">🔒</div>'+
+      '<p style="margin:6px 0 12px;font-size:.92rem">Loading your team… if this stays, tap to retry or sign in again.</p>'+
+      '<button class="btn p" onclick="loadTeam()">Load team</button></div>';
+    return;
+  }
+  var list=allEmps();
+  // pending accounts (awaiting approval) float to the top
+  list=list.slice().sort(function(a,b){ return (a.status==="pending"?0:1)-(b.status==="pending"?0:1); });
+  var pendingCount=list.filter(function(e){return e.status==="pending";}).length;
+  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+      '<span class="mini">'+(pendingCount?('<b style="color:#b5751f">'+pendingCount+' awaiting approval</b>'):'')+'</span>'+
+      '<button class="btn" onclick="signOut()">Sign out</button></div>'+
+    list.map(function(e){
+    var pin = e.hasPin ? '<span style="color:var(--ok,#2f8055)">🔒 PIN set</span>' : '<span style="color:#b5751f">⚠️ no PIN yet</span>';
+    var pending = e.status==="pending";
+    var edge = pending ? 'border:1.5px solid #e6cd97;background:#fdf9f0' : 'border:1px solid var(--line);background:#fff';
+    var dim = (e.active===false && !pending) ? 'opacity:.55' : '';
+    var s4 = e.ssnLast4 ? ' · SSN •••‑'+esc(e.ssnLast4) : '';
+    return '<div style="'+edge+';'+dim+';border-radius:11px;padding:12px 14px;margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline">'+
+        '<b style="color:var(--green-ink)">'+esc(e.name||"(no name)")+
+          (pending?' <span class="mini" style="color:#b5751f;font-weight:700">· PENDING</span>':'')+
+          (e.admin?' <span class="mini">· admin</span>':'')+
+          (e.active===false&&!pending?' <span class="mini">· inactive</span>':'')+'</b>'+
+        '<span class="mini">'+esc(e.role||"")+(e.empType==="1099"?" · 1099":"")+'</span></div>'+
+      '<div class="mini" style="margin-top:4px">'+
+        (e.phone?'📱 '+esc(e.phone):'<span style="color:#b5751f">no phone</span>')+
+        ' · 💵 '+payLabel(e)+' · '+pin+s4+'</div>'+
+      (e.address?'<div class="mini">🏠 '+esc(e.address)+'</div>':'')+
+      (e.emergencyName?'<div class="mini">🚑 '+esc(e.emergencyName)+(e.emergencyPhone?' · '+esc(e.emergencyPhone):'')+'</div>':'')+
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+
+        (pending?'<button class="btn p" onclick="approveEmp(\''+e.id+'\')">✅ Approve</button>':'')+
+        '<button class="btn" onclick="openEmpEdit(\''+e.id+'\')">Edit / set up</button>'+
+        '<button class="btn" onclick="printEmp(\''+e.id+'\')">🖨️ Print</button>'+
+      '</div></div>';
+  }).join("");
+  if(!list.length) box.innerHTML+='<div class="empty">No team members yet.</div>';
+}
+var _pendingPin=null; // set by resetEmpPin, applied on save
+function openEmpEdit(id){
+  _pendingPin=null;
+  var e = id ? (allEmps().find(function(x){return x.id===id;})||{}) : {};
+  document.getElementById("empModalTitle").textContent = id ? ("Edit — "+(e.name||"")) : "Add a team member";
+  document.getElementById("eId").value=id||"";
+  document.getElementById("eName").value=e.name||"";
+  document.getElementById("eRole").value=e.role||"";
+  document.getElementById("ePhone").value=e.phone||"";
+  document.getElementById("eEmail").value=e.email||"";
+  document.getElementById("eAddr").value=e.address||"";
+  document.getElementById("eEcn").value=e.emergencyName||"";
+  document.getElementById("eEcp").value=e.emergencyPhone||"";
+  document.getElementById("eRate").value=(e.rate!=null?e.rate:"");
+  document.getElementById("eDay").value=(e.dayRate!=null?e.dayRate:"");
+  document.getElementById("eStart").value=e.startDate||"";
+  document.getElementById("eActive").checked = e.active!==false;
+  document.getElementById("eAdmin").checked = !!e.admin;
+  document.getElementById("eNotes").value=e.notes||"";
+  document.getElementById("ePinState").textContent = e.pin ? "🔒 PIN is set" : "⚠️ no PIN yet";
+  document.getElementById("empModal").style.display="flex";
+}
+function closeEmpEdit(){ document.getElementById("empModal").style.display="none"; _pendingPin=null; }
+function resetEmpPin(){
+  var v=prompt("Set a 4-digit clock-in PIN for this person (blank to clear):","");
+  if(v===null) return;
+  v=v.trim();
+  if(v===""){ _pendingPin=""; document.getElementById("ePinState").textContent="PIN will be CLEARED on Save"; return; }
+  if(!/^\d{4}$/.test(v)){ alert("PIN must be exactly 4 digits."); return; }
+  _pendingPin=v; document.getElementById("ePinState").textContent="New PIN will be set on Save";
+}
+function saveEmp(){
+  var name=document.getElementById("eName").value.trim();
+  if(!name){ alert("Please enter a name."); return; }
+  var id=document.getElementById("eId").value || slugId(name);
+  var r=document.getElementById("eRate").value, d=document.getElementById("eDay").value;
+  var emp={ id:id, name:name, role:document.getElementById("eRole").value.trim(),
+    phone:document.getElementById("ePhone").value.trim(), email:document.getElementById("eEmail").value.trim(),
+    address:document.getElementById("eAddr").value.trim(), emergencyName:document.getElementById("eEcn").value.trim(),
+    emergencyPhone:document.getElementById("eEcp").value.trim(), startDate:document.getElementById("eStart").value,
+    rate:(r===""?null:parseFloat(r)), dayRate:(d===""?null:parseFloat(d)),
+    active:document.getElementById("eActive").checked, admin:document.getElementById("eAdmin").checked,
+    notes:document.getElementById("eNotes").value.trim() };
+  if(_pendingPin!==null) emp.pin=_pendingPin;   // "" clears · "1234" sets · null = leave as-is
+  WeCareCloud.team("save",{emp:emp, code:officeCode()}).then(function(res){
+    if(!res || !res.ok){ alert("Couldn't save — is the office code entered?"); return; }
+    closeEmpEdit(); loadTeam();
+  });
+}
+function approveEmp(id){
+  WeCareCloud.team("approve",{id:id, code:officeCode()}).then(function(res){
+    if(!res || !res.ok){ alert("Couldn't approve — is the office code entered?"); return; }
+    loadTeam();
+  });
+}
+function delEmp(){
+  var id=document.getElementById("eId").value; if(!id){ closeEmpEdit(); return; }
+  var e=allEmps().find(function(x){return x.id===id;});
+  if(!confirm("Remove "+((e&&e.name)||"this person")+" from the team? (Their past hours stay in the records.)")) return;
+  WeCareCloud.team("remove",{id:id, code:officeCode()}).then(function(res){
+    if(!res || !res.ok){ alert("Couldn't remove — is the office code entered?"); return; }
+    closeEmpEdit(); loadTeam();
+  });
+}
+function empProfileHTML(e){
+  function row(l,v){return '<tr><td style="color:#6d7d77;padding:4px 12px 4px 0;white-space:nowrap">'+l+'</td><td style="padding:4px 0"><b>'+(v?esc(v):"—")+'</b></td></tr>';}
+  return '<h2 style="font-family:Georgia,serif;color:#153a2a;margin:0 0 2px">'+esc(e.name||"")+'</h2>'+
+    '<div style="color:#6d7d77;margin-bottom:12px">'+esc(e.role||"")+(e.active===false?" · INACTIVE":"")+'</div>'+
+    '<table style="border-collapse:collapse;font-size:14px">'+
+      row("Cell phone",e.phone)+row("Email",e.email)+row("Home address",e.address)+
+      row("Emergency contact",(e.emergencyName||"")+(e.emergencyPhone?" · "+e.emergencyPhone:""))+
+      row("Pay",payLabel(e))+row("Start date",e.startDate)+row("Clock-in PIN",e.hasPin?"Set ✓":"Not set")+
+      row("Status",(e.status==="pending"?"PENDING APPROVAL":(e.active===false?"Inactive":"Active")))+
+      '<tr><td colspan="2" style="padding-top:10px"><b style="font-family:Georgia,serif;color:#153a2a">Payroll / W-2</b></td></tr>'+
+      row("Employment type",(e.empType==="1099"?"1099 Contractor":"W-2 Employee"))+
+      row("Legal name",e.legalName)+row("SSN (last 4)",e.ssnLast4?("•••-••-"+e.ssnLast4):"")+
+      row("Date of birth",e.dob)+row("Filing status",e.filingStatus)+
+      (e.notes?row("Notes",e.notes):"")+
+    '</table>'+
+    '<div style="margin-top:20px;border-top:1px solid #ccc;padding-top:12px">'+
+      '<b style="font-family:Georgia,serif;color:#153a2a">Paper documents to collect &amp; file</b>'+
+      '<div style="font-size:13px;color:#444;margin-top:6px;line-height:1.9">'+
+        '☐ Signed W-4 (tax withholding)&nbsp;&nbsp; ☐ I-9 + ID (work eligibility)&nbsp;&nbsp; ☐ Direct-deposit form or voided check<br>'+
+        '☐ Driver&#39;s license / driving record (if operating vehicles)&nbsp;&nbsp; ☐ Signed handbook / policies'+
+      '</div>'+
+      '<p style="font-size:12px;color:#888;margin-top:10px">Keep SSN, bank, and tax details on paper only — they are not stored in the app. WeCare Landscapes · printed '+new Date().toLocaleDateString()+'</p>'+
+    '</div>';
+}
+function printWindow(title,inner){
+  var w=window.open("","_blank","width=680,height=800");
+  if(!w){ alert("Allow pop-ups to print."); return; }
+  w.document.write('<!doctype html><html><head><title>'+title+'</title><meta charset="utf-8"><style>body{font-family:Arial,Helvetica,sans-serif;color:#16302a;margin:32px;line-height:1.5}</style></head><body>'+inner+'</body></html>');
+  w.document.close(); setTimeout(function(){w.focus();w.print();},250);
+}
+function printEmp(id){
+  var e=allEmps().find(function(x){return x.id===id;}); if(!e){alert("Save first, then print.");return;}
+  printWindow("WeCare — "+(e.name||"Team member"), empProfileHTML(e));
+}
+function printRoster(){
+  var list=allEmps();
+  var inner='<h1 style="font-family:Georgia,serif;color:#153a2a">WeCare Landscapes — Team Roster</h1>'+
+    '<p style="color:#6d7d77">'+list.length+' people · printed '+new Date().toLocaleDateString()+'</p>'+
+    list.map(function(e){return '<div style="border-top:1px solid #ccc;padding:12px 0">'+empProfileHTML(e)+'</div>';}).join("");
+  printWindow("WeCare — Team Roster", inner);
+}
+function exportCSV(){
+  var ws=weekStart(),ot=parseFloat(document.getElementById("otAfter").value)||40,tot={},days={};
+  load(K_PUNCH,[]).forEach(function(p){if(!p.out)return;var t0=new Date(p.in).getTime();if(t0<ws)return;tot[p.empId]=(tot[p.empId]||0)+(new Date(p.out).getTime()-t0)/3600000;(days[p.empId]||(days[p.empId]={}))[new Date(p.in).toISOString().slice(0,10)]=1;});
+  var rows=["Employee,Regular,Overtime,Total Hours,Pay"];
+  CREW.forEach(function(c){if(!tot[c.id])return;var h=tot[c.id],reg=Math.min(h,ot),o=Math.max(0,h-ot);var pay=c.dayRate?c.dayRate*Object.keys(days[c.id]||{}).length:(reg*(c.rate||0)+o*(c.rate||0)*1.5);rows.push('"'+c.name+'",'+reg.toFixed(2)+','+o.toFixed(2)+','+h.toFixed(2)+','+pay.toFixed(2));});
+  var b=new Blob([rows.join("\n")],{type:"text/csv"}),u=URL.createObjectURL(b),a=document.createElement("a");
+  a.href=u;a.download="wecare-payroll-week.csv";a.click();
+}
+function renderCrewChecks(){
+  var checks=CREW.map(function(c){return '<label><input type="checkbox" value="'+c.id+'">'+esc(String(c.name||c.id||"?").split(" ")[0])+'</label>'}).join("");
+  var wo=document.getElementById("woCrew"), rc=document.getElementById("rcCrew"), rt=document.getElementById("rtCrew");
+  // don't blow away boxes the user already checked mid-entry
+  if(wo && wo.querySelectorAll("input:checked").length===0) wo.innerHTML=checks;
+  if(rc && rc.querySelectorAll("input:checked").length===0) rc.innerHTML=checks;
+  if(rt && rt.querySelectorAll("input:checked").length===0) rt.innerHTML=checks;
+}
+renderCrewChecks();
+document.getElementById("otAfter").addEventListener("input",render);
+var _lr=document.getElementById("laborRate");
+_lr.value=localStorage.getItem("wecare_labor_rate")||"";
+_lr.addEventListener("input",function(){localStorage.setItem("wecare_labor_rate",_lr.value);renderCosting();});
+window.addEventListener("storage",function(){render();renderSOPs();renderCosting();renderCases();renderRecur();renderRoutes();renderTeam();renderProps();});
+setInterval(function(){generateRecurring();generateRoutes();render();renderCosting();renderCases();renderRecur();renderRoutes();renderTeam();},5000);
+seedSOPs();
+generateRecurring();
+generateRoutes();
+render();
+renderSOPs();
+renderCosting();
+renderCases();
+renderRecur();
+renderRoutes();
+loadTeam();
+resetPropForm();
+renderProps();
+</script>
+<script>
+/* ============================================================================
+   WeCare Ops — showpiece layer: service catalog, roles, toasts, calendar, job file
+   Built on top of the existing engine (load/save, K_JOBS, CREW, render, etc.).
+   ========================================================================== */
+
+/* ---- Service catalog: color + icon per service (keys match the select values) ---- */
+var SERVICES=[
+ {n:"Lawn maintenance",        c:"#4a9e5c", i:"🌿"},
+ {n:"Landscape design/build",  c:"#2f8055", i:"📐"},
+ {n:"Tree & shrub planting",   c:"#3f7a3f", i:"🌳"},
+ {n:"Concrete Artistry",       c:"#b5751f", i:"🪨"},
+ {n:"Artificial turf",         c:"#6aa84f", i:"🟢"},
+ {n:"Landscape lighting",      c:"#c9a227", i:"💡"},
+ {n:"Sod install",             c:"#7bb03e", i:"🟩"},
+ {n:"Drainage",                c:"#3d8b9a", i:"💧"},
+ {n:"Irrigation",              c:"#2b6b78", i:"🚿"},
+ {n:"Water feature",           c:"#2a7d8c", i:"⛲"},
+ {n:"Hardscape/patio",         c:"#8a6d3b", i:"🧱"},
+ {n:"Retaining walls",         c:"#6d5a34", i:"🪨"},
+ {n:"Commercial grounds care", c:"#557a8a", i:"🏢"},
+];
+function svcMeta(name){ for(var i=0;i<SERVICES.length;i++){ if(SERVICES[i].n===name) return SERVICES[i]; } return {n:name||"Job",c:"#6d7d77",i:"🌱"}; }
+function fillServiceSelects(){
+  [["woSvc",false],["rcSvc",false],["sopSvc",true]].forEach(function(pair){
+    var sel=document.getElementById(pair[0]); if(!sel) return; var cur=sel.value;
+    var head=pair[1]?'<option value="">Any / general</option>':'';
+    sel.innerHTML=head+SERVICES.map(function(s){return '<option>'+esc(s.n)+'</option>';}).join("");
+    if(cur){ sel.value=cur; if(sel.value!==cur){ /* old value not in list */ sel.insertAdjacentHTML('beforeend','<option>'+esc(cur)+'</option>'); sel.value=cur; } }
+  });
+}
+
+/* ---- Roles: only the named editors can change things; everyone else is read-only ----
+   Leave EDITOR_EMAILS empty to keep editing unlocked for every owner login (pilot).
+   Add the 3 real login emails (Derrick, Brandi, Topher) to ARM the lock. */
+var EDITOR_EMAILS=[]; // e.g. ["derrick@…","brandi@…","topher.cook7@gmail.com"]
+function currentEmail(){ try{ return (JSON.parse(localStorage.getItem("wecare_session")||"{}").email||"").toLowerCase(); }catch(e){ return ""; } }
+function isEditor(){ return EDITOR_EMAILS.length ? EDITOR_EMAILS.indexOf(currentEmail())>=0 : true; }
+var EDIT=true;
+function applyRole(){
+  EDIT=isEditor();
+  document.body.classList.toggle("viewer",!EDIT);
+  var b=document.getElementById("roleBadge");
+  if(b){ b.textContent=EDIT?"Editor":"View only"; b.className="rolebadge"+(EDIT?"":" view"); }
+}
+
+/* ---- Toasts (replace jarring alerts in the new flows) ---- */
+function toast(msg,kind){
+  var host=document.getElementById("toasts"); if(!host) return;
+  var t=document.createElement("div"); t.className="toast"+(kind?(" "+kind):"");
+  t.innerHTML=msg; host.appendChild(t);
+  setTimeout(function(){ t.classList.add("out"); setTimeout(function(){ t.remove(); },320); }, kind==="warn"?4200:2600);
+}
+function scrollToEl(id){ var e=document.getElementById(id); if(e) e.scrollIntoView({behavior:"smooth",block:"start"}); }
+function copyCalUrl(){
+  var el=document.getElementById("calSubUrl"); if(!el) return;
+  el.select();
+  var done=function(){ toast("✓ Calendar link copied — paste it into iPhone or Google Calendar","ok"); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(el.value).then(done,function(){ try{document.execCommand("copy");}catch(e){} done(); }); }
+  else { try{document.execCommand("copy");}catch(e){} done(); }
+}
+function gotoPanel(pid){ var el=document.getElementById(pid); if(!el) return; var pane=el.closest(".tabpane"); if(pane) showTab(pane.getAttribute("data-tab")); setTimeout(function(){ el.scrollIntoView({behavior:"smooth",block:"start"}); },80); }
+function quickNewJob(){ showTab("today"); newJobToggle(true); }
+function quickJobForProp(id){
+  showTab("today"); newJobToggle(true);
+  var sel=document.getElementById("woProp"); if(sel){ sel.value=id; if(typeof woPropPick==="function") woPropPick(); }
+  toast("Property loaded into a new work order — add the scope &amp; date","ok");
+}
+
+/* ---- Auth guard: owner writes must be signed in, or the app silently saves as a
+   guest (anon key) and the cloud rejects it — the save "sticks" locally then vanishes. ---- */
+function isAuthed(){ return !!(window.WeCareCloud && WeCareCloud.sessionValid && WeCareCloud.sessionValid()); }
+var OPS_VERSION="v0925";  // bump on each ops.html change so we can confirm the live version on any device
+function renderAuthStatus(){
+  var el=document.getElementById("authStatus"); if(!el) return;
+  var pend=(window.WeCareCloud&&WeCareCloud.pending)?WeCareCloud.pending():0;
+  var parts=['<span style="color:#7c8f86" title="app version — tells us your device has the latest code">'+OPS_VERSION+'</span>'];
+  if(isAuthed()){
+    var s=(WeCareCloud.session&&WeCareCloud.session())||{};
+    parts.push('<span style="color:#bfe6c9" title="'+esc(s.email||"")+'">✓ '+esc((s.email||"signed in").split("@")[0])+'</span>');
+  } else {
+    parts.push('<a href="#" onclick="opAuthOpen();return false" style="color:#ffd479;font-weight:700">⚠️ Not signed in — Sign in</a>');
+  }
+  // Nothing is ever lost: unsynced changes wait here until they reach the cloud.
+  if(pend>0) parts.push('<span style="color:#ffd479" title="Saved on this device — waiting to reach the cloud. They send automatically once you\'re signed in and online.">⌛ '+pend+' saved, syncing…</span>');
+  el.innerHTML=parts.join(' &nbsp;·&nbsp; ');
+}
+setInterval(renderAuthStatus, 4000);   // keep the sign-in + syncing badge live as the queue drains
+function requireAuth(){
+  if(isAuthed()) return true;
+  renderAuthStatus();
+  opAuthOpen();     // sign in right here on the office page — no redirect
+  return false;
+}
+/* ---- Inline office sign-in (no separate login page) ---- */
+function opAuthOpen(){
+  var o=document.getElementById("authOverlay"); if(!o) return;
+  o.style.display="grid";
+  var sess=(window.WeCareCloud&&WeCareCloud.session&&WeCareCloud.session())||{};
+  var e=document.getElementById("opEmail"); if(e){ if(sess.email&&!e.value) e.value=sess.email; setTimeout(function(){ (e.value?document.getElementById("opPw"):e).focus(); },60); }
+  var pw=document.getElementById("opPw"); if(pw) pw.onkeyup=function(ev){ if(ev.key==="Enter") opAuthSubmit(); };
+}
+function opAuthClose(){ var o=document.getElementById("authOverlay"); if(o) o.style.display="none"; }
+function opAuthSubmit(){
+  var em=(document.getElementById("opEmail").value||"").trim().toLowerCase();
+  var pw=document.getElementById("opPw").value||"";
+  var err=document.getElementById("opErr"), go=document.getElementById("opGo");
+  if(!em||!pw){ err.textContent="Enter your email and password."; return; }
+  if(!(window.WeCareCloud&&WeCareCloud.login)){ err.textContent="Sign-in unavailable — reload the page."; return; }
+  go.disabled=true; go.textContent="Signing in…"; err.textContent="";
+  WeCareCloud.login(em,pw).then(function(r){
+    go.disabled=false; go.textContent="Sign in";
+    if(r&&r.ok){
+      document.getElementById("opPw").value="";
+      opAuthClose();
+      try{ if(WeCareCloud.pull) WeCareCloud.pull(); }catch(e){}
+      renderAuthStatus(); render();
+      toast("✓ Signed in — your changes will save & sync","ok");
+    } else {
+      err.textContent=(r&&/password|invalid|credential/i.test(r.error||"")) ? "That email or password isn't right." : "Couldn't sign in — try again.";
+    }
+  });
+}
+
+/* ---- Tabs: a simple daily home; Calendar / Customers / Team / Money / Setup one tap away ---- */
+var TAB_DEFS=[
+ {id:"today",   label:"Today",     icon:"🏠", panels:["stats","newJobBtn","ordersPanel","clockPanel","woPanel"]},
+ {id:"calendar",label:"Calendar",  icon:"📅", panels:["calPanel"]},
+ {id:"customers",label:"Customers",icon:"🏡", panels:["propPanel"]},
+ {id:"team",    label:"Team",      icon:"👥", panels:["teamPanel"]},
+ {id:"money",   label:"Money",     icon:"💵", panels:["payrollPanel","fixPanel","costPanel","dataPanel"]},
+ {id:"setup",   label:"Setup",     icon:"⚙️", panels:["syncPanel","recurPanel","routePanel","sopPanel","casePanel"]},
+];
+function buildTabs(){
+  var host=document.getElementById("paneHost"); if(!host||host.getAttribute("data-built")) return; host.setAttribute("data-built","1");
+  // the big "＋ New job" button that lives at the top of Today
+  var njb=document.createElement("div"); njb.id="newJobBtn"; njb.className="editor-only";
+  njb.innerHTML='<button class="qbtn p" style="width:100%;justify-content:center;font-size:1rem;padding:14px" onclick="newJobToggle()">＋ New job</button>';
+  document.body.appendChild(njb); // parked; moved into Today pane below
+  TAB_DEFS.forEach(function(t){
+    var pane=document.createElement("section"); pane.className="tabpane"; pane.id="pane-"+t.id; pane.setAttribute("data-tab",t.id);
+    t.panels.forEach(function(pid){ var el=document.getElementById(pid); if(el) pane.appendChild(el); });
+    host.appendChild(pane);
+  });
+  var grid=document.querySelector(".grid"); if(grid && !grid.querySelector(".panel")) grid.remove();
+  var bar=document.getElementById("tabbar");
+  bar.innerHTML=TAB_DEFS.map(function(t){
+    return '<button class="tab" data-tab="'+t.id+'" onclick="showTab(\''+t.id+'\')"><span class="ticon">'+t.icon+'</span><span class="tlabel">'+t.label+'</span><span class="tdot" hidden></span></button>';
+  }).join("");
+  var wo=document.getElementById("woPanel"); if(wo){ wo.style.display="none"; wo.style.marginTop="0"; }
+  showTab(localStorage.getItem("wc_tab")||"today");
+  updateTabBadges();
+}
+function showTab(id){
+  if(!document.getElementById("pane-"+id)) id="today";
+  localStorage.setItem("wc_tab",id);
+  [].forEach.call(document.querySelectorAll(".tabpane"),function(p){ p.classList.toggle("on",p.id==="pane-"+id); });
+  [].forEach.call(document.querySelectorAll(".tab"),function(b){ b.classList.toggle("on",b.getAttribute("data-tab")===id); });
+  if(id==="calendar"){ try{ renderCalendar(); }catch(e){} }
+  try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){ window.scrollTo(0,0); }
+}
+function newJobToggle(forceOpen){
+  var wo=document.getElementById("woPanel"); if(!wo) return;
+  showTab("today");
+  var open = forceOpen ? true : (wo.style.display==="none");
+  wo.style.display = open ? "block" : "none";
+  if(open){ wo.scrollIntoView({behavior:"smooth",block:"start"}); var f=document.getElementById("woProp"); if(f) setTimeout(function(){f.focus();},350); }
+}
+function updateTabBadges(){
+  try{
+    var fixes=load(K_FIX,[]).filter(function(f){return !f.resolved;}).length;
+    var d=document.querySelector('.tab[data-tab="money"] .tdot'); if(d) d.hidden=!fixes;
+  }catch(e){}
+}
+
+// Remove any leftover SAMPLE jobs/recurring/routes from earlier builds — locally
+// AND from the cloud so they can't sync back. Matches only obvious sample tells
+// (the old seed names/ids, "Demo/Example/Test/Sample", and the fictional 555-01xx
+// numbers), so real work is never touched.
+function scrubSamples(){
+  // Match ONLY the exact legacy seed IDs from earlier demo builds. We deliberately
+  // do NOT match by customer name or phone anymore: the real sample rows were
+  // already cleared from the cloud, and name-matching was DELETING real work —
+  // any job the owner named "Test"/"Demo" while trying it out got wiped on the
+  // next reload. A real job's id is "W"+timestamp and can never match these.
+  function isSample(o){
+    if(!o) return false;
+    var id=((o.id||"")+"").toLowerCase();
+    var nm=(((o.customer&&o.customer.name)||o.customer||o.name||o.title||"")+"").trim().toLowerCase();
+    // ONLY the genuine old seed-data id families (these exact shapes were the demo
+    // seeds). Real ids are "W"/"PR"/"C"+timestamp and never match — and this will
+    // NOT touch anything the owner types (test names, "Zebra", real customers).
+    if(/^(ldemo\d|rdemo\d|spamdemo|seed\d|w[123])$/.test(id)) return true;
+    if(/^wr-rdemo\d/.test(id)) return true;          // recurring/route demo projections
+    if(/^example[\s—-]/.test(nm)) return true;       // "Example — …" seeded names
+    return false;
+  }
+  var arrStores=["wecare_workorders","wecare_recurring","wecare_routes","wecare_leads","wecare_consults","wecare_estimates","wecare_casestudies","wecare_punch_fixes"];
+  arrStores.forEach(function(key){
+    var arr; try{ arr=JSON.parse(localStorage.getItem(key)||"[]")||[]; }catch(e){ return; }
+    if(!Array.isArray(arr)||!arr.length) return;
+    var removed=arr.filter(isSample), keep=arr.filter(function(o){return !isSample(o);});
+    if(removed.length){
+      save(key,keep);
+      if(window.WeCareCloud&&WeCareCloud.remove) removed.forEach(function(o){ if(o&&o.id) WeCareCloud.remove(key,o.id); });
+    }
+  });
+  // conversations are an object-map keyed by id
+  try{
+    var cv=JSON.parse(localStorage.getItem("wecare_convos")||"{}")||{}, cids=Object.keys(cv), gone=[];
+    cids.forEach(function(id){ if(isSample(cv[id])){ gone.push(id); delete cv[id]; if(window.WeCareCloud&&WeCareCloud.remove) WeCareCloud.remove("wecare_convos",id); } });
+    if(gone.length) save("wecare_convos",cv);
+  }catch(e){}
+}
+
+/* ---- Calendar ---------------------------------------------------------------- */
+var CAL={view:"month", cursor:new Date()};
+function noon(d){ var m=new Date(d.getTime?d.getTime():d); m.setHours(12,0,0,0); return m; }
+function iso(d){ return noon(d).toISOString().slice(0,10); }
+function addDays(d,n){ var m=noon(d); m.setDate(m.getDate()+n); return m; }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+var _dowShort=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+var _mon=["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function effStatus(j){
+  var punches=load(K_PUNCH,[]);
+  var mine=punches.filter(function(p){return p.jobId===j.id;});
+  if(mine.some(function(p){return !p.out;})) return "started";        // clocked in = on site now
+  if(j.status==="done") return "done";
+  if(mine.length && mine.every(function(p){return p.out;})) return "done"; // clocked out = finished
+  return j.status||"assigned";
+}
+
+// every recurring occurrence between two dates (for the month-at-a-glance picture)
+function recurOccurrences(s,startD,endD){
+  var out=[], guard=0;
+  var anchor=noon(s.anchor?new Date(s.anchor+"T12:00:00"):nextDOW(s.dow||1));
+  if(s.freq==="monthly_date"){
+    for(var n=0;n<600;n++){ var d=noon(addMonthsClamped(anchor,n)); if(d.getTime()>endD.getTime()) break; if(d.getTime()>=startD.getTime()) out.push(iso(d)); }
+    return out;
+  }
+  var step=stepDays(s.freq), d2=noon(anchor);
+  while(d2.getTime()>startD.getTime() && guard++<800) d2=addDays(d2,-step);
+  guard=0; while(d2.getTime()<startD.getTime() && guard++<800) d2=addDays(d2,step);
+  guard=0; while(d2.getTime()<=endD.getTime() && guard++<800){ out.push(iso(d2)); d2=addDays(d2,step); }
+  return out;
+}
+
+function calFilters(){ return { crew:(document.getElementById("calCrew")||{}).value||"", svc:(document.getElementById("calSvc")||{}).value||"" }; }
+
+// build {iso: [ {job} | {planned,schedule,...} ]} for a date range
+function buildDayMap(startD,endD){
+  var f=calFilters(), map={}, taken={};
+  load(K_JOBS,[]).forEach(function(j){
+    if(!j.date) return;
+    if(f.crew && (j.assignedTo||[]).indexOf(f.crew)<0) return;
+    if(f.svc && j.service!==f.svc) return;
+    (map[j.date]||(map[j.date]=[])).push({job:j});
+    if(j.recurId) taken[j.recurId+"|"+j.date]=1;
+  });
+  load(K_RECUR,[]).forEach(function(s){
+    if(s.active===false) return;
+    if(f.crew && (s.crew||[]).indexOf(f.crew)<0) return;
+    if(f.svc && s.service!==f.svc) return;
+    recurOccurrences(s,startD,endD).forEach(function(ds){
+      if(taken[s.id+"|"+ds]) return;
+      (map[ds]||(map[ds]=[])).push({planned:true,schedule:s,service:s.service,customer:s.customer,recurId:s.id,date:ds});
+    });
+  });
+  Object.keys(map).forEach(function(k){ map[k].sort(function(a,b){ return (a.planned?1:0)-(b.planned?1:0); }); });
+  return map;
+}
+
+function chipHTML(item){
+  var svc=item.job?item.job.service:item.service, meta=svcMeta(svc);
+  var real=!!item.job, st=real?effStatus(item.job):"";
+  var cls="cal-chip"+(item.planned?" planned":"")+(st==="done"?" done":"");
+  var style=item.planned?("color:"+meta.c+";box-shadow:inset 3px 0 0 0 "+meta.c):("background:"+meta.c);
+  var label=item.customer||(item.job&&item.job.customer)||"Job";
+  var click=real?("openJobFile('"+item.job.id+"')"):("plannedClick('"+item.recurId+"','"+item.date+"')");
+  var drag=(real&&EDIT)?(' draggable="true" ondragstart="calDragStart(event,\''+item.job.id+'\')"'):'';
+  return '<div class="'+cls+'"'+drag+' style="'+style+'" title="'+esc(label+' · '+svc)+'" onclick="event.stopPropagation();'+click+'"><span class="ci">'+meta.i+'</span><span class="ct">'+esc(label)+'</span></div>';
+}
+
+function renderCalendar(){
+  var body=document.getElementById("calBody"), title=document.getElementById("calTitle");
+  if(!body) return;
+  // keep the view segmented control + filters in sync
+  var seg=document.getElementById("calViews");
+  if(seg) [].forEach.call(seg.querySelectorAll("button"),function(b){ b.classList.toggle("on",b.getAttribute("data-v")===CAL.view); });
+  syncCalFilterOptions();
+  if(CAL.view==="month") renderMonth(body,title);
+  else if(CAL.view==="week") renderWeek(body,title);
+  else renderDay(body,title);
+  renderLegend();
+}
+
+function renderMonth(body,title){
+  var c=noon(CAL.cursor), y=c.getFullYear(), m=c.getMonth();
+  title.textContent=_mon[m]+" "+y;
+  var first=noon(new Date(y,m,1)), start=addDays(first,-first.getDay());
+  var end=addDays(start,41);
+  var map=buildDayMap(start,end), tISO=todayISO();
+  var cells="";
+  for(var i=0;i<42;i++){
+    var d=addDays(start,i), di=iso(d), items=map[di]||[], oth=d.getMonth()!==m, isT=di===tISO;
+    var chips=items.slice(0,3).map(chipHTML).join("");
+    var more=items.length>3?('<div class="cal-more">+'+(items.length-3)+' more</div>'):"";
+    cells+='<div class="cal-cell'+(oth?" oth":"")+(isT?" today":"")+'" data-date="'+di+'" '+
+      'onclick="calOpenDay(\''+di+'\')" ondragover="calDragOver(event,this)" ondragleave="this.classList.remove(\'dragover\')" ondrop="calDrop(event,this)">'+
+      '<div class="cal-daynum">'+(isT?'<b>'+d.getDate()+'</b>':'<span>'+d.getDate()+'</span>')+(items.length?'<span class="mini" style="font-size:.64rem">'+items.length+'</span>':'')+'</div>'+
+      chips+more+'</div>';
+  }
+  body.innerHTML='<div class="cal-dows"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>'+
+    '<div class="cal-grid reveal">'+cells+'</div>';
+}
+
+function renderWeek(body,title){
+  var c=noon(CAL.cursor), start=addDays(c,-c.getDay()), end=addDays(start,6);
+  title.textContent=_mon[start.getMonth()].slice(0,3)+" "+start.getDate()+" – "+_mon[end.getMonth()].slice(0,3)+" "+end.getDate();
+  var map=buildDayMap(start,end), tISO=todayISO(), cols="";
+  for(var i=0;i<7;i++){
+    var d=addDays(start,i), di=iso(d), items=map[di]||[], isT=di===tISO;
+    cols+='<div class="wk-col" data-date="'+di+'" ondragover="calDragOver(event,this)" ondragleave="this.classList.remove(\'dragover\')" ondrop="calDrop(event,this)">'+
+      '<div class="wk-head'+(isT?" today":"")+'" onclick="calOpenDay(\''+di+'\')"><div class="wd">'+_dowShort[i]+'</div><div class="wn">'+d.getDate()+'</div></div>'+
+      (items.length?items.map(chipHTML).join(""):'<div class="mini" style="text-align:center;padding:14px 4px;color:var(--muted)">—</div>')+'</div>';
+  }
+  body.innerHTML='<div class="cal-week reveal">'+cols+'</div>';
+}
+
+function renderDay(body,title){
+  var d=noon(CAL.cursor), di=iso(d);
+  title.textContent=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()]+", "+_mon[d.getMonth()].slice(0,3)+" "+d.getDate();
+  var items=(buildDayMap(d,d)[di]||[]);
+  if(!items.length){ body.innerHTML='<div class="cal-day"><div class="empty" style="text-align:center;padding:34px">Nothing scheduled for this day.'+(EDIT?' <a href="#" onclick="quickNewJob();return false;" style="color:var(--teal-deep);font-weight:700">Add a job →</a>':'')+'</div></div>'; return; }
+  body.innerHTML='<div class="cal-day reveal">'+items.map(function(it){
+    var svc=it.job?it.job.service:it.service, meta=svcMeta(svc);
+    var real=!!it.job, st=real?effStatus(it.job):"planned";
+    var cust=it.customer||(it.job&&it.job.customer)||"Job";
+    var addr=real?(it.job.address||""):(it.schedule.address||"");
+    var crew=(real?(it.job.assignedTo||[]):(it.schedule.crew||[])).map(nm).join(", ");
+    var click=real?("openJobFile('"+it.job.id+"')"):("plannedClick('"+it.recurId+"','"+it.date+"')");
+    return '<div class="dayrow" onclick="'+click+'"><div class="swatch" style="background:'+meta.c+'"></div>'+
+      '<div class="meta"><div class="r-cust">'+meta.i+' '+esc(cust)+(it.planned?' <span class="pill" style="background:var(--sand);color:var(--muted)">planned</span>':'')+'</div>'+
+      '<div class="r-sub">'+esc(svc)+(addr?' · '+esc(addr):'')+'</div>'+
+      (crew?'<div class="r-sub">👷 '+esc(crew)+'</div>':'')+'</div>'+
+      (real?'<span class="pill st-'+st+'" style="align-self:center">'+st+'</span>':'')+'</div>';
+  }).join("")+'</div>';
+}
+
+function renderLegend(){
+  var el=document.getElementById("calLegend"); if(!el) return;
+  var used={}; load(K_JOBS,[]).forEach(function(j){ if(j.service) used[j.service]=1; });
+  load(K_RECUR,[]).forEach(function(s){ if(s.active!==false&&s.service) used[s.service]=1; });
+  var keys=Object.keys(used); if(!keys.length) keys=["Lawn maintenance"];
+  el.innerHTML=keys.map(function(k){ var m=svcMeta(k); return '<span><i style="background:'+m.c+'"></i>'+m.i+' '+esc(k)+'</span>'; }).join("")+
+    '<span style="margin-left:auto"><i style="border:1px dashed var(--muted);background:transparent"></i>planned</span>';
+}
+
+function syncCalFilterOptions(){
+  var cc=document.getElementById("calCrew");
+  if(cc && cc.options.length<=1){ cc.innerHTML='<option value="">All crew</option>'+CREW.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>';}).join(""); }
+  var cs=document.getElementById("calSvc");
+  if(cs && cs.options.length<=1){ cs.innerHTML='<option value="">All services</option>'+SERVICES.map(function(s){return '<option>'+esc(s.n)+'</option>';}).join(""); }
+}
+
+function calSetView(v){ CAL.view=v; renderCalendar(); }
+function calStep(dir){
+  var c=noon(CAL.cursor);
+  if(CAL.view==="month") c=noon(new Date(c.getFullYear(),c.getMonth()+dir,Math.min(c.getDate(),15)));
+  else if(CAL.view==="week") c=addDays(c,7*dir);
+  else c=addDays(c,dir);
+  CAL.cursor=c; renderCalendar();
+}
+function calToday(){ CAL.cursor=new Date(); renderCalendar(); }
+function calOpenDay(di){ CAL.cursor=new Date(di+"T12:00:00"); CAL.view="day"; renderCalendar(); scrollToEl("calPanel"); }
+
+/* drag-to-reschedule (editors only) */
+var _dragJid=null;
+function calDragStart(e,jid){ if(!EDIT){ e.preventDefault(); return; } _dragJid=jid; try{ e.dataTransfer.setData("text/plain",jid); e.dataTransfer.effectAllowed="move"; }catch(_){} }
+function calDragOver(e,cell){ if(!EDIT||!_dragJid) return; e.preventDefault(); cell.classList.add("dragover"); }
+function calDrop(e,cell){
+  e.preventDefault(); cell.classList.remove("dragover");
+  var jid=_dragJid||((e.dataTransfer&&e.dataTransfer.getData("text/plain"))||""); _dragJid=null;
+  var date=cell.getAttribute("data-date"); if(!jid||!date) return;
+  rescheduleJob(jid,date);
+}
+function rescheduleJob(jid,date){
+  var jobs=load(K_JOBS,[]), j=jobs.find(function(x){return x.id===jid;}); if(!j) return;
+  if(j.date===date) return;
+  j.date=date; save(K_JOBS,jobs);
+  toast("✓ Moved <b>"+esc(j.customer)+"</b> to "+new Date(date+"T12:00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}),"ok");
+  render();
+  if(document.getElementById("jobModal").classList.contains("open")) openJobFile(jid);
+}
+
+function plannedClick(rid,date){
+  var s=load(K_RECUR,[]).find(function(x){return x.id===rid;}); if(!s) return;
+  if(!EDIT){ toast("Planned "+esc(s.service||"visit")+" for "+esc(s.customer)+" · "+date,""); return; }
+  var jobs=load(K_JOBS,[]), jid="WR-"+s.id+"-"+date;
+  if(!jobs.some(function(j){return j.id===jid;})){
+    jobs.push({id:jid,customer:s.customer,phone:s.phone||"",service:s.service,address:s.address||"",scope:"Recurring "+(s.service||"maintenance").toLowerCase(),sop:(s.service||"")+" SOP",assignedTo:s.crew||[],date:date,status:"assigned",estHours:s.estHours||null,recurId:s.id,propertyId:s.propertyId||""});
+    save(K_JOBS,jobs); toast("✓ Planned visit is now a live work order","ok");
+  }
+  render(); openJobFile(jid);
+}
+
+/* ---- Job File (rich per-job view with photo gallery) ------------------------- */
+function propCardById(id){ return loadProps().find(function(x){return x.id===id;}); }
+function openJobFile(id){
+  var j=load(K_JOBS,[]).find(function(x){return x.id===id;}); if(!j){ toast("That job isn't on the board anymore.","warn"); return; }
+  var meta=svcMeta(j.service), st=effStatus(j), card=j.propertyId?propCardById(j.propertyId):null;
+  var when=j.date?new Date(j.date+"T12:00:00").toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"}):"—";
+
+  // status timeline from clock-ins
+  var punches=load(K_PUNCH,[]).filter(function(p){return p.jobId===j.id;});
+  var events=[];
+  punches.forEach(function(p){
+    events.push({t:new Date(p.in).getTime(),h:'🟢 <b>'+esc(p.empName)+'</b> clocked in · '+new Date(p.in).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})});
+    if(p.out) events.push({t:new Date(p.out).getTime(),h:'⬜ <b>'+esc(p.empName)+'</b> clocked out · '+new Date(p.out).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+' <span class="mini">('+fmtDur(new Date(p.out)-new Date(p.in))+')</span>'});
+  });
+  events.sort(function(a,b){return a.t-b.t;});
+  var timeline=events.length?('<div class="tl">'+events.map(function(e){return '<div class="ev">'+e.h+'</div>';}).join("")+'</div>')
+    :'<div class="mini" style="color:var(--muted)">No clock-ins yet. When the crew clocks in on this job, it goes live here automatically.</div>';
+
+  // photo gallery (how-to first, then job photos)
+  var media=[]; if(j.howTo&&safeUrl(j.howTo)) media.push({u:j.howTo,tag:"How-to"});
+  (j.photos||[]).forEach(function(u){ if(safeUrl(u)) media.push({u:u}); });
+  var gallery=media.map(function(x){ return '<a href="'+safeUrl(x.u)+'" target="_blank" rel="noopener">'+(isVideo(x.u)?'<video src="'+safeUrl(x.u)+'" preload="metadata" muted></video>':'<img src="'+safeUrl(x.u)+'" loading="lazy" alt="job photo">')+'</a>'; }).join("");
+  var addTile='<label class="add editor-only">📷<span>Add photos</span><input type="file" accept="image/*,video/*" capture="environment" multiple style="display:none" onchange="jfAddPhotos(\''+j.id+'\',this)"></label>';
+
+  // property profile block
+  var prop="";
+  if(card){
+    var rows=[["Gate / access",card.access],["Areas we maintain",card.areas],["Turf & plants",card.turfPlants],["Irrigation",card.irrigation],["Preferences",card.preferences],["⚠️ Problem areas",card.problemAreas],["Special",card.special]]
+      .filter(function(r){return r[1];}).map(function(r){return '<div><div class="k">'+esc(r[0])+'</div>'+esc(r[1])+'</div>';}).join("");
+    var pph=(card.photos||[]).filter(safeUrl).slice(0,6).map(function(u){return '<a href="'+safeUrl(u)+'" target="_blank" rel="noopener"><img src="'+safeUrl(u)+'" loading="lazy" alt="property"></a>';}).join("");
+    prop='<div class="jf-sec"><h4>🏡 Property profile — '+esc(card.name||card.customer||"")+'</h4>'+
+      '<div class="kv" style="flex-direction:column;gap:9px">'+(rows||'<div class="mini">No profile details yet.</div>')+'</div>'+
+      (pph?'<div class="gallery" style="margin-top:9px">'+pph+'</div>':'')+'</div>';
+  } else {
+    prop='<div class="jf-sec"><div class="hintbar" style="margin:0">💡 No property card attached. <a href="#" class="editor-only" style="color:var(--green-deep);font-weight:700" onclick="closeJobFile();quickNewJob();return false;">Attach one</a> so the crew always sees the full property profile.</div></div>';
+  }
+
+  var actions=EDIT?('<div class="jf-sec editor-only"><h4>Manage</h4><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+
+    '<label class="mini" style="font-weight:700">Reschedule <input type="date" value="'+esc(j.date||"")+'" onchange="rescheduleJob(\''+j.id+'\',this.value)" style="padding:6px 8px;border:1px solid var(--line);border-radius:8px"></label>'+
+    (st!=="done"?'<button class="btn" onclick="jfMarkDone(\''+j.id+'\')">✓ Mark done</button>':'<a class="btn" href="invoice.html?job='+j.id+'" target="_blank">🧾 Invoice</a>')+
+    '<span style="flex:1"></span>'+
+    '<button class="btn" style="color:var(--red);border-color:var(--red)" onclick="jfDelete(\''+j.id+'\')">🗑 Delete</button>'+
+    '</div></div>'):'';
+
+  document.getElementById("jobCard").innerHTML=
+    '<div class="jf-hd" style="background:linear-gradient(135deg,'+meta.c+','+meta.c+'cc)">'+
+      '<button class="jf-x" onclick="closeJobFile()">✕</button>'+
+      '<h3>'+meta.i+' '+esc(j.customer||"Job")+'</h3>'+
+      '<div class="sub">'+esc(j.service)+' · '+esc(when)+' · <span style="text-transform:capitalize">'+st+'</span></div></div>'+
+    '<div class="jf-body">'+
+      '<div class="jf-sec"><div class="kv">'+
+        (j.address?'<div><div class="k">Address</div>'+esc(j.address)+'</div>':'')+
+        (j.phone?'<div><div class="k">Phone</div>'+esc(j.phone)+'</div>':'')+
+        '<div><div class="k">Crew</div>'+((j.assignedTo||[]).map(nm).join(", ")||"—")+'</div>'+
+        (j.estHours?'<div><div class="k">Est. hours</div>'+j.estHours+'h</div>':'')+
+      '</div>'+(j.scope?'<div style="margin-top:9px"><div class="k">Scope</div>'+esc(j.scope)+'</div>':'')+'</div>'+
+      prop+
+      '<div class="jf-sec"><h4>📷 Job photos <span class="mini" style="text-transform:none;letter-spacing:0;font-weight:400">— before / during / after</span></h4>'+
+        '<div class="gallery">'+gallery+addTile+'</div></div>'+
+      '<div class="jf-sec"><h4>🕑 Timeline</h4>'+timeline+'</div>'+
+      actions+
+    '</div>';
+  var modal=document.getElementById("jobModal"); modal.classList.add("open");
+}
+function closeJobFile(){ document.getElementById("jobModal").classList.remove("open"); }
+function jfMarkDone(id){
+  var jobs=load(K_JOBS,[]), j=jobs.find(function(x){return x.id===id;}); if(!j) return;
+  j.status="done"; save(K_JOBS,jobs); toast("✓ Marked done — you can request a review from Today's board","ok");
+  render(); openJobFile(id);
+}
+// Delete a work order for good — with an "are you sure" so an accidental tap can't
+// wipe a job. Removes it from the cloud too, so it won't reappear on the next sync.
+function jfDelete(id){
+  var jobs=load(K_JOBS,[]), j=jobs.find(function(x){return x.id===id;}); if(!j) return;
+  var isRecur=!!j.recurId;
+  var msg=isRecur
+    ? "Delete this visit for \""+(j.customer||"this job")+"\" AND stop the recurring schedule it comes from?\n\nFuture planned visits will stop too. This can't be undone."
+    : "Delete the work order for \""+(j.customer||"this job")+"\"?\n\nThis can't be undone.";
+  if(!confirm(msg)) return;   // the "are you sure" gate
+  save(K_JOBS, jobs.filter(function(x){return x.id!==id;}));
+  if(window.WeCareCloud && WeCareCloud.remove) WeCareCloud.remove("wecare_workorders", id);
+  if(isRecur){
+    save(K_RECUR, load(K_RECUR,[]).filter(function(s){return s.id!==j.recurId;}));
+    if(window.WeCareCloud && WeCareCloud.remove) WeCareCloud.remove("wecare_recurring", j.recurId);
+  }
+  toast("🗑 Deleted"+(isRecur?" — recurring schedule stopped":""),"warn");
+  closeJobFile(); render();
+}
+function jfAddPhotos(id,input){
+  var files=[].slice.call(input.files||[]); if(!files.length) return;
+  if(!(window.WeCareCloud&&WeCareCloud.uploadPhoto)){ toast("Photo upload needs the cloud connection.","warn"); return; }
+  var big=files.filter(function(f){return f.size>100*1024*1024;});
+  if(big.length){ toast("Keep each file under ~100MB.","warn"); return; }
+  toast("Uploading "+files.length+" photo"+(files.length>1?"s":"")+"…");
+  Promise.all(files.map(function(f){return WeCareCloud.uploadPhoto(f,id);})).then(function(urls){
+    var jobs=load(K_JOBS,[]), j=jobs.find(function(x){return x.id===id;}); if(!j) return;
+    j.photos=(j.photos||[]).concat((urls||[]).filter(Boolean)); save(K_JOBS,jobs);
+    toast("✓ Photos added to the job file","ok"); render(); openJobFile(id);
+  }).catch(function(){ toast("Upload failed — try again.","warn"); });
+}
+
+/* ---- Hints / coaching ---- */
+function renderHint(){
+  var host=document.getElementById("hintHost"); if(!host) return;
+  if(sessionStorage.getItem("wc_hint_x")==="1"){ host.innerHTML=""; return; }
+  var props=loadProps().length, jobs=load(K_JOBS,[]).length, msg;
+  if(!props) msg="👋 Start in the <b>Customers</b> tab — save a Property card once (name, address, notes, photos), then pick it on any job. It's the reusable brain for that customer.";
+  else if(!jobs) msg="📅 Tap <b>＋ New job</b> and pick a date — it lands on the <b>Calendar</b> tab, where you can drag it to any day to reschedule.";
+  else msg="💡 Tip: open the <b>Calendar</b> tab and tap any job to see its <b>job file</b> — photos, the property profile, and a live timeline from the crew's clock-ins.";
+  host.innerHTML='<div class="hintbar reveal">'+msg+'<button class="hx" title="Dismiss" onclick="sessionStorage.setItem(\'wc_hint_x\',\'1\');this.parentNode.remove();">✕</button></div>';
+}
+function updateGreet(){
+  var g=document.getElementById("greet"); if(!g) return;
+  var h=new Date().getHours(), part=h<12?"Good morning":h<17?"Good afternoon":"Good evening";
+  var td=load(K_JOBS,[]).filter(function(j){return j.date===todayISO();}).length;
+  g.innerHTML=esc(part)+'<small>'+(td?(td+" job"+(td===1?"":"s")+" on today's calendar."):"Nothing scheduled today — let's line some up.")+'</small>';
+}
+
+/* ---- Wire everything into the existing engine ---- */
+var _origRender=render;
+render=function(){ _origRender.apply(this,arguments); try{
+  updateGreet(); renderHint(); updateTabBadges();
+  var cp=document.getElementById("pane-calendar");   // only redraw the calendar when its tab is showing (or before tabs exist)
+  if(!_dragJid && (!cp || cp.classList.contains("on"))) renderCalendar();
+}catch(e){} };
+var _origRenderProps=renderProps;
+renderProps=function(){ _origRenderProps.apply(this,arguments); try{ augmentPropRows(); }catch(e){} };
+function augmentPropRows(){
+  loadProps().forEach(function(p){
+    var row=document.getElementById("prow-"+p.id); if(!row||row.querySelector(".jobhere")) return;
+    var b=document.createElement("button");
+    b.className="btn jobhere editor-only"; b.style.cssText="padding:3px 9px"; b.textContent="＋ Job here";
+    b.onclick=function(ev){ ev.stopPropagation(); quickJobForProp(p.id); };
+    var openBtn=row.querySelector("button"); if(openBtn) openBtn.parentNode.insertBefore(b,openBtn);
+  });
+}
+var _origSaveProp=savePropCard;
+savePropCard=function(){ if(!requireAuth()) return; return _origSaveProp.apply(this,arguments); };
+var _origCreateWO=createWO;
+createWO=function(){
+  if(!requireAuth()) return;
+  var had=(document.getElementById("woCust").value||"").trim();
+  var day=document.getElementById("woDate").value||"today";
+  _origCreateWO.apply(this,arguments);
+  if(had){ toast("✓ Work order created"+(day!=="today"?(" for "+new Date(day+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"})):" for today"),"ok"); setDefaultWoDate(); }
+};
+function setDefaultWoDate(){ var d=document.getElementById("woDate"); if(d&&!d.value) d.value=todayISO(); }
+
+document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeJobFile(); });
+
+/* boot the showpiece layer */
+renderAuthStatus();
+// refresh a near-expired session on load; if still not signed in, show the inline
+// sign-in right here (never redirect off the office page)
+if(window.WeCareCloud && WeCareCloud.refreshSession){
+  try{ WeCareCloud.refreshSession().then(function(){ renderAuthStatus(); if(!isAuthed()) opAuthOpen(); }); }
+  catch(e){ if(!isAuthed()) opAuthOpen(); }
+} else if(!isAuthed()){ opAuthOpen(); }
+scrubSamples();
+fillServiceSelects();
+applyRole();
+buildTabs();
+render();
+setDefaultWoDate();
+updateGreet();
+renderHint();
+updateTabBadges();
+augmentPropRows();
+// On-device sync debug panel — add ?debug=1 to the URL to see live sync events
+if(location.search.indexOf("debug=1")>=0){
+  var dbg=document.createElement("div");
+  dbg.style.cssText="position:fixed;left:0;right:0;top:0;max-height:30vh;overflow:auto;pointer-events:none;background:#0b1a13;color:#8fe6a6;font:11px/1.45 ui-monospace,Menlo,monospace;padding:8px;z-index:99999;border-bottom:2px solid #2b6b78;white-space:pre-wrap";
+  document.body.appendChild(dbg);
+  var paintDbg=function(){ try{ var L=(window.WeCareCloud&&WeCareCloud.log)?WeCareCloud.log():[]; dbg.textContent="SYNC LOG · "+OPS_VERSION+" · "+(isAuthed()?"signed in":"GUEST")+"\n"+(L.length?L.join("\n"):"(nothing yet — make a job)"); dbg.scrollTop=dbg.scrollHeight; }catch(e){} };
+  window.addEventListener("wecare-log", paintDbg); setInterval(paintDbg,1000); paintDbg();
+}
+</script>
+<script src="js/wecare-onboard.js?v=0834"></script>
+</body>
+</html>
