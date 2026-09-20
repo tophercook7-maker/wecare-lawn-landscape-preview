@@ -1921,7 +1921,7 @@ augmentPropRows();
 // On-device sync debug panel — add ?debug=1 to the URL to see live sync events
 if(location.search.indexOf("debug=1")>=0){
   var dbg=document.createElement("div");
-  dbg.style.cssText="position:fixed;left:0;right:0;bottom:0;max-height:48vh;overflow:auto;background:#0b1a13;color:#8fe6a6;font:11px/1.45 ui-monospace,Menlo,monospace;padding:8px;z-index:99999;border-top:2px solid #2b6b78;white-space:pre-wrap";
+  dbg.style.cssText="position:fixed;left:0;right:0;bottom:0;max-height:40vh;overflow:auto;pointer-events:none;background:#0b1a13;color:#8fe6a6;font:11px/1.45 ui-monospace,Menlo,monospace;padding:8px;z-index:99999;border-top:2px solid #2b6b78;white-space:pre-wrap";
   document.body.appendChild(dbg);
   var paintDbg=function(){ try{ var L=(window.WeCareCloud&&WeCareCloud.log)?WeCareCloud.log():[]; dbg.textContent="SYNC LOG · "+OPS_VERSION+" · "+(isAuthed()?"signed in":"GUEST")+"\n"+(L.length?L.join("\n"):"(nothing yet — make a job)"); dbg.scrollTop=dbg.scrollHeight; }catch(e){} };
   window.addEventListener("wecare-log", paintDbg); setInterval(paintDbg,1000); paintDbg();
