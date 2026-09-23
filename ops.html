@@ -1415,7 +1415,7 @@ function quickJobForProp(id){
 /* ---- Auth guard: owner writes must be signed in, or the app silently saves as a
    guest (anon key) and the cloud rejects it — the save "sticks" locally then vanishes. ---- */
 function isAuthed(){ return !!(window.WeCareCloud && WeCareCloud.sessionValid && WeCareCloud.sessionValid()); }
-var OPS_VERSION="v0925";  // bump on each ops.html change so we can confirm the live version on any device
+var OPS_VERSION="v0923b";  // bump on each ops.html OR wecare-cloud*.js change so we can confirm the live version on any device
 function renderAuthStatus(){
   var el=document.getElementById("authStatus"); if(!el) return;
   var pend=(window.WeCareCloud&&WeCareCloud.pending)?WeCareCloud.pending():0;
