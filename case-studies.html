@@ -73,7 +73,7 @@
     </video>
   </div>
 
-  <div class="wrap" style="max-width:940px;margin-top:34px;display:grid;grid-template-columns:1fr 1fr;gap:18px">
+  <div class="wrap vid-row" style="max-width:940px;margin-top:34px">
     <figure style="margin:0">
       <video autoplay muted loop playsinline preload="metadata" poster="video/carved-wall-poster.jpg"
         style="width:100%;display:block;border-radius:var(--radius);box-shadow:var(--shadow);background:#000">
@@ -82,14 +82,28 @@
       <figcaption class="lead center" style="margin-top:10px;font-size:.95rem">Hand-carved concrete retaining wall, sculpted to look like natural stacked rock</figcaption>
     </figure>
     <figure style="margin:0">
+      <video autoplay muted loop playsinline preload="metadata" poster="video/wall-carving-poster.jpg"
+        style="width:100%;display:block;border-radius:var(--radius);box-shadow:var(--shadow);background:#000">
+        <source src="video/wall-carving.mp4" type="video/mp4">
+      </video>
+      <figcaption class="lead center" style="margin-top:10px;font-size:.95rem">On the job — hand-carving that same wall</figcaption>
+    </figure>
+    <figure style="margin:0">
       <video autoplay muted loop playsinline preload="metadata" poster="video/stone-fountain-poster.jpg"
         style="width:100%;display:block;border-radius:var(--radius);box-shadow:var(--shadow);background:#000">
         <source src="video/stone-fountain.mp4" type="video/mp4">
       </video>
       <figcaption class="lead center" style="margin-top:10px;font-size:.95rem">Stacked-stone bubbling fountain, tucked into a hosta &amp; liriope bed</figcaption>
     </figure>
+    <figure style="margin:0">
+      <video autoplay muted loop playsinline preload="metadata" poster="video/aquascape-example-poster.jpg"
+        style="width:100%;display:block;border-radius:var(--radius);box-shadow:var(--shadow);background:#000">
+        <source src="video/aquascape-example.mp4" type="video/mp4">
+      </video>
+      <figcaption class="lead center" style="margin-top:10px;font-size:.95rem">Aquascape fire &amp; water feature — an example of what we install</figcaption>
+    </figure>
   </div>
-  <style>@media(max-width:640px){.wrap[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}}</style>
+  <style>.vid-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}@media(max-width:900px){.vid-row{grid-template-columns:1fr 1fr}}@media(max-width:520px){.vid-row{grid-template-columns:1fr}}</style>
 </section>
 
 <!-- MORE OF OUR WORK — a wider portfolio, distinct from the homepage before/afters -->
