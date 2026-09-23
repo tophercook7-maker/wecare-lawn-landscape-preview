@@ -160,6 +160,9 @@ function upsert(store, row){
   outboxAdd(store.table,row);   // mark PENDING immediately (durable + synchronous): the local copy
                                 // is protected from being overwritten by a pull until this write is
                                 // CONFIRMED. Cleared only on r.ok below — never by a pull echo.
+  pendingDeleteClear(store.table,row.id); // this id is being saved again — cancel any stale queued
+                                           // delete for it, or a failed-delete retry could fire right
+                                           // after this save and remove the row the user just re-created
   if(!sessionValid()){
     if(PUBLIC_TABLES[store.table]){                 // customer forms → service-role gate
       team("public_write",{table:store.table,row:row})

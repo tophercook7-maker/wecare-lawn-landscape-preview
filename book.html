@@ -119,11 +119,12 @@ var picked="";
 function load(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
 function fmtTime(v){var s=SLOTS.find(function(x){return x[0]===v});return s?s[1]:v;}
 var dateEl=document.getElementById("date");
-(function(){ var t=new Date(); t.setDate(t.getDate()+1); dateEl.min=new Date().toISOString().slice(0,10); dateEl.value=t.toISOString().slice(0,10); })();
+// Central-time calendar day, not UTC — .toISOString() flips to tomorrow's UTC date
+// every evening (~7pm-midnight Central), which was blocking/defaulting customers to
+// the wrong day right when most people book. en-CA gives YYYY-MM-DD directly.
+function centralDay(d){ return d.toLocaleDateString("en-CA",{timeZone:"America/Chicago"}); }
+(function(){ var t=new Date(); t.setDate(t.getDate()+1); dateEl.min=centralDay(new Date()); dateEl.value=centralDay(t); })();
 dateEl.addEventListener("change",renderSlots);
-function taken(date){
-  return load("wecare_consults",[]).filter(function(c){return c.date===date && c.status!=="canceled";}).map(function(c){return c.time;});
-}
 function renderSlots(){
   var box=document.getElementById("slots"), date=dateEl.value;
   var dow=date?new Date(date+"T12:00:00").getDay():0;

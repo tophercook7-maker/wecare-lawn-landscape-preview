@@ -17,7 +17,12 @@ var DEFAULT_CREW = [
 
 /* ---- shared stores (owner dashboard reads the same keys) ---- */
 var K_PUNCH="wecare_punches";      // [{id, empId, empName, jobId, in, out, inGeo, outGeo, edits:[]}]
-var K_JOBS ="wecare_workorders";   // [{id, customer, service, address, scope, sop, assignedTo[], date, status, estHours, propertyId}]
+// Deliberately NOT "wecare_workorders" — that key is wired into the cloud sync layer's
+// interceptor, and crew never holds a real Supabase Auth session (PIN-only, via the
+// team edge function), so every write here would queue forever in the sync outbox and
+// retry a doomed POST every 20s. This is a local-only render cache; the actual writes
+// go through team("crew_job_status") / team("crew_add_media") right next to each call.
+var K_JOBS ="wecare_workorders_crew_local";   // [{id, customer, service, address, scope, sop, assignedTo[], date, status, estHours, propertyId}]
 var K_SOPS ="wecare_sops";         // SOP library (owner-written) [{id,title,service,steps[],notes}]
 var K_PROPS="wecare_properties";   // property cards attached to jobs [{id,name,access,areas,...,notes[],photos[]}]
 var K_EMP  ="wecare_employees";    // employee directory (owner-managed): profile + clock-in PIN
