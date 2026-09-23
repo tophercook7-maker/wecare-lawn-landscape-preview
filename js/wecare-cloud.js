@@ -18,13 +18,13 @@ function authHeaders(){ return sessionValid() ? {apikey:ANON, Authorization:"Bea
 function _storeSess(d, email){ if(d && d.access_token){ setSession({access_token:d.access_token,refresh_token:d.refresh_token,expires_at:d.expires_at||(Math.floor(Date.now()/1000)+(d.expires_in||3600)),email:(d.user&&d.user.email)||email}); return true; } return false; }
 function login(email,password){
   return fetch(URL_+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:ANON,"Content-Type":"application/json"},body:JSON.stringify({email:email,password:password})})
-    .then(function(r){return r.json();}).then(function(d){ if(_storeSess(d,email)){ try{flushOutbox();}catch(e){} return {ok:true}; } return {ok:false,error:(d&&(d.error_description||d.msg))||"login failed"}; })
+    .then(function(r){return r.json();}).then(function(d){ if(_storeSess(d,email)){ try{flushOutbox();flushPendingDeletes();}catch(e){} return {ok:true}; } return {ok:false,error:(d&&(d.error_description||d.msg))||"login failed"}; })
     .catch(function(e){return {ok:false,error:String(e)};});
 }
 function refreshSession(){
   var s=getSession(); if(!s||!s.refresh_token) return Promise.resolve(false);
   return fetch(URL_+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:ANON,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:s.refresh_token})})
-    .then(function(r){return r.json();}).then(function(d){ if(_storeSess(d,s.email)){ try{flushOutbox();}catch(e){} return true; } return false; }).catch(function(){return false;});
+    .then(function(r){return r.json();}).then(function(d){ if(_storeSess(d,s.email)){ try{flushOutbox();flushPendingDeletes();}catch(e){} return true; } return false; }).catch(function(){return false;});
     // NOTE: on refresh failure we deliberately KEEP the existing session. Refresh tokens
     // rotate and can fail when the same account is open on multiple devices; the current
     // access token is usually still valid, and nulling it would drop the owner to "guest"
@@ -105,6 +105,26 @@ function flushOutbox(){
   finally{ _flushing=false; }
 }
 
+// DURABLE pending-deletes: mirrors the outbox above but for removeRow(). A delete
+// the owner triggers is marked here BEFORE the fetch fires, persisted to
+// localStorage, and only cleared once the cloud actually confirms it (r.ok).
+// applyRemote() treats these ids as "supposed to be gone" even if a pull still
+// returns them (failed/slow DELETE), so a deletion can never silently un-delete
+// itself the way a failed write used to be able to bring a "deleted" row back.
+var DELETE_KEY="wecare_pending_delete";
+function loadPendingDeletes(){ try{ return JSON.parse(localStorage.getItem(DELETE_KEY))||{}; }catch(e){ return {}; } }
+function savePendingDeletes(o){ try{ localStorage.setItem(DELETE_KEY, JSON.stringify(o)); }catch(e){} }
+function pendingDeleteAdd(table,id){ var o=loadPendingDeletes(); (o[table]||(o[table]={}))[id]=1; savePendingDeletes(o); }
+function pendingDeleteClear(table,id){ var o=loadPendingDeletes(); if(o[table]){ delete o[table][id]; if(!Object.keys(o[table]).length) delete o[table]; savePendingDeletes(o); } }
+function pendingDeleteIds(table){ var o=loadPendingDeletes(); return o[table]||{}; }
+var _flushingDeletes=false;
+function flushPendingDeletes(){
+  if(_flushingDeletes || !sessionValid()) return; var o=loadPendingDeletes(); var tables=Object.keys(o); if(!tables.length) return;
+  _flushingDeletes=true;
+  try{ tables.forEach(function(t){ var st=byTable[t]; if(!st) return; Object.keys(o[t]).forEach(function(id){ removeRow(st.key, id); }); }); }
+  finally{ _flushingDeletes=false; }
+}
+
 var _origSet = localStorage.setItem.bind(localStorage);
 // intercept writes to our keys -> push changed rows to Supabase
 localStorage.setItem = function(k,v){
@@ -158,6 +178,7 @@ function upsert(store, row){
 function applyRemote(store, rows){
   var incoming=rows.map(store.fromRow);
   var prot=outboxIds(store.table);
+  var pendingDel=pendingDeleteIds(store.table);
   var authed=sessionValid();
   // Remember every id this pull returned FROM the cloud (this session).
   var seen=_cloudSeen[store.key]||(_cloudSeen[store.key]={});
@@ -167,7 +188,10 @@ function applyRemote(store, rows){
   try{ var raw2=localStorage.getItem(store.key); if(raw2){ var p2=JSON.parse(raw2); localRecsAll=store.shape==="array"?(p2||[]):Object.keys(p2||{}).map(function(k){return p2[k];}); } }catch(e){}
   // Start from the cloud rows (cloud copy wins for any id it returns), then decide which
   // LOCAL-ONLY rows to keep vs drop.
-  var byId={}; incoming.forEach(function(o){ if(o&&o.id) byId[o.id]=o; });
+  // A row still returned by the cloud but marked pending-delete means the DELETE
+  // hasn't been confirmed yet (in flight, or failed and awaiting retry) — don't
+  // let it win here, or a deletion could silently un-delete itself.
+  var byId={}; incoming.forEach(function(o){ if(o&&o.id && !pendingDel[o.id]) byId[o.id]=o; });
   localRecsAll.forEach(function(o){
     if(!o||!o.id || byId[o.id]) return;      // cloud already has it → cloud wins
     // A local row the pull didn't return. Only DELETE it when it's a GENUINE remote delete:
@@ -282,11 +306,11 @@ function initialSync(){
       var raw=localStorage.getItem(store.key);
       if(raw){ try{ pushChanges(store, raw); }catch(e){} }
     });
-    flushOutbox();   // retry anything queued from a previous session
+    flushOutbox(); flushPendingDeletes();   // retry anything queued from a previous session
     pullAll();
     startRealtime();
   });
-  setInterval(function(){ if(document.visibilityState!=="hidden"){ flushOutbox(); pullAll(); } }, 20000);  // slow fallback; realtime carries the fast path
+  setInterval(function(){ if(document.visibilityState!=="hidden"){ flushOutbox(); flushPendingDeletes(); pullAll(); } }, 20000);  // slow fallback; realtime carries the fast path
 }
 // upload a job photo to Supabase Storage → returns the public URL.
 // Preferred path: a PIN-verified, single-use SIGNED upload URL minted by the team
@@ -350,13 +374,16 @@ function removeRow(key, id){
   var store=byKey[key];
   if(!store) return Promise.resolve(false);
   logEv("REMOVE called "+store.table+" "+id);
-  outboxClear(store.table, id);   // cancel any queued write for this id so it can't come back
+  outboxClear(store.table, id);      // cancel any queued write for this id so it can't come back
+  pendingDeleteAdd(store.table, id); // mark PENDING immediately (durable): protects against a pull
+                                      // resurrecting this id until the cloud confirms the delete
   return fetch(REST+store.table+"?id=eq."+encodeURIComponent(id), {method:"DELETE", headers:authHeaders()})
-    .then(function(r){ return r.ok; }).catch(function(){ return false; });
+    .then(function(r){ logEv("REMOVE "+store.table+" "+id+" -> "+r.status); if(r.ok) pendingDeleteClear(store.table,id); return r.ok; })
+    .catch(function(e){ logEv("REMOVE "+store.table+" "+id+" -> NETERR "+e); return false; }); // stays pending + retried
 }
 
 window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, save:saveConfirmed,
-  remove:removeRow, flush:flushOutbox, pending:outboxCount, log:function(){return _log.slice();},
+  remove:removeRow, flush:flushOutbox, flushDeletes:flushPendingDeletes, pending:outboxCount, log:function(){return _log.slice();},
   login:login, logout:logout, refreshSession:refreshSession, changePassword:changePassword,
   session:getSession, sessionValid:sessionValid, authHeaders:authHeaders};
 // Only the owner/crew tools (which set window.WECARE_SYNC) poll + pull. Public
@@ -366,7 +393,7 @@ window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, 
 function maybeSync(){ if(window.WECARE_SYNC) initialSync(); }
 document.addEventListener("visibilitychange",function(){
   if(!window.WECARE_SYNC) return;
-  if(document.visibilityState==="visible"){ refreshIfNeeded().then(function(){ flushOutbox(); pullAll(); startRealtime(); }); }   // catch up + retry queue + resubscribe
+  if(document.visibilityState==="visible"){ refreshIfNeeded().then(function(){ flushOutbox(); flushPendingDeletes(); pullAll(); startRealtime(); }); }   // catch up + retry queue + resubscribe
 });
 if(document.readyState!=="loading") maybeSync();
 else document.addEventListener("DOMContentLoaded", maybeSync);
