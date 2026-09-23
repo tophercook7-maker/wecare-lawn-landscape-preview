@@ -390,7 +390,11 @@ window.WeCareCloud={pull:pullAll, url:URL_, uploadPhoto:uploadPhoto, team:team, 
 // customer pages skip all polling entirely (writes still work via the interceptor
 // and WeCareCloud.save) — no battery/data/egress drain for visitors.
 // Also pause polling while the tab is hidden.
-function maybeSync(){ if(window.WECARE_SYNC) initialSync(); }
+// One-time page-view beacon (owner/crew tools only, fires once per load) — lets us
+// see which of the several office-app URLs is actually being opened on a device,
+// since mobile browsers cache by path and we've had multiple copies in play.
+function logView(){ try{ team("log_view",{path:location.pathname,ua:navigator.userAgent}); }catch(e){} }
+function maybeSync(){ if(window.WECARE_SYNC){ logView(); initialSync(); } }
 document.addEventListener("visibilitychange",function(){
   if(!window.WECARE_SYNC) return;
   if(document.visibilityState==="visible"){ refreshIfNeeded().then(function(){ flushOutbox(); flushPendingDeletes(); pullAll(); startRealtime(); }); }   // catch up + retry queue + resubscribe
