@@ -155,6 +155,44 @@
         <div class="field" id="modeSqft" style="display:none"><label for="f-sqft">Total square feet</label><input id="f-sqft" name="sqft" type="number" min="0" placeholder="e.g. 1200"></div>
         <div class="calc-out" id="sodOut"></div>
       </form>
+
+      <form class="calc" data-lead="Free Zoysia installation" id="zoysiaLeadForm" style="margin-top:18px">
+        <h3 style="margin-top:0">Get your free Zoysia quote</h3>
+        <p class="mini" style="margin:-6px 0 10px">We'll follow up with your pallet count, price, and a date — usually the same day.</p>
+        <input type="hidden" name="service" value="Free Zoysia installation">
+        <input type="hidden" name="sqft" id="zq-sqft" value="">
+        <div class="row">
+          <div class="field"><label for="zq-name">Name</label><input id="zq-name" name="name" required autocomplete="name" placeholder="Your name"></div>
+          <div class="field"><label for="zq-phone">Phone</label><input id="zq-phone" name="phone" type="tel" required autocomplete="tel" placeholder="501-000-0000"></div>
+        </div>
+        <div class="field"><label for="zq-address">Property address</label><input id="zq-address" name="address" autocomplete="street-address" placeholder="Street, city"></div>
+        <div class="field"><label for="zq-detail">Anything else to add?</label><textarea id="zq-detail" name="detail" rows="2" placeholder="Timing, access, questions…"></textarea></div>
+        <button class="btn btn-leaf" type="submit" style="width:100%">🌱 Get My Free Zoysia Quote →</button>
+        <p data-ok style="display:none;background:rgba(148,204,79,.18);border:1px solid var(--leaf);border-radius:10px;padding:14px;margin-top:14px;color:var(--green-deep);font-weight:600">✅ Got it — we'll follow up with your pallet count, price, and a date.</p>
+      </form>
+      <script>
+      // Carry the calculator's computed sqft into this separate lead form.
+      // The leads row has a first-class `sqft` column (js/wecare-cloud.js) so it
+      // rides along as its own field AND gets folded into `detail` for readability.
+      (function(){
+        var cf=document.getElementById("sodCalc"), lf=document.getElementById("zoysiaLeadForm");
+        if(!cf||!lf) return;
+        function currentSqft(){
+          var mode=cf.mode.value;
+          if(mode==="area") return (parseFloat(cf.len.value)||0)*(parseFloat(cf.wid.value)||0);
+          return parseFloat(cf.sqft.value)||0;
+        }
+        lf.addEventListener("submit",function(){
+          var sqft=Math.round(currentSqft());
+          lf.elements.sqft.value=sqft||"";
+          if(sqft){
+            var note="Lawn size from calculator: ~"+sqft.toLocaleString()+" sq ft";
+            var existing=(lf.elements.detail.value||"").trim();
+            lf.elements.detail.value=note+(existing?"\n\n"+existing:"");
+          }
+        });
+      })();
+      </script>
     </div>
   </div>
 </section>
