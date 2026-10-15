@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>WeCare Landscapes · Derrick Collier</title>
+<meta name="description" content="Call, text, save the contact, book a design consultation, see the work, or leave a review — WeCare Landscapes, Hot Springs, AR. Family-owned since 1998.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0f2219">
+<meta property="og:title" content="WeCare Landscapes · Derrick Collier">
+<meta property="og:description" content="Landscape design-build & outdoor artistry. Hot Springs & Central Arkansas, since 1998.">
+<meta property="og:image" content="https://wecarelandscapes.expert/img/proj-transform-after-2.jpg">
+<meta property="og:url" content="https://wecarelandscapes.expert/tap/">
+<link rel="icon" href="../img/mark.png">
+<link rel="apple-touch-icon" href="../img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="../video/fire-feature-poster.jpg">
+<!-- site stylesheet: needed for the Sage chat panel -->
+<link rel="stylesheet" href="../css/style.css">
+<style>
+:root{
+  --night:#0f2219; --night-2:#152d22; --card:#1a3529; --card-2:#203f31;
+  --cream:#f4efe4; --cream-dim:#c9d3cb; --mute:#94a89c;
+  --gold:#d8b46a; --gold-soft:rgba(216,180,106,.16);
+  --leaf:#94cc4f; --teal:#408f9e;
+  --hair:rgba(244,239,228,.10);
+}
+html,body{background:var(--night)}
+body.tp{margin:0;color:var(--cream);font-family:"Inter",-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+.tp *{box-sizing:border-box}
+.tp a{color:inherit;text-decoration:none}
+.tp h1,.tp h2,.tp h3{font-family:"Fraunces",Georgia,serif;color:var(--cream);font-weight:600;letter-spacing:-.01em;margin:0}
+.shell{max-width:480px;margin:0 auto;position:relative;background:var(--night);min-height:100vh;overflow:hidden}
+@media(min-width:560px){body.tp{background:radial-gradient(1200px 700px at 50% -10%,#1f4232,#0a1711 70%)}.shell{margin:28px auto;border-radius:30px;box-shadow:0 30px 80px rgba(0,0,0,.5);border:1px solid var(--hair)}}
+
+/* hero */
+.hero{position:relative;height:min(78vh,620px);min-height:520px;display:flex;flex-direction:column;justify-content:flex-end;padding:0 22px 26px;isolation:isolate}
+.hero video,.hero .poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(15,34,25,.55) 0%,rgba(15,34,25,0) 26%,rgba(15,34,25,.25) 48%,rgba(15,34,25,.94) 84%,var(--night) 100%)}
+.topbar{position:absolute;top:0;left:0;right:0;padding:calc(16px + env(safe-area-inset-top)) 18px 0;display:flex;justify-content:space-between;align-items:center}
+.tbrand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.86rem;letter-spacing:.02em}
+.tbrand img{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.verified{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;padding:6px 10px;border-radius:99px;background:rgba(15,34,25,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--hair)}
+.verified b{color:var(--gold)}
+.kicker{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
+.hero h1{font-size:2.55rem;line-height:1.02}
+.hero h1 em{font-style:italic;font-weight:500;color:var(--gold)}
+.hero .sub{margin:12px 0 0;color:var(--cream-dim);font-size:.98rem;max-width:34ch}
+.owner{display:flex;align-items:center;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid var(--hair)}
+.owner .mono{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:"Fraunces",serif;font-size:1.05rem;background:var(--gold-soft);color:var(--gold);border:1px solid rgba(216,180,106,.4)}
+.owner b{display:block;font-size:.95rem}
+.owner span{font-size:.8rem;color:var(--mute)}
+
+/* actions */
+.wrap{padding:0 18px}
+.primary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.btn-x{display:flex;align-items:center;justify-content:center;gap:9px;height:58px;border-radius:16px;font-weight:600;font-size:1rem;border:0;cursor:pointer;font-family:inherit;transition:transform .15s ease}
+.btn-x:active{transform:scale(.97)}
+.btn-x svg{width:20px;height:20px}
+.b-gold{background:linear-gradient(180deg,#e4c47f,#c99f4f);color:#1b1608}
+.b-leaf{background:var(--leaf);color:#14301f}
+.b-ghost{background:var(--card);color:var(--cream);border:1px solid var(--hair)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:88px;padding:12px 6px;border-radius:16px;background:var(--card);border:1px solid var(--hair);font-size:.78rem;font-weight:600;text-align:center;cursor:pointer;color:var(--cream);font-family:inherit;transition:background .2s,transform .15s}
+.tile:active{transform:scale(.96)}
+.tile:hover{background:var(--card-2)}
+.tile .ic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--gold-soft);color:var(--gold)}
+.tile .ic svg{width:19px;height:19px}
+.tile.star .ic{background:rgba(148,204,79,.16);color:var(--leaf)}
+
+/* sections */
+section.s{padding:42px 18px 0}
+.s-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.s-head h2{font-size:1.55rem}
+.s-head a{font-size:.8rem;color:var(--gold);font-weight:600}
+.eyebrow-t{font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin:0 0 6px}
+
+/* before/after */
+.ba{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;user-select:none;-webkit-user-select:none;touch-action:pan-y;border:1px solid var(--hair);background:#000}
+.ba img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.ba .after{clip-path:inset(0 0 0 var(--x,50%))}
+.ba .bar{position:absolute;top:0;bottom:0;left:var(--x,50%);width:2px;background:var(--cream);transform:translateX(-1px);box-shadow:0 0 12px rgba(0,0,0,.4)}
+.ba .knob{position:absolute;top:50%;left:var(--x,50%);width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:var(--cream);color:var(--night);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:ew-resize}
+.ba .knob svg{width:22px;height:22px}
+.ba .lab{position:absolute;bottom:12px;font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:5px 9px;border-radius:8px;background:rgba(15,34,25,.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ba .l1{left:12px}.ba .l2{right:12px;color:var(--gold)}
+.ba-tabs{display:flex;gap:8px;margin-top:10px}
+.ba-tabs button{flex:1;height:38px;border-radius:12px;background:transparent;border:1px solid var(--hair);color:var(--cream-dim);font:600 .8rem "Inter",sans-serif;cursor:pointer}
+.ba-tabs button.on{background:var(--cream);color:var(--night);border-color:var(--cream)}
+.cap{font-size:.84rem;color:var(--mute);margin:10px 2px 0}
+
+/* signature */
+.sig{position:relative;border-radius:22px;overflow:hidden;min-height:300px;display:flex;align-items:flex-end;padding:20px;isolation:isolate;border:1px solid rgba(216,180,106,.35)}
+.sig img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.sig::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(15,34,25,0) 18%,rgba(15,34,25,.7) 48%,rgba(15,34,25,.96))}
+.sig h3{font-size:1.45rem;margin:4px 0 6px}
+.sig p{margin:0 0 14px;color:var(--cream-dim);font-size:.9rem}
+.pill{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:99px;background:var(--cream);color:var(--night);font-weight:600;font-size:.85rem}
+
+/* gallery */
+.rail{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -18px;padding:0 18px 4px;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.rail figure{flex:0 0 78%;margin:0;scroll-snap-align:center;cursor:zoom-in}
+.rail img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:18px;border:1px solid var(--hair);background:var(--card)}
+.rail figcaption{font-size:.8rem;color:var(--cream-dim);margin:8px 2px 0}
+
+/* services */
+.svc{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.svc a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px;border-radius:14px;background:var(--card);border:1px solid var(--hair);font-size:.86rem;font-weight:500}
+.svc a::after{content:"→";color:var(--gold);font-weight:600}
+
+/* offer */
+.offer{border-radius:22px;padding:22px;background:linear-gradient(150deg,#2b5a35,#173b2c 70%);border:1px solid rgba(148,204,79,.35);position:relative;overflow:hidden}
+.offer::before{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(148,204,79,.35),transparent 70%)}
+.offer .tag{display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#14301f;background:var(--leaf);padding:5px 9px;border-radius:7px}
+.offer h3{font-size:1.5rem;margin:12px 0 6px}
+.offer p{margin:0 0 16px;color:var(--cream-dim);font-size:.9rem}
+
+/* reviews */
+.quote{padding:20px;border-radius:18px;background:var(--card);border:1px solid var(--hair);margin-bottom:10px}
+.quote .stars{color:var(--gold);letter-spacing:3px;font-size:.9rem}
+.quote p{margin:8px 0 10px;font-family:"Fraunces",serif;font-size:1.04rem;line-height:1.45;color:var(--cream)}
+.quote span{font-size:.78rem;color:var(--mute)}
+
+/* info */
+.info{border-radius:18px;background:var(--card);border:1px solid var(--hair)}
+.info div{display:flex;justify-content:space-between;gap:14px;padding:14px 16px;border-bottom:1px solid var(--hair);font-size:.86rem}
+.info div:last-child{border:0}
+.info dt{color:var(--mute)}
+.info dd{margin:0;text-align:right;color:var(--cream)}
+
+/* qr */
+.qr{display:flex;gap:16px;align-items:center;padding:16px;border-radius:18px;background:var(--cream);color:var(--night)}
+.qr img{width:104px;height:104px;border-radius:8px;flex:0 0 auto}
+.qr h3{color:var(--night);font-size:1.15rem;margin-bottom:4px}
+.qr p{margin:0;font-size:.82rem;color:#3b4d45}
+
+footer.f{padding:36px 18px calc(110px + env(safe-area-inset-bottom));text-align:center;font-size:.76rem;color:var(--mute)}
+footer.f img{width:46px;margin:0 auto 10px;opacity:.85}
+footer.f a{color:var(--cream-dim);text-decoration:underline;text-underline-offset:3px}
+
+/* sticky dock */
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));width:min(456px,calc(100% - 24px));display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:8px;padding:8px;border-radius:22px;background:rgba(21,45,34,.82);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);border:1px solid var(--hair);z-index:90;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;transform:translate(-50%,16px)}
+.dock.show{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.dock a{height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;gap:7px;font-weight:600;font-size:.88rem}
+.dock svg{width:18px;height:18px}
+
+/* lightbox + toast */
+.lb{position:fixed;inset:0;background:rgba(5,12,9,.94);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.lb.open{display:flex}
+.lb img{max-width:100%;max-height:82vh;border-radius:14px}
+.lb p{position:absolute;bottom:calc(28px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:var(--cream-dim);font-size:.88rem;margin:0}
+.toast{position:fixed;left:50%;top:calc(18px + env(safe-area-inset-top));transform:translate(-50%,-80px);background:var(--cream);color:var(--night);font-weight:600;font-size:.88rem;padding:11px 18px;border-radius:99px;z-index:300;transition:transform .35s ease;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.toast.show{transform:translate(-50%,0)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+/* Sage: launched from the tile, not the floating button */
+#ai-launch{display:none!important}
+</style>
+</head>
+<body class="tp">
+<div class="shell">
+
+  <!-- HERO -->
+  <header class="hero">
+    <img class="poster" src="../video/fire-feature-poster.jpg" alt="">
+    <video autoplay muted loop playsinline preload="metadata" poster="../video/fire-feature-poster.jpg" aria-hidden="true">
+      <source src="../video/fire-feature.mp4" type="video/mp4">
+    </video>
+    <div class="topbar">
+      <div class="tbrand"><img src="../img/logo-white.png" alt="WeCare Landscapes logo">WeCare Landscapes</div>
+      <a class="verified" href="https://maps.google.com/?cid=12501164772747548114" target="_blank" rel="noopener" data-t="maps"><b>●</b> On Google Maps</a>
+    </div>
+    <p class="kicker">Hot Springs · Central Arkansas</p>
+    <h1>Landscapes built <em>without the usual limits.</em></h1>
+    <p class="sub">Design-build, carved concrete artistry, stonework, sod from our own farm, and property care.</p>
+    <div class="owner">
+      <div class="mono">DC</div>
+      <div><b>Derrick Collier, Owner</b><span>Family-owned · landscaping since 1998</span></div>
+    </div>
+  </header>
+
+  <!-- ACTIONS -->
+  <div class="wrap">
+    <div class="primary">
+      <a class="btn-x b-gold" href="tel:+15016274384" data-t="call">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+        Call</a>
+      <a class="btn-x b-ghost" href="sms:+15016274384?&body=Hi%20Derrick%2C%20I%20got%20your%20card%20and%20I%27d%20like%20to%20talk%20about%20my%20property." data-t="text">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Text</a>
+    </div>
+    <div class="grid">
+      <a class="tile" href="derrick-collier-wecare.vcf" download="Derrick Collier - WeCare Landscapes.vcf" data-t="save_contact">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>Save contact</a>
+      <a class="tile" href="../book.html" data-t="book">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></span>Book a design visit</a>
+      <a class="tile star" href="../review" data-t="review">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg></span>Leave a review</a>
+      <button class="tile" type="button" id="askSage" data-t="sage">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 1.9-5.4 5.2-6"/></svg></span>Ask Sage, 24/7</button>
+      <a class="tile" href="#work" data-t="work">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>See our work</a>
+      <button class="tile" type="button" id="shareBtn" data-t="share">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></span>Share this card</button>
+    </div>
+  </div>
+
+  <!-- BEFORE / AFTER -->
+  <section class="s rv">
+    <p class="eyebrow-t">Real projects · drag to compare</p>
+    <div class="s-head"><h2>Before &amp; after</h2></div>
+    <div class="ba" id="ba" style="--x:50%">
+      <img class="before" id="baB" src="../img/proj-transform-before-2.jpg" alt="Backyard before — bare gravel and weeds">
+      <img class="after" id="baA" src="../img/proj-transform-after-2.jpg" alt="The same backyard after — lawn, native stone and flagstone paths">
+      <span class="lab l1">Before</span><span class="lab l2">After</span>
+      <div class="bar"></div>
+      <div class="knob" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg></div>
+    </div>
+    <div class="ba-tabs" role="tablist">
+      <button class="on" data-b="../img/proj-transform-before-2.jpg" data-a="../img/proj-transform-after-2.jpg" data-c="Bare gravel and grade problems, turned into lawn, native stone and flagstone paths.">Backyard</button>
+      <button data-b="../img/pool-before.jpg" data-a="../img/pool-after.jpg" data-c="A bare dirt slope, turned into a pool deck with turf, boxwoods and stone borders.">Pool yard</button>
+      <button data-b="../img/proj-fountain-before.jpg" data-a="../img/proj-fountain-after.jpg" data-c="A plain mulch bed, turned into a stacked-stone bubbling fountain.">Fountain</button>
+    </div>
+    <p class="cap" id="baCap">Bare gravel and grade problems, turned into lawn, native stone and flagstone paths.</p>
+  </section>
+
+  <!-- SIGNATURE -->
+  <section class="s rv">
+    <a class="sig" href="../carved-concrete-artistry.html" data-t="signature">
+      <img src="../video/fire-feature-poster.jpg" alt="Hand-carved concrete tree-stump fire feature" loading="lazy">
+      <div>
+        <p class="kicker" style="margin:0">Our signature</p>
+        <h3>Carved concrete artistry</h3>
+        <p>Tree stumps, rock, fire and water features, hand-carved on site. You won't find these anywhere else around here.</p>
+        <span class="pill">See the artistry →</span>
+      </div>
+    </a>
+  </section>
+
+  <!-- WORK -->
+  <section class="s rv" id="work">
+    <div class="s-head"><h2>The work</h2><a href="../case-studies.html" data-t="all_work">All projects →</a></div>
+    <div class="rail" id="rail">
+      <figure><img src="../img/proj-transform-after-1.jpg" alt="Backyard after a full landscape transformation" loading="lazy"><figcaption>Full backyard transformation</figcaption></figure>
+      <figure><img src="../img/new-patio-covered.jpg" alt="Flagstone patio under a covered porch" loading="lazy"><figcaption>Covered flagstone patio</figcaption></figure>
+      <figure><img src="../img/new-stone-table.jpg" alt="Carved Arkansas-stone table and benches by a lake" loading="lazy"><figcaption>Carved stone table by the lake</figcaption></figure>
+      <figure><img src="../img/new-patio-lakeside.jpg" alt="Lakeside flagstone patio" loading="lazy"><figcaption>Lakeside flagstone patio</figcaption></figure>
+      <figure><img src="../img/new-craft-medallion.jpg" alt="Flagstone patio with an inlaid stone medallion" loading="lazy"><figcaption>Inlaid stone medallion</figcaption></figure>
+      <figure><img src="../img/new-patio-golf.jpg" alt="Flagstone patio overlooking the golf course" loading="lazy"><figcaption>Patio over the golf course</figcaption></figure>
+      <figure><img src="../img/proj-fountain-after.jpg" alt="Three-tier stacked-stone bubbling fountain" loading="lazy"><figcaption>Stacked-stone fountain</figcaption></figure>
+      <figure><img src="../img/new-flagstone-patio.jpg" alt="Flagstone patio and walkway" loading="lazy"><figcaption>Flagstone walk</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="s rv">
+    <div class="s-head"><h2>What we do</h2></div>
+    <div class="svc">
+      <a href="../landscape-design-build.html">Design &amp; build</a>
+      <a href="../carved-concrete-artistry.html">Carved concrete</a>
+      <a href="../hardscape-stonework-patios.html">Stone &amp; patios</a>
+      <a href="../pondless-water-features.html">Water features</a>
+      <a href="../drainage-erosion-correction.html">Drainage</a>
+      <a href="../irrigation-installation-repair.html">Irrigation</a>
+      <a href="../landscape-lighting.html">Lighting</a>
+      <a href="../artificial-turf.html">Artificial turf</a>
+      <a href="../sod-sales-delivery-installation.html">Sod &amp; install</a>
+      <a href="../lawn-property-maintenance.html">Property care</a>
+    </div>
+  </section>
+
+  <!-- OFFER -->
+  <section class="s rv">
+    <div class="offer">
+      <span class="tag">From our own farm</span>
+      <h3>Free Zoysia sod with professional installation</h3>
+      <p>We grow it, prepare your ground, and lay it. The sod is on us.</p>
+      <a class="pill" href="../free-zoysia-sod.html" data-t="zoysia">See how it works →</a>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="s rv">
+    <div class="s-head"><h2>Neighbors say</h2></div>
+    <div class="quote"><div class="stars">★★★★★</div><p>"These guys did fantastic, restoring the tree back to its former glory… I wish I'd known about Derrick years ago. Fantastic work at a fair price."</p><span>Nancy T. · Hot Springs</span></div>
+    <div class="quote"><div class="stars">★★★★★</div><p>"Very professional and reasonable. Good folks."</p><span>Homeowner · Saline County</span></div>
+    <a class="btn-x b-leaf" href="../review" data-t="review_2" style="margin-top:4px">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>
+      Worked with us? Leave a Google review</a>
+  </section>
+
+  <!-- INFO -->
+  <section class="s rv">
+    <dl class="info">
+      <div><dt>Phone</dt><dd><a href="tel:+15016274384">(501) 627-4384</a></dd></div>
+      <div><dt>Email</dt><dd><a href="mailto:derrick@wecarelandscapes.expert">derrick@wecarelandscapes.expert</a></dd></div>
+      <div><dt>Hours</dt><dd>Mon–Fri · 8 AM – 3 PM</dd></div>
+      <div><dt>Serving</dt><dd>Hot Springs, Hot Springs Village, Benton, Bryant, Little Rock, Conway, Russellville</dd></div>
+      <div><dt>Follow</dt><dd><a href="https://www.facebook.com/p/Derrick-Colliers-We-Care-Lawn-Care-LLC-100064053907550/" target="_blank" rel="noopener" data-t="facebook">Facebook</a> · <a href="../" data-t="website">Website</a></dd></div>
+    </dl>
+  </section>
+
+  <!-- QR -->
+  <section class="s rv">
+    <div class="qr">
+      <img src="qr.svg" alt="QR code that opens this page">
+      <div><h3>Pass it on</h3><p>Someone standing next to you? Have them point their camera here and they'll get this same card.</p></div>
+    </div>
+  </section>
+
+  <footer class="f">
+    <img src="../img/logo-white.png" alt="">
+    WeCare Landscapes · Hot Springs, Arkansas<br>
+    <a href="../privacy.html">Privacy</a> · <a href="../terms.html">Terms</a>
+  </footer>
+</div>
+
+<!-- sticky dock appears once the hero scrolls away -->
+<nav class="dock" id="dock" aria-label="Quick contact">
+  <a class="b-ghost" href="tel:+15016274384" data-t="call_dock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>Call</a>
+  <a class="b-ghost" href="sms:+15016274384" data-t="text_dock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Text</a>
+  <a class="b-gold" href="../book.html" data-t="book_dock">Book a visit</a>
+</nav>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true"><img id="lbImg" alt=""><p id="lbCap"></p></div>
+<div class="toast" id="toast">Link copied</div>
+
+<script src="../js/wecare-cloud.js?v=0927"></script>
+<script src="../js/analytics.js?v=0844"></script>
+<script src="../js/app.js?v=0844"></script>
+<script>
+(function(){
+  var URL_SELF = "https://wecarelandscapes.expert/tap/";
+  function t(name){ try{ if(window.track) window.track("tap_card", {action:name}); }catch(e){} }
+  document.querySelectorAll("[data-t]").forEach(function(el){ el.addEventListener("click", function(){ t(el.getAttribute("data-t")); }); });
+
+  function toast(msg){ var e=document.getElementById("toast"); e.textContent=msg; e.classList.add("show"); setTimeout(function(){ e.classList.remove("show"); }, 2200); }
+
+  // Ask Sage
+  document.getElementById("askSage").addEventListener("click", function(){ if(window.Sage) window.Sage.open(); });
+
+  // Share
+  document.getElementById("shareBtn").addEventListener("click", function(){
+    var data = {title:"WeCare Landscapes · Derrick Collier", text:"Landscape design-build & outdoor artistry in Hot Springs, AR — here's Derrick's card:", url:URL_SELF};
+    if(navigator.share){ navigator.share(data).catch(function(){}); }
+    else if(navigator.clipboard){ navigator.clipboard.writeText(URL_SELF).then(function(){ toast("Link copied"); }); }
+    else { prompt("Copy this link:", URL_SELF); }
+  });
+
+  // Before / after slider
+  var ba=document.getElementById("ba"), dragging=false;
+  function setX(clientX){ var r=ba.getBoundingClientRect(); var p=Math.max(0,Math.min(100,(clientX-r.left)/r.width*100)); ba.style.setProperty("--x", p+"%"); }
+  ba.addEventListener("pointerdown", function(e){ dragging=true; ba.setPointerCapture(e.pointerId); setX(e.clientX); });
+  ba.addEventListener("pointermove", function(e){ if(dragging) setX(e.clientX); });
+  ["pointerup","pointercancel"].forEach(function(ev){ ba.addEventListener(ev, function(){ dragging=false; }); });
+  // a gentle nudge so people know it moves
+  var nudged=false, nio=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting && !nudged){ nudged=true; var s=performance.now(); (function step(n){ var k=(n-s)/1600; if(k>1){ ba.style.setProperty("--x","50%"); return; } ba.style.setProperty("--x", (50+Math.sin(k*Math.PI*2)*18)+"%"); requestAnimationFrame(step); })(s); } }); },{threshold:.6});
+  nio.observe(ba);
+  document.querySelectorAll(".ba-tabs button").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll(".ba-tabs button").forEach(function(x){ x.classList.remove("on"); });
+      b.classList.add("on");
+      document.getElementById("baB").src=b.dataset.b; document.getElementById("baA").src=b.dataset.a;
+      document.getElementById("baCap").textContent=b.dataset.c; ba.style.setProperty("--x","50%"); t("ba_"+b.textContent.trim().toLowerCase().replace(/\s+/g,"_"));
+    });
+  });
+
+  // Lightbox
+  var lb=document.getElementById("lb");
+  document.querySelectorAll("#rail figure").forEach(function(f){
+    f.addEventListener("click", function(){ var i=f.querySelector("img"); document.getElementById("lbImg").src=i.src; document.getElementById("lbImg").alt=i.alt; document.getElementById("lbCap").textContent=f.querySelector("figcaption").textContent; lb.classList.add("open"); });
+  });
+  lb.addEventListener("click", function(){ lb.classList.remove("open"); });
+
+  // Sticky dock + reveals
+  var dock=document.getElementById("dock"), hero=document.querySelector(".hero");
+  new IntersectionObserver(function(es){ es.forEach(function(e){ dock.classList.toggle("show", !e.isIntersecting); }); },{threshold:.15}).observe(hero);
+  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); },{threshold:.12});
+  document.querySelectorAll(".rv").forEach(function(x){ io.observe(x); });
+
+  // Respect data-saver / reduced motion: keep the still poster instead of the video
+  var v=document.querySelector(".hero video");
+  if((navigator.connection && navigator.connection.saveData) || matchMedia("(prefers-reduced-motion: reduce)").matches){ v.removeAttribute("autoplay"); v.pause(); v.style.display="none"; }
+
+  t("open");
+})();
+</script>
+</body>
+</html>
