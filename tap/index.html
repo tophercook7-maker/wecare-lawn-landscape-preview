@@ -78,7 +78,7 @@ section.s{padding:42px 18px 0}
 .eyebrow-t{font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin:0 0 6px}
 
 /* before/after */
-.ba{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;user-select:none;-webkit-user-select:none;touch-action:pan-y;border:1px solid var(--hair);background:#000}
+.ba{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:4/3;max-height:72vh;margin:0 auto;user-select:none;-webkit-user-select:none;touch-action:pan-y;border:1px solid var(--hair);background:#000}
 .ba img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .ba .after{clip-path:inset(0 0 0 var(--x,50%))}
 .ba .bar{position:absolute;top:0;bottom:0;left:var(--x,50%);width:2px;background:var(--cream);transform:translateX(-1px);box-shadow:0 0 12px rgba(0,0,0,.4)}
@@ -216,17 +216,17 @@ footer.f a{color:var(--cream-dim);text-decoration:underline;text-underline-offse
   <section class="s rv">
     <p class="eyebrow-t">Real projects · drag to compare</p>
     <div class="s-head"><h2>Before &amp; after</h2></div>
-    <div class="ba" id="ba" style="--x:50%">
-      <img class="before" id="baB" src="../img/proj-transform-before-2.jpg" alt="Backyard before — bare gravel and weeds">
-      <img class="after" id="baA" src="../img/proj-transform-after-2.jpg" alt="The same backyard after — lawn, native stone and flagstone paths">
+    <div class="ba" id="ba" style="--x:50%;aspect-ratio:1082/776">
+      <img class="before" id="baB" src="../img/ba-backyard-before.jpg" alt="Backyard before — bare gravel and weeds">
+      <img class="after" id="baA" src="../img/ba-backyard-after.jpg" alt="The same backyard after — lawn, native stone and flagstone paths">
       <span class="lab l1">Before</span><span class="lab l2">After</span>
       <div class="bar"></div>
       <div class="knob" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg></div>
     </div>
     <div class="ba-tabs" role="tablist">
-      <button class="on" data-b="../img/proj-transform-before-2.jpg" data-a="../img/proj-transform-after-2.jpg" data-c="Bare gravel and grade problems, turned into lawn, native stone and flagstone paths.">Backyard</button>
-      <button data-b="../img/pool-before.jpg" data-a="../img/pool-after.jpg" data-c="A bare dirt slope, turned into a pool deck with turf, boxwoods and stone borders.">Pool yard</button>
-      <button data-b="../img/proj-fountain-before.jpg" data-a="../img/proj-fountain-after.jpg" data-c="A plain mulch bed, turned into a stacked-stone bubbling fountain.">Fountain</button>
+      <button class="on" data-r="1082/776" data-b="../img/ba-backyard-before.jpg" data-a="../img/ba-backyard-after.jpg" data-c="Bare gravel and grade problems, turned into lawn, native stone and flagstone paths.">Backyard</button>
+      <button data-r="748/1131" data-b="../img/ba-pool-before.jpg" data-a="../img/ba-pool-after.jpg" data-c="Bare dirt around the pool, turned into turf, a stone deck and clean borders.">Pool yard</button>
+      <button data-r="670/864" data-b="../img/ba-walkway-before.jpg" data-a="../img/ba-walkway-after.jpg" data-c="A tired side path, rebuilt in fresh flagstone with stone edging.">Walkway</button>
     </div>
     <p class="cap" id="baCap">Bare gravel and grade problems, turned into lawn, native stone and flagstone paths.</p>
   </section>
@@ -367,7 +367,7 @@ footer.f a{color:var(--cream-dim);text-decoration:underline;text-underline-offse
     b.addEventListener("click", function(){
       document.querySelectorAll(".ba-tabs button").forEach(function(x){ x.classList.remove("on"); });
       b.classList.add("on");
-      document.getElementById("baB").src=b.dataset.b; document.getElementById("baA").src=b.dataset.a;
+      document.getElementById("baB").src=b.dataset.b; document.getElementById("baA").src=b.dataset.a; ba.style.aspectRatio=b.dataset.r; document.getElementById("baB").alt=b.textContent.trim()+" before"; document.getElementById("baA").alt=b.textContent.trim()+" after";
       document.getElementById("baCap").textContent=b.dataset.c; ba.style.setProperty("--x","50%"); t("ba_"+b.textContent.trim().toLowerCase().replace(/\s+/g,"_"));
     });
   });
