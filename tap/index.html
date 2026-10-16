@@ -44,6 +44,9 @@ body.tp{margin:0;color:var(--cream);font-family:"Inter",-apple-system,BlinkMacSy
 .tbrand img{width:34px;height:34px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
 .verified{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;padding:6px 10px;border-radius:99px;background:rgba(15,34,25,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--hair)}
 .verified b{color:var(--gold)}
+.tp .toprev{position:absolute;top:calc(66px + env(safe-area-inset-top));left:18px;right:18px;display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:16px;background:var(--leaf);color:#14301f;font-weight:700;font-size:1rem;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.toprev .st{letter-spacing:2px;font-size:.9rem}
+.toprev:active{transform:scale(.97)}
 .kicker{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
 .hero h1{font-size:2.55rem;line-height:1.02}
 .hero h1 em{font-style:italic;font-weight:500;color:var(--gold)}
@@ -182,6 +185,7 @@ footer.f a{color:var(--cream-dim);text-decoration:underline;text-underline-offse
       <div class="tbrand"><img src="../img/logo-white.png" alt="WeCare Landscapes logo">WeCare Landscapes</div>
       <a class="verified" href="https://maps.google.com/?cid=12501164772747548114" target="_blank" rel="noopener" data-t="maps"><b>●</b> On Google Maps</a>
     </div>
+    <a class="toprev" href="../review" data-t="review_top"><span class="st">★★★★★</span>Leave a Google review</a>
     <p class="kicker">Hot Springs · Central Arkansas</p>
     <h1>Landscapes built <em>without the usual limits.</em></h1>
     <p class="sub">Design-build, carved concrete artistry, stonework, sod from our own farm, and property care.</p>
