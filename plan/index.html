@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Your Care Plan · WeCare Landscapes</title>
+<meta name="description" content="What Chris Cook watches and handles for WeCare Landscapes on the $50 a month care plan.">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f2219">
+<link rel="icon" href="../img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0f2219; --card:#1a3529; --card-2:#203f31;
+  --cream:#f4efe4; --cream-dim:#c9d3cb; --mute:#94a89c;
+  --gold:#d8b46a; --gold-soft:rgba(216,180,106,.16);
+  --leaf:#94cc4f; --leaf-soft:rgba(148,204,79,.15);
+  --hair:rgba(244,239,228,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night)}
+body{color:var(--cream);font-family:"Inter",-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--gold);text-decoration:none;font-weight:600}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.01em;margin:0;color:var(--cream)}
+.shell{max-width:560px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) 16px 56px}
+@media(min-width:620px){body{background:radial-gradient(1200px 700px at 50% -10%,#1f4232,#0a1711 70%)}.shell{margin:28px auto;border-radius:28px;background:var(--night);border:1px solid var(--hair);padding:36px 30px 56px}}
+
+.brand{display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:600;color:var(--cream-dim)}
+.brand img{width:34px;height:34px;object-fit:contain}
+.kicker{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:30px 0 10px}
+h1{font-size:2.3rem;line-height:1.05}
+.lede{color:var(--cream-dim);margin:14px 0 0;font-size:1rem}
+.terms{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:22px}
+.term{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:14px 10px;text-align:center}
+.term b{display:block;font-family:"Fraunces",serif;font-size:1.35rem;color:var(--gold);line-height:1.1}
+.term span{font-size:.74rem;color:var(--mute)}
+
+section{margin-top:44px}
+.eyebrow{font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin:0 0 6px}
+section h2{font-size:1.5rem;margin-bottom:14px}
+section > p{color:var(--cream-dim);margin:0 0 14px}
+
+.steps{list-style:none;margin:0;padding:0;counter-reset:s}
+.steps li{counter-increment:s;position:relative;padding:16px 16px 16px 60px;background:var(--card);border:1px solid var(--hair);border-radius:16px;margin-bottom:10px}
+.steps li::before{content:counter(s);position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:"Fraunces",serif;font-weight:600;background:var(--gold-soft);color:var(--gold);border:1px solid rgba(216,180,106,.4)}
+.steps b{display:block;font-size:.98rem}
+.steps span{display:block;color:var(--cream-dim);font-size:.9rem;margin-top:2px}
+
+.acct{background:var(--card);border:1px solid var(--hair);border-radius:18px;padding:16px;margin-bottom:10px}
+.acct-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.acct h3{font-family:"Inter",sans-serif;font-size:1rem;font-weight:700}
+.acct .what{font-size:.82rem;color:var(--mute);margin-top:2px;overflow-wrap:anywhere}
+.when{flex:none;font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:99px;background:var(--leaf-soft);color:var(--leaf);white-space:nowrap}
+.when.wk{background:var(--gold-soft);color:var(--gold)}
+.acct ul{margin:12px 0 0;padding:0 0 0 18px;color:var(--cream-dim);font-size:.9rem}
+.acct li{margin:3px 0}
+
+.report{background:linear-gradient(180deg,var(--card-2),var(--card));border:1px solid rgba(216,180,106,.3);border-radius:18px;padding:18px}
+.report ul{margin:0;padding:0;list-style:none}
+.report li{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--hair);font-size:.92rem;color:var(--cream-dim)}
+.report li:first-child{border-top:0;padding-top:0}
+.report li b{color:var(--cream);display:block;font-size:.95rem}
+.dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:8px}
+
+.done{margin:0;padding:0;list-style:none}
+.done li{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--hair);font-size:.92rem;color:var(--cream-dim)}
+.done li:first-child{border-top:0}
+.done li b{color:var(--cream)}
+.chk{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--leaf-soft);color:var(--leaf);margin-top:1px}
+.chk svg{width:13px;height:13px}
+.date{flex:none;margin-left:auto;font-size:.75rem;color:var(--mute);white-space:nowrap;padding-left:8px}
+
+.yours{background:var(--card);border:1px solid var(--hair);border-radius:18px;padding:18px;color:var(--cream-dim);font-size:.94rem}
+.yours p{margin:0 0 10px}
+.yours p:last-child{margin:0}
+
+.sign{margin-top:44px;padding-top:22px;border-top:1px solid var(--hair);display:flex;align-items:center;gap:12px}
+.mono{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-family:"Fraunces",serif;font-size:1.05rem;background:var(--gold-soft);color:var(--gold);border:1px solid rgba(216,180,106,.4)}
+.sign b{display:block}
+.sign span{font-size:.85rem;color:var(--mute)}
+</style>
+</head>
+<body>
+<main class="shell">
+
+  <div class="brand"><img src="../img/logo-trans.png" alt="">WeCare Landscapes</div>
+
+  <p class="kicker">Your Care Plan</p>
+  <h1>One person watching everything behind your business</h1>
+  <p class="lede">Your website, your Google listing, your leads database and your accounts all run in the background. I keep an eye on every one of them so nothing quietly breaks, and once a month I show you where you stand.</p>
+
+  <div class="terms">
+    <div class="term"><b>$50</b><span>a month</span></div>
+    <div class="term"><b>3 months</b><span>trial, Oct–Jan</span></div>
+    <div class="term"><b>You</b><span>own the accounts</span></div>
+  </div>
+
+  <section>
+    <p class="eyebrow">Start here</p>
+    <h2>Your part, in four steps</h2>
+    <ol class="steps">
+      <li><b>Check your leads in the office app</b><span>Every form, chat and consultation request lands at <a href="../ops.html">wecarelandscapes.expert/ops.html</a>. A quick look once a day is plenty.</span></li>
+      <li><b>Ask for a review when a job is done</b><span>Tap your card on the customer's phone, or text them <a href="../review">wecarelandscapes.expert/review</a>. Right when they're happy is the best time.</span></li>
+      <li><b>Send me before and after photos</b><span>From the same spot and angle if you can. I turn them into your project pages and posts.</span></li>
+      <li><b>Forward me anything that looks like an account notice</b><span>A bill, a renewal or a "verify your account" email you don't recognize. I'll tell you if it's real and take care of it.</span></li>
+    </ol>
+  </section>
+
+  <section>
+    <p class="eyebrow">What I watch for you</p>
+    <h2>Every account tied to We Care</h2>
+
+    <div class="acct">
+      <div class="acct-top"><div><h3>Leads database &amp; office app</h3><div class="what">Your leads, crew app, work orders and Sage, the website chat</div></div><span class="when">Daily</span></div>
+      <ul><li>Checked every morning to make sure it's running and saving leads</li><li>If it ever goes down, I get an alert and bring it back</li></ul>
+    </div>
+
+    <div class="acct">
+      <div class="acct-top"><div><h3>Your website</h3><div class="what">wecarelandscapes.expert, your tap page and your review link</div></div><span class="when">Daily</span></div>
+      <ul><li>Every page loads and the forms work</li><li>The security certificate (the padlock) stays current</li><li>Fixes when something on the site looks wrong</li></ul>
+    </div>
+
+    <div class="acct">
+      <div class="acct-top"><div><h3>Your web address</h3><div class="what">The wecarelandscapes.expert domain</div></div><span class="when">Daily</span></div>
+      <ul><li>Watched so it never lapses. If it did, your website and email would go dark</li></ul>
+    </div>
+
+    <div class="acct">
+      <div class="acct-top"><div><h3>Google Business Profile</h3><div class="what">"We Care Landscapes" on Google Search and Maps</div></div><span class="when wk">Weekly</span></div>
+      <ul><li>Hours, services, photos and details stay correct</li><li>New reviews, plus anything Google flags or wants confirmed</li><li>No one changes your listing without you knowing</li></ul>
+    </div>
+
+    <div class="acct">
+      <div class="acct-top"><div><h3>Bing, Houzz &amp; other listings</h3><div class="what">The directories that feed ChatGPT, Gemini and the rest</div></div><span class="when wk">Weekly</span></div>
+      <ul><li>Your name, number and website match everywhere</li><li>Bing Places is synced with your Google listing</li></ul>
+    </div>
+
+    <div class="acct">
+      <div class="acct-top"><div><h3>Business email</h3><div class="what">derrick@wecarelandscapes.expert</div></div><span class="when wk">Weekly</span></div>
+      <ul><li>Mail keeps reaching your Yahoo and Gmail</li><li>Account and billing notices don't get buried</li></ul>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Every month</p>
+    <h2>Your report</h2>
+    <p>The first one comes in early November. It's one short page you can read in a couple of minutes.</p>
+    <div class="report">
+      <ul>
+        <li><span class="dot"></span><div><b>Where you show up on Google</b>The searches people use to find a landscaper here, and where you rank for each</div></li>
+        <li><span class="dot"></span><div><b>Whether AI recommends you</b>What ChatGPT, Gemini and the others say when someone asks who to hire in Hot Springs</div></li>
+        <li><span class="dot"></span><div><b>Reviews</b>How many you have, what's new, and how you compare</div></li>
+        <li><span class="dot"></span><div><b>Leads</b>How many came in through the site and the chat</div></li>
+        <li><span class="dot"></span><div><b>What I caught and fixed</b>Anything that broke or needed attention, and what I did about it</div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Since we started</p>
+    <h2>Already done</h2>
+    <ul class="done">
+      <li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Leads database brought back</b> after it shut itself off, and it's now on a daily check</div><span class="date">Oct 6</span></li>
+      <li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Listed on Bing Places</b>, synced from Google</div><span class="date">Oct 12</span></li>
+      <li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Google listing verified</b> and live on Maps</div><span class="date">Oct 15</span></li>
+      <li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Review link and "Leave us a Google review" button</b> on your site</div><span class="date">Oct 15</span></li>
+      <li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Tap page</b> for your cards: call, text, save contact, reviews, your work</div><span class="date">Oct 15</span></li>
+      <li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Nextdoor Fave 2026 badge</b> on your site and tap page</div><span class="date">Oct 15</span></li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">Your accounts, your money</p>
+    <h2>How it's set up</h2>
+    <div class="yours">
+      <p>Accounts stay in your company's name, and recurring charges go on the company, wherever possible. I manage and watch them; you own them.</p>
+      <p>If you ever want to take any of it over yourself, I'll hand you every login in one sitting.</p>
+      <p>In early January we look at the three months together. Keep it, change it or stop. It's your call.</p>
+    </div>
+  </section>
+
+  <div class="sign">
+    <div class="mono">CC</div>
+    <div><b>Chris Cook</b><span>MixedMakerShop · text me anytime: 501-575-8017</span></div>
+  </div>
+
+</main>
+</body>
+</html>
