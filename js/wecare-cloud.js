@@ -166,7 +166,8 @@ function upsert(store, row){
   if(!sessionValid()){
     if(PUBLIC_TABLES[store.table]){                 // customer forms → service-role gate
       team("public_write",{table:store.table,row:row})
-        .then(function(res){ if(res&&res.ok) outboxClear(store.table,row.id); }).catch(function(){});
+        .then(function(res){ if(res&&res.ok) outboxClear(store.table,row.id); else backupWrite(store.table,row); })
+        .catch(function(){ backupWrite(store.table,row); });
     } else { logEv("upsert "+store.table+" "+row.id+" -> QUEUED (not signed in)"); }
     return;                                          // owner table w/o a session → stays pending, flushes after sign-in
   }
@@ -346,6 +347,19 @@ function uploadPhoto(file, jobId, id, pin, kind){
 // Employee directory goes through the service-role `team` edge function so crew
 // PINs + personal info are never exposed to this public anon key.
 var TEAM_FN=URL_+"/functions/v1/team";
+// BACKUP INBOX (16 Oct 2026): if the database can't take a customer's form (it paused
+// 09-29 and again ~10-13 on the free tier), the row goes to a separate Cloudflare
+// inbox instead of sitting in the customer's own browser. Topher's Mac replays it into
+// the database once it's back and alerts him. Resolves true when the backup holds it.
+var BACKUP_URL="https://wecare-lead-backup.henryai.workers.dev/lead";
+var _backedUp={};
+function backupWrite(table,row){
+  if(!row||!row.id) return Promise.resolve(false);
+  var k=table+":"+row.id; if(_backedUp[k]) return Promise.resolve(true);
+  return fetch(BACKUP_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({table:table,row:row})})
+    .then(function(r){ if(r.ok){ _backedUp[k]=1; logEv("BACKUP "+k+" -> held"); } return r.ok; })
+    .catch(function(){ return false; });
+}
 function team(action, payload){
   var body=Object.assign({action:action}, payload||{});
   // 20s timeout so a weak field signal fails cleanly (UI prompts a retry) instead of
@@ -363,7 +377,12 @@ function saveConfirmed(key, obj){
   var store=byKey[key]; if(!store||!obj||!obj.id) return Promise.resolve(false);
   var sh=_shadow[key]||(_shadow[key]={}); sh[obj.id]=JSON.stringify(obj); // pre-seed so the interceptor doesn't double-send
   var row=store.toRow(obj);
-  if(!sessionValid() && PUBLIC_TABLES[store.table]){ return team("public_write",{table:store.table,row:row}).then(function(res){return !!(res&&res.ok);}); }
+  if(!sessionValid() && PUBLIC_TABLES[store.table]){
+    return team("public_write",{table:store.table,row:row}).then(function(res){
+      if(res&&res.ok) return true;
+      return backupWrite(store.table,row);   // database down: the backup inbox holds it, so the customer still gets "sent"
+    });
+  }
   return fetch(REST+store.table+"?on_conflict=id",{method:"POST",
     headers:Object.assign({},authHeaders(),{"Prefer":"resolution=merge-duplicates,return=minimal"}),
     body:JSON.stringify(row)}).then(function(r){return r.ok;}).catch(function(){return false;});
