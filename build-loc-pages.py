@@ -17,7 +17,8 @@ CITIES = {
     h1="Landscaping &amp; outdoor artistry in Hot Springs Village",
     intro="Hot Springs Village's hillside lots, wooded properties, and community grounds are a big part of what we do. WeCare brings full design-build, carved concrete artistry, sod, drainage, and recurring grounds care to the Village.",
     serves="In Hot Springs Village we handle the whole range — design-build transformations, carved concrete features, sod, drainage on sloped and wooded lots, and recurring grounds care.",
-    sod_line="Farm-grown sod delivered and installed across Hot Springs Village."),
+    sod_line="Farm-grown sod delivered and installed across Hot Springs Village.",
+    projects=True),
  "benton": dict(
     name="Benton", county="Saline County", maint=False, sod="range",
     h1="Landscape design-build &amp; outdoor artistry in Benton",
@@ -120,7 +121,7 @@ TEMPLATE = """<!doctype html>
   {maint_scope}
 </div></section>
 
-<section class="section bg-sand"><div class="wrap" style="max-width:820px">
+{projects}<section class="section bg-sand"><div class="wrap" style="max-width:820px">
   <p class="lead" style="max-width:70ch">WeCare Landscapes is a service-area business based near Hot Springs, serving {name} and {county}. Family-owned since 1998 — the same team designs, builds, and (in our core area) maintains, so your project holds together and holds up.</p>
 </div></section>
 
@@ -144,10 +145,68 @@ TEMPLATE = """<!doctype html>
 <footer><div class="wrap"><div class="foot-bot" style="justify-content:center">
   <span>© 2026 WeCare Landscapes · Hot Springs &amp; Central Arkansas · <a href="index.html">Home</a> · <a href="about.html">About</a></span>
 </div></div></footer>
-<script src="js/wecare-cloud.js?v=0843"></script>
-<script src="js/app.js?v=0838"></script>
+<script src="js/wecare-cloud.js?v=1016"></script>
+<script src="js/app.js?v=0844"></script>
+<script src="js/hits.js?v=1016" defer></script>
 </body></html>
 """
+
+# Real Village jobs, confirmed by Derrick 2026-10-26 (same photos as the home page proof).
+VILLAGE_PROJECTS = [
+ ("pool-before.jpg","pool-after.jpg",900,1350,True,
+  "Backyard before: bare dirt slope with an above-ground pool",
+  "Backyard after: in-ground-look pool with a stamped-concrete deck, turf lawn, boxwoods and stone borders",
+  "From a bare slope to a resort in the backyard",
+  "An above-ground pool on a dirt hillside became an in-ground-look pool with a stamped-concrete deck, a lush turf lawn, sculpted boxwoods and stone borders."),
+ ("proj-transform-before-1.webp","proj-transform-after-2.webp",800,600,False,
+  "Backyard before: bare, rocky, unlandscaped slope",
+  "Same angle after: manicured lawn, native stone, flagstone paths and a finished landscape",
+  "From a bare, rocky slope to a showpiece backyard",
+  "Grade shaped, runoff solved, and a finished landscape of lawn, stone edging and flagstone paths."),
+ ("proj2-before.jpg","proj2-after.jpg",800,600,False,
+  "Eroded, bare slope before landscaping",
+  "Dry-creek stone bed and plantings after drainage and landscaping",
+  "An erosion problem turned into a feature",
+  "Village lots are steep. This natural-stone dry creek handles the water and looks intentional year-round."),
+ ("new-curb-before.jpg","new-curb-after.jpg",800,600,False,
+  "New-build front yard before: bare dirt, weeds and a fresh mailbox",
+  "Front yard after: established sod lawn with a river-rock dry creek and clean stone borders",
+  "A bare new-build yard, finished for the street",
+  "Fresh sod, a river-rock dry creek to carry the runoff, and stone-bordered beds. Instant curb appeal the day the work was done."),
+ ("proj3-before.jpg","proj3-after.jpg",800,600,False,
+  "Rough, unfinished lakeside slope before",
+  "Lakeside stone terraces, flagstone patio, putting green and pondless waterfall after",
+  "A rough lakeside slope becomes an outdoor retreat",
+  "Natural-stone terraces, a flagstone patio, a private putting green and a pondless waterfall carried down toward the water."),
+]
+
+def projects_html(c):
+    if not c.get("projects"):
+        return ""
+    items = []
+    for b, a, w, h, tall, balt, aalt, title, text in VILLAGE_PROJECTS:
+        lb = "" if tall else '<span class="ba-lbl before">Before</span>'
+        la = "" if tall else '<span class="ba-lbl after">After</span>'
+        items.append(f'''    <div class="reveal">
+      <div class="ba-proof{' tall' if tall else ''}">
+        <figure>{lb}<img loading="lazy" src="img/{b}" width="{w}" height="{h}" alt="{balt}"></figure>
+        <figure>{la}<img loading="lazy" src="img/{a}" width="{w}" height="{h}" alt="{aalt}"></figure>
+      </div>
+      <div class="ba-cap"><h3>{title}</h3><p>{text}</p></div>
+    </div>''')
+    return ('''<style>.ba-stack{display:flex;flex-direction:column;gap:30px}.ba-cap{margin:12px 0 0;text-align:center}.ba-cap h3{margin:0 0 4px;font-size:1.25rem}.ba-cap p{margin:0;color:var(--body)}.ba-proof.tall figure{aspect-ratio:2/3}</style>
+<section class="section" id="village-projects">
+  <div class="wrap center" style="max-width:820px">
+    <p class="eyebrow">Real jobs in the Village</p>
+    <h2>Hot Springs Village projects</h2>
+    <p class="lead center" style="margin-bottom:36px">Hillsides, runoff, lake lots and new builds. Five Village properties, before and after, designed and built by our team.</p>
+  </div>
+  <div class="wrap ba-stack" style="max-width:960px">
+''' + "\n".join(items) + '''
+  </div>
+  <div class="wrap center" style="margin-top:30px"><a class="btn btn-leaf" href="book.html">Plan your Village project</a></div>
+</section>
+''')
 
 def build():
     for slug, c in CITIES.items():
@@ -166,7 +225,7 @@ def build():
         page = TEMPLATE.format(
             slug=slug, name=c["name"], county=c["county"], h1=c["h1"], intro=c["intro"],
             serves=c["serves"], services=services, maint_li=maint_note(c), sod_line=c["sod_line"],
-            maint_scope=maint_scope, meta=meta, faq1=faq1, faq2=faq2)
+            maint_scope=maint_scope, meta=meta, faq1=faq1, faq2=faq2, projects=projects_html(c))
         with open(f"loc-{slug}.html", "w") as f:
             f.write(page)
         print(f"wrote loc-{slug}.html  (maintenance={c['maint']})")
