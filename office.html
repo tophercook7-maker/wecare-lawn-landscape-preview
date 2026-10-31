@@ -1149,12 +1149,17 @@ function payLabel(e){ if(e.dayRate) return "$"+e.dayRate+"/day"; if(e.rate!=null
 /* office code gates the team's personal info; stored only in THIS browser */
 function officeCode(){try{return localStorage.getItem("wecare_office_code")||"";}catch(e){return "";}}
 var _ownerLoaded=false;
-function loadTeam(){
+function loadTeam(tries){
   if(!window.WeCareCloud || !WeCareCloud.team){ renderTeam(); return; }
+  tries = tries===undefined ? 3 : tries;
   // logged-in owner: the session JWT authorizes the team read (no office code needed)
   WeCareCloud.team("list",{code:officeCode()}).then(function(res){
     if(res && res.owner && res.employees){ save(K_EMP,res.employees); _ownerLoaded=true; CREW=allEmps(); renderTeam(); render(); renderCosting(); }
-    else { _ownerLoaded=false; renderTeam(); }
+    else {
+      _ownerLoaded=false; renderTeam();
+      // on page load the login can still be refreshing, so the first read is refused; try again shortly
+      if(tries>0) setTimeout(function(){ if(!_ownerLoaded) loadTeam(tries-1); }, 2500);
+    }
   });
 }
 function signOut(){ try{if(window.WeCareCloud&&WeCareCloud.logout)WeCareCloud.logout();}catch(e){} save(K_EMP,[]); renderAuthStatus(); opAuthOpen(); }
@@ -1500,6 +1505,7 @@ function showTab(id){
   [].forEach.call(document.querySelectorAll(".tabpane"),function(p){ p.classList.toggle("on",p.id==="pane-"+id); });
   [].forEach.call(document.querySelectorAll(".tab"),function(b){ b.classList.toggle("on",b.getAttribute("data-tab")===id); });
   if(id==="calendar"){ try{ renderCalendar(); }catch(e){} }
+  if(id==="team" && !_ownerLoaded){ try{ loadTeam(1); }catch(e){} }
   try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){ window.scrollTo(0,0); }
 }
 function newJobToggle(forceOpen){
