@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Your Report · October 2026 · WeCare Landscapes</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0f2219">
+<link rel="icon" href="../../img/mark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--night:#0f2219;--card:#1a3529;--card-2:#203f31;--cream:#f4efe4;--cream-dim:#c9d3cb;--mute:#94a89c;
+--gold:#d8b46a;--gold-soft:rgba(216,180,106,.16);--leaf:#94cc4f;--leaf-soft:rgba(148,204,79,.15);--hair:rgba(244,239,228,.10);--rust:#e0896a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--night)}
+body{color:var(--cream);font-family:"Inter",-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--gold);text-decoration:none;font-weight:600}
+h1,h2{font-family:"Fraunces",Georgia,serif;font-weight:600;letter-spacing:-.01em;margin:0}
+.shell{max-width:560px;margin:0 auto;padding:calc(22px + env(safe-area-inset-top)) 16px 56px}
+@media(min-width:620px){body{background:radial-gradient(1200px 700px at 50% -10%,#1f4232,#0a1711 70%)}.shell{margin:28px auto;border-radius:28px;background:var(--night);border:1px solid var(--hair);padding:36px 30px 56px}}
+.brand{display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:600;color:var(--cream-dim)}
+.brand img{width:34px;height:34px;object-fit:contain}
+.kicker{font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:30px 0 10px}
+h1{font-size:2.2rem;line-height:1.05}
+.lede{color:var(--cream-dim);margin:14px 0 0}
+.terms{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:22px}
+.term{background:var(--card);border:1px solid var(--hair);border-radius:16px;padding:16px 10px;text-align:center}
+.term b{display:block;font-family:"Fraunces",serif;font-size:1.6rem;color:var(--gold);line-height:1.1}
+.term span{font-size:.76rem;color:var(--mute)}
+section{margin-top:44px}
+.eyebrow{font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin:0 0 6px}
+section h2{font-size:1.5rem;margin-bottom:14px}
+section > p{color:var(--cream-dim);margin:0 0 14px}
+.rows{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--hair);border-radius:18px}
+.rows li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 16px;border-top:1px solid var(--hair)}
+.rows li:first-child{border-top:0}
+.rows b{display:block;font-size:.94rem}
+.rows span{display:block;font-size:.8rem;color:var(--mute);overflow-wrap:anywhere}
+.rows em{display:inline-block;font-style:normal;font-size:.72rem;font-weight:700;margin-top:4px}
+em.up{color:var(--leaf)} em.down{color:var(--rust)}
+.pos{flex:none;font-size:.72rem!important;font-weight:700;letter-spacing:.04em;padding:5px 10px;border-radius:99px;background:var(--leaf-soft);color:var(--leaf)!important;white-space:nowrap}
+.pos.na{background:var(--gold-soft);color:var(--gold)!important}
+.rows .n{flex:none;width:44px;font-family:"Fraunces",serif;font-size:1.6rem;color:var(--gold);text-align:center}
+.rows li:has(.n){justify-content:flex-start}
+.done{margin:0;padding:0;list-style:none}
+.done li{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--hair);font-size:.92rem;color:var(--cream-dim)}
+.done li:first-child{border-top:0}
+.done li b{color:var(--cream)}
+.chk{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--leaf-soft);color:var(--leaf);margin-top:1px}
+.chk svg{width:13px;height:13px}
+.date{flex:none;margin-left:auto;font-size:.75rem;color:var(--mute);white-space:nowrap;padding-left:8px}
+.report{background:linear-gradient(180deg,var(--card-2),var(--card));border:1px solid rgba(216,180,106,.3);border-radius:18px;padding:18px}
+.report ul{margin:0;padding:0;list-style:none}
+.report li{display:flex;gap:12px;padding:10px 0;border-top:1px solid var(--hair);font-size:.92rem;color:var(--cream-dim)}
+.report li:first-child{border-top:0;padding-top:0}
+.report li b{color:var(--cream);display:block;font-size:.95rem}
+.dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:8px}
+.yours{background:var(--card);border:1px solid var(--hair);border-radius:18px;padding:18px;color:var(--cream-dim);font-size:.94rem;margin-top:12px}
+.yours p{margin:0} .yours b{color:var(--cream)}
+.sign{margin-top:44px;padding-top:22px;border-top:1px solid var(--hair);display:flex;align-items:center;gap:12px}
+.mono{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-family:"Fraunces",serif;font-size:1.05rem;background:var(--gold-soft);color:var(--gold);border:1px solid rgba(216,180,106,.4)}
+.sign b{display:block} .sign span{font-size:.85rem;color:var(--mute)}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="brand"><img src="../../img/logo-trans.png" alt="">WeCare Landscapes</div>
+  <p class="kicker">Your Monthly Report</p>
+  <h1>October 6 – October 31, 2026</h1>
+  <p class="lede">This is your first report. Your Google listing only went live on October 15, so this month is mostly about the starting line, and from here you’ll see what moves.</p>
+  <div class="terms"><div class="term"><b>12</b><span>Google reviews · 5.0★</span></div><div class="term"><b>—</b><span>not in Maps top 20 yet</span></div><div class="term"><b>1 of 5</b><span>AI answers name you</span></div><div class="term"><b>107</b><span>website visits</span></div></div>
+
+  <section>
+    <p class="eyebrow">Google Maps</p>
+    <h2>Where you show up</h2>
+    <p>When someone nearby searches these on Google Maps, this is where your listing lands. 12 reviews on Google, averaging 5.0 stars <em class="up">▲ was 1</em>.</p>
+    <ul class="rows"><li><div><b>“landscaper near Hot Springs Village, AR”</b><span>Top of the list: Village Precision Pros, Hot Springs Lawn and Landscaping</span></div><span class="pos na">not top 20</span></li><li><div><b>“landscaping Hot Springs, AR”</b><span>Top of the list: Hot Springs Lawn and Landscaping, Shane&#x27;s Lawn, Landscaping &amp; Sprinkler</span></div><span class="pos na">not top 20</span></li><li><div><b>“landscape design Hot Springs Village, AR”</b><span>Top of the list: Village Precision Pros, Wellspring Landscaping &amp; Pavers</span></div><span class="pos na">not top 20</span></li><li><div><b>“sod near Hot Springs Village, AR”</b><span>Top of the list: —</span></div><span class="pos na">couldn’t read</span></li><li><div><b>“landscaper near Benton, AR”</b><span>Top of the list: Point of View Landscape LLC, Garden Designs by R&amp;L LLC</span></div><span class="pos na">not top 20</span></li></ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">ChatGPT-style answers</p>
+    <h2>Do AI tools recommend you?</h2>
+    <p>More people now ask an AI who to hire. I ask the same questions they do and check whether you get named.</p>
+    <ul class="rows"><li><div><b>Best landscapers in Hot Springs Village</b><span>“Who are the best landscapers in Hot Springs Village, Arkansas?”</span><em class="down">dropped</em></div><span class="pos na">not yet</span></li><li><div><b>Carved concrete and faux rock</b><span>“Who does carved or sculpted decorative concrete and faux rock work in central Arkansas?”</span><em class="down">dropped</em></div><span class="pos na">not yet</span></li><li><div><b>Zoysia sod near the Village</b><span>“Where can I buy zoysia sod and get it installed near Hot Springs Village, Arkansas?”</span><em class="down">dropped</em></div><span class="pos na">not yet</span></li><li><div><b>Yard drainage and erosion</b><span>“Who fixes yard drainage and erosion problems in Hot Springs, Arkansas?”</span><em class="down">dropped</em></div><span class="pos na">not yet</span></li><li><div><b>Pondless water features</b><span>“Who builds pondless water features in central Arkansas?”</span><em class="up">new this month</em></div><span class="pos">names you</span></li></ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">Leads</p>
+    <h2>Your website and tap page</h2>
+    <p>Calls straight to your phone and word of mouth aren’t in here, only what happened on your site and tap page. I started counting visits and taps on October 16.</p>
+    <ul class="rows"><li><b class="n">107</b><div><b>website visits</b><span>pages people opened on your site</span></div></li><li><b class="n">57</b><div><b>tap page opens</b><span>from your cards and QR code</span></div></li><li><b class="n">0</b><div><b>call and text taps</b><span>0 call, 0 text</span></div></li><li><b class="n">20</b><div><b>review links opened</b><span>people heading to leave you a Google review</span></div></li><li><b class="n">0</b><div><b>contacts saved</b><span>your card saved to their phone</span></div></li></ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">Behind the scenes</p>
+    <h2>What I watched and handled</h2>
+    <p>I ran <b>703 checks</b> on your leads database, website, tap page and review link since Oct 16, and <b>99%</b> came back clean. 2 problems came up, and every one is listed below. Plus 2 weekly checks of your business email, Google listing notices and the name and phone on your site.</p>
+    <ul class="done"><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Leads database brought back</b> and put on a regular check</div><span class="date">Oct 6</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Listed on Bing Places</b>, synced from Google (Bing feeds ChatGPT)</div><span class="date">Oct 12</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Google listing verified</b> and live on Maps</div><span class="date">Oct 15</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Nextdoor Fave 2026 badge</b> on your website and tap page</div><span class="date">Oct 15</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Review link and “Leave us a Google review” button</b> on your website</div><span class="date">Oct 15</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Tap page</b> for your cards: call, text, save contact, reviews, your work</div><span class="date">Oct 15</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Backup for customer forms</b>, so a form is never lost even if the database has a problem</div><span class="date">Oct 16</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Every-30-minute watch</b> on your database, website, tap page and review link</div><span class="date">Oct 16</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Fire-pit patio before and after</b> added to your website and the tap page slider</div><span class="date">Oct 16</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Hours and “since 1998”</b> updated on your Google listing</div><span class="date">Oct 16</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Nextdoor Fave win posted</b> on your Google listing</div><span class="date">Oct 16</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Review button moved to the top</b> of your tap page, like you asked</div><span class="date">Oct 16</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>“Recommend us on Nextdoor” link</b> added to your tap page</div><span class="date">Oct 16</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Leads database stopped answering</b>, back in 30 minutes</div><span class="date">Oct 18</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Leads database stopped answering</b>, back in 252 minutes</div><span class="date">Oct 20</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Growth ideas menu</b>: 65 ideas researched for your business, sent as a PDF</div><span class="date">Oct 24</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Asked Google to index 3 key pages</b>: before/after showcase, concrete artistry, design cost</div><span class="date">Oct 26</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Found why Village searches skip you</b>: listing newly trusted, name different on Wix/Facebook/Google, new site only 2 months old. Distance is not the problem</div><span class="date">Oct 26</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Hot Springs Village projects page</b> live with your 5 Village before/afters</div><span class="date">Oct 26</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Your job photos on Cass's old listing</b> traced and flagged for removal</div><span class="date">Oct 26</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Drive-by design video</b> built from your footage and renders</div><span class="date">Oct 30</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Caught: Hayden still shows on the clock</b> (one shift left open since late August, about 1,500 hours) in your office app</div><span class="date">Oct 31</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>Full check of your website and office app</b>; fixed the Team tab not loading</div><span class="date">Oct 31</span></li><li><span class="chk"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 8.5l3 3 7-7"/></svg></span><div><b>New 5-star review</b> from Teresa Harper caught and passed on</div><span class="date">Oct 31</span></li></ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">Next month</p>
+    <h2>What I’m working on</h2>
+    <div class="report"><ul><li><span class="dot"></span><div><b>Climb the Maps list</b>I keep your listing filled out and active with new photos and posts, so Google has more reasons to show you.</div></li><li><span class="dot"></span><div><b>Get named by AI</b>AI tools pick businesses they can read about in more than one place. I keep your listings matching everywhere so they connect the dots.</div></li></ul></div>
+    <div class="yours"><p><b>One thing from you:</b> send me a few photos of jobs you finish this month, before and after if you have them. I put them on your Google listing and your website, and that helps more than anything else I do.</p></div>
+  </section>
+
+  <div class="sign">
+    <div class="mono">CC</div>
+    <div><b>Chris Cook</b><span>MixedMakerShop · text me anytime: 501-575-8017</span></div>
+  </div>
+</main>
+</body>
+</html>
